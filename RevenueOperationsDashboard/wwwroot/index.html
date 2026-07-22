@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="am" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time Service Performance Operations Center</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brandDark: '#0b1120',
+            cardBg: '#1e293b',
+            borderDark: '#334155',
+            accentGreen: '#10b981',
+            accentBlue: '#3b82f6',
+            accentCyan: '#06b6d4',
+            accentRed: '#ef4444',
+            accentOrange: '#f59e0b',
+            accentPurple: '#8b5cf6'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Apache ECharts -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+  <style>
+    body {
+      background-color: #0b1120;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      user-select: none;
+    }
+
+    /* Custom TV Glow and Animations */
+    .glow-dot {
+      box-shadow: 0 0 12px #ef4444;
+      animation: pulseGlow 1.8s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
+    }
+
+    .slide-container {
+      transition: opacity 0.4s ease-in-out;
+    }
+
+    .slide-hidden {
+      display: none !important;
+      opacity: 0;
+    }
+
+    .slide-visible {
+      display: flex !important;
+      opacity: 1;
+    }
+
+    /* Scrollbar customization */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen overflow-hidden p-4 relative flex flex-col bg-brandDark text-slate-100">
+
+  <!-- FLOATING NAVIGATION ARROWS (VERTICALLY CENTERED & HORIZONTALLY SPACED) -->
+  <button onclick="prevSlide()" class="fixed left-6 top-1/2 -translate-y-1/2 z-50 p-4 rounded-full bg-slate-900/80 text-slate-300 hover:text-white border border-slate-700/80 hover:border-cyan-500/80 hover:bg-slate-800 backdrop-blur-md shadow-2xl transition-all hover:scale-110 active:scale-95 focus:outline-none group">
+    <i class="fa-solid fa-chevron-left text-2xl group-hover:-translate-x-0.5 transition-transform"></i>
+  </button>
+
+  <button onclick="nextSlide()" class="fixed right-6 top-1/2 -translate-y-1/2 z-50 p-4 rounded-full bg-slate-900/80 text-slate-300 hover:text-white border border-slate-700/80 hover:border-cyan-500/80 hover:bg-slate-800 backdrop-blur-md shadow-2xl transition-all hover:scale-110 active:scale-95 focus:outline-none group">
+    <i class="fa-solid fa-chevron-right text-2xl group-hover:translate-x-0.5 transition-transform"></i>
+  </button>
+
+  <!-- GLOBAL FILTER MODAL OVERLAY -->
+  <div id="filterModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden transition-opacity">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-6">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-sliders text-blue-400 text-xl"></i>
+          <div>
+            <h3 class="text-lg font-bold text-white">Global Dashboard Filters</h3>
+            <p class="text-xs text-slate-400">Refine metrics across all Operations Center slides</p>
+          </div>
+        </div>
+        <button onclick="toggleFilterModal()" class="text-slate-400 hover:text-white text-xl">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Filter Form Elements -->
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">በጀት ዓመት (Fiscal Year)</label>
+          <select id="filterFiscalYear" onchange="applyFilters()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+            <!-- Loaded dynamically from API -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">ቅርንጫፍ / ክፍለ ከተማ (Parent Branch)</label>
+          <select id="filterParent" onchange="applyFilters()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+            <!-- Loaded dynamically from API -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የታክስ ዓይነት (Plan / Tax Item)</label>
+          <select id="filterPlanItem" onchange="applyFilters()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+            <!-- Loaded dynamically from API -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-between border-t border-slate-800 pt-4">
+        <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-white underline">
+          Clear All Filters
+        </button>
+        <button onclick="toggleFilterModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm px-5 py-2 rounded-lg transition">
+          Apply & Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MAIN SLIDESHOW VIEWPORT -->
+  <main class="flex-1 w-full h-full relative overflow-hidden flex flex-col min-h-0">
+
+    <div id="slide-0" class="slide-container slide-visible h-full w-full flex-col gap-3 min-h-0">
+      <div class="bg-cardBg border border-borderDark rounded-xl p-4 flex flex-col h-full w-full shadow-lg min-h-0 overflow-hidden">
+        <div class="flex items-center justify-between mb-2 flex-shrink-0">
+          <div>
+            <h2 class="text-base md:text-lg font-bold text-cyan-400">የገቢ አፈፃፀም በታክስ ዓይነት በቢሊዮን ብር</h2>
+            <p class="text-xs text-slate-400">Tax Type Performance Breakdown (Target vs. Actual in Billions ETB)</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs">
+            <span class="flex items-center gap-1.5 text-cyan-400 font-semibold"><div class="w-3 h-3 bg-cyan-400 rounded-sm"></div> እቅድ (Plan)</span>
+            <span class="flex items-center gap-1.5 text-blue-500 font-semibold"><div class="w-3 h-3 bg-blue-500 rounded-sm"></div> አፈፃፀም (Actual)</span>
+          </div>
+        </div>
+        <div id="chartTaxType" class="w-full flex-1 min-h-[300px]"></div>
+      </div>
+    </div>
+
+
+    <div id="slide-1" class="slide-container slide-hidden h-full w-full flex-col gap-3 min-h-0">
+      <div class="bg-cardBg border border-borderDark rounded-xl p-4 flex flex-col h-full w-full shadow-lg min-h-0 overflow-hidden">
+        <div class="flex items-center justify-between mb-2 flex-shrink-0">
+          <div>
+            <h2 class="text-base md:text-lg font-bold text-purple-400">የገቢ አፈፃፀም በወራት ንፅፅር</h2>
+            <p class="text-xs text-slate-400">Monthly Achievement Percentage Curve across Fiscal Calendar</p>
+          </div>
+          <div class="text-xs text-purple-300 font-semibold bg-purple-950/60 border border-purple-800/50 px-3 py-1 rounded-lg">
+            <span id="trendFiscalYearLabel">2018 (በጀት ዓመት)</span>
+          </div>
+        </div>
+        <div id="chartMonthlyTrend" class="w-full flex-1 min-h-[300px]"></div>
+      </div>
+    </div>
+
+
+    <!-- Slide 2: Target vs Actual Volumes -->
+    <div id="slide-2" class="slide-container slide-hidden h-full w-full flex-col gap-3 min-h-0">
+      <div class="bg-cardBg border border-borderDark rounded-xl p-4 flex flex-col h-full w-full shadow-lg min-h-0 overflow-hidden">
+        <div class="flex items-center justify-between mb-2 flex-shrink-0">
+          <div>
+            <h2 class="text-base md:text-lg font-bold text-blue-400">የቅርንጫፎች ዕቅድና አፈፃፀም ገቢ መጠን</h2>
+            <p class="text-xs text-slate-400">Branch Comparative Volume Analytics in Billions ETB (Target vs. Actual)</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs">
+            <span class="flex items-center gap-1.5 text-[#00c4ff] font-semibold"><div class="w-3 h-3 bg-[#00c4ff] rounded-sm"></div> እቅድ (Plan)</span>
+            <span class="flex items-center gap-1.5 text-blue-500 font-semibold"><div class="w-3 h-3 bg-blue-500 rounded-sm"></div> አፈፃፀም (Actual)</span>
+          </div>
+        </div>
+        <div id="chartBranchVolume" class="w-full flex-1 min-h-[300px]"></div>
+      </div>
+    </div>
+
+    <!-- Slide 3: Leaderboards (Top vs Bottom Performers) -->
+    <div id="slide-3" class="slide-container slide-hidden h-full w-full gap-4 min-h-0">
+      <!-- Left Card: Top Performers -->
+      <div class="flex-1 bg-cardBg border border-borderDark rounded-xl p-4 flex flex-col h-full shadow-lg min-h-0 overflow-hidden">
+        <div class="flex items-center justify-between mb-2 flex-shrink-0">
+          <div>
+            <h2 id="topPerformersTitle" class="text-base md:text-lg font-bold text-emerald-400">ከፍተኛ አፈፃፀም ያላቸው ቅርንጫፎች</h2>
+            <p id="topPerformersSub" class="text-xs text-slate-400">Top Performing Branch Offices by Overall Achievement %</p>
+          </div>
+          <span class="text-xs bg-emerald-950 text-emerald-300 px-3 py-1 rounded-lg font-semibold border border-emerald-800">Leaderboard</span>
+        </div>
+        <div id="chartTopPerformers" class="w-full flex-1 min-h-[300px]"></div>
+      </div>
+
+      <!-- Right Card: Bottom Performers -->
+      <div class="flex-1 bg-cardBg border border-borderDark rounded-xl p-4 flex flex-col h-full shadow-lg min-h-0 overflow-hidden">
+        <div class="flex items-center justify-between mb-2 flex-shrink-0">
+          <div>
+            <h2 id="bottomPerformersTitle" class="text-base md:text-lg font-bold text-rose-400">ትኩረት የሚሹ ቅርንጫፎች</h2>
+            <p id="bottomPerformersSub" class="text-xs text-slate-400">Lowest Performing Branch Offices needing attention</p>
+          </div>
+          <span class="text-xs bg-rose-950 text-rose-300 px-3 py-1 rounded-lg font-semibold border border-rose-800">Underperforming</span>
+        </div>
+        <div id="chartBottomPerformers" class="w-full flex-1 min-h-[300px]"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- DYNAMIC PREMIUM FOOTER TOOLBAR -->
+  <footer class="mt-4 flex-shrink-0 bg-slate-900/60 border border-slate-800/80 backdrop-blur-md rounded-xl p-3 flex items-center justify-between z-40">
+    <div class="flex items-center gap-4">
+      <button id="playPauseBtn" onclick="toggleCarousel()" class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition">
+        <i id="playPauseIcon" class="fa-solid fa-pause"></i>
+        <span id="playPauseText">Pause</span>
+      </button>
+      <div class="w-32 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+        <div id="carouselProgressBar" class="bg-blue-500 h-full w-0 transition-all duration-100"></div>
+      </div>
+      <span id="slideTitleDisplay" class="text-xs font-medium text-slate-400">Slide 1 of 3: Tax Type Target vs Actual</span>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <!-- Dot Indicators -->
+      <div id="carouselDots" class="flex items-center gap-1.5 mr-4"></div>
+
+      <!-- Action Buttons -->
+      <button onclick="toggleFilterModal()" class="flex items-center gap-2 bg-blue-600/80 hover:bg-blue-600 text-white font-semibold text-xs px-4 py-2 rounded-lg border border-blue-500/30 transition shadow-lg">
+        <i class="fa-solid fa-sliders"></i> Filters
+      </button>
+      
+      <button onclick="toggleFullscreen()" class="text-slate-400 hover:text-white transition p-1">
+        <i class="fa-solid fa-expand text-sm"></i>
+      </button>
+    </div>
+  </footer>
+
+  <!-- JASS SCRIPT LOGIC & DYNAMIC INTEGRATION -->
+  <script>
+    // Global Application State
+    const state = {
+      currentSlide: 0,
+      slideCount: 0,
+      activeSlides: [],
+      autoRotate: true,
+      slideDuration: 12000, // 12 seconds per slide
+      timerProgress: 0,
+      timerInterval: null,
+      filters: {
+        fiscalYear: 'ALL',
+        parent: 'ALL',
+        planItem: 'ALL'
+      }
+    };
+
+    // ECharts Instances Map
+    const chartInstances = {};
+
+    // Initialize Dashboard Layout and Config from Server
+    async function initializeDashboardConfig() {
+      try {
+        const res = await fetch('/api/dashboard/config');
+        const config = await res.json();
+        state.config = config;
+
+        // Set default filters
+        state.filters.fiscalYear = config.defaultFilters.fiscalYearId;
+        state.filters.parent = config.defaultFilters.parentId;
+        state.filters.planItem = config.defaultFilters.planItemId;
+
+        state.autoRotate = config.carousel.autoPlay;
+        state.carouselDefaultDuration = config.carousel.intervalMs || 12000;
+        state.slideDuration = state.carouselDefaultDuration;
+        updatePlayPauseButtonState();
+
+        const mainViewport = document.querySelector('main');
+        const visibleSlides = [];
+
+        // Track and process slides based on config
+        for (const slideConfig of config.carousel.slides) {
+          const slideEl = document.getElementById(slideConfig.id);
+          if (!slideEl) continue;
+
+          if (!slideConfig.visible) {
+            slideEl.remove(); // Remove disabled slides from DOM
+          } else {
+            // Update Title / Subtitle if custom elements exist
+            const titleEl = slideEl.querySelector('h2');
+            const subEl = slideEl.querySelector('p');
+            if (titleEl) titleEl.innerText = slideConfig.title;
+            if (subEl) subEl.innerText = slideConfig.subtitle;
+
+            // Re-append to main viewport to guarantee server-side order
+            mainViewport.appendChild(slideEl);
+            visibleSlides.push(slideConfig);
+          }
+        }
+
+        state.activeSlides = visibleSlides;
+        state.slideCount = visibleSlides.length;
+
+        // Build Navigation Dots dynamically
+        const dotsContainer = document.getElementById('carouselDots');
+        if (dotsContainer) {
+          dotsContainer.innerHTML = visibleSlides.map((slide, idx) => {
+            const isFirst = idx === 0;
+            return `<button id="dot-${idx}" onclick="goToSlide(${idx})" class="${isFirst ? 'w-6 h-2 bg-blue-500' : 'w-2 h-2 bg-slate-600 hover:bg-slate-500'} rounded-full transition-all focus:outline-none"></button>`;
+          }).join('');
+        }
+      } catch (err) {
+        console.error("Failed to load dashboard configuration:", err);
+      }
+    }
+
+    // Apply Filter Changes
+    async function applyFilters() {
+      state.filters.fiscalYear = document.getElementById('filterFiscalYear').value;
+      state.filters.parent = document.getElementById('filterParent').value;
+      state.filters.planItem = document.getElementById('filterPlanItem').value;
+
+      // Update Filter Summary text if element exists
+      const filterSummaryText = document.getElementById('filterSummaryText');
+      if (filterSummaryText) {
+        const parentLabel = state.filters.parent === 'ALL' ? 'All Branches' : document.getElementById('filterParent').options[document.getElementById('filterParent').selectedIndex].text;
+        filterSummaryText.innerText = `Fiscal Year: ${state.filters.fiscalYear} | ${parentLabel}`;
+      }
+
+      await refreshActiveSlideMetric(state.currentSlide);
+    }
+
+    async function resetFilters() {
+      if (state.config && state.config.defaultFilters) {
+        document.getElementById('filterFiscalYear').value = state.config.defaultFilters.fiscalYearId;
+        document.getElementById('filterParent').value = state.config.defaultFilters.parentId;
+        document.getElementById('filterPlanItem').value = state.config.defaultFilters.planItemId;
+      } else {
+        if (document.getElementById('filterFiscalYear').options.length > 0) {
+          document.getElementById('filterFiscalYear').selectedIndex = 0;
+        }
+        document.getElementById('filterParent').value = 'ALL';
+        document.getElementById('filterPlanItem').value = 'ALL';
+      }
+      await applyFilters();
+    }
+
+    // Dynamic API Fetch & Render Pipeline for Visible Slide Only
+    async function refreshActiveSlideMetric(index) {  
+      try {
+        const slide = state.activeSlides[index];
+        if (!slide) return;
+
+        const query = new URLSearchParams({  
+          fiscalYearId: state.filters.fiscalYear,  
+          parentId: state.filters.parent,  
+          planItemId: state.filters.planItem  
+        }).toString();
+
+        const resData = await fetch(`${slide.apiEndpoint}?${query}`).then(r => r.json());
+
+        // Initialize and clear active chart to force initial build animations
+        if (slide.id === 'slide-0') {
+          if (!chartInstances.taxType) {
+            chartInstances.taxType = echarts.init(document.getElementById('chartTaxType'), 'dark');
+          } else {
+            chartInstances.taxType.clear();
+          }
+          renderTaxTypeChart(resData);
+        } else if (slide.id === 'slide-1') {
+          if (!chartInstances.monthlyTrend) {
+            chartInstances.monthlyTrend = echarts.init(document.getElementById('chartMonthlyTrend'), 'dark');
+          } else {
+            chartInstances.monthlyTrend.clear();
+          }
+          renderMonthlyTrendChart(resData);
+        } else if (slide.id === 'slide-2') {
+          if (!chartInstances.branchVolume) {
+            chartInstances.branchVolume = echarts.init(document.getElementById('chartBranchVolume'), 'dark');
+          } else {
+            chartInstances.branchVolume.clear();
+          }
+          renderBranchVolumeChart(resData);
+        } else if (slide.id === 'slide-3') {
+          if (!chartInstances.topPerformers) {
+            chartInstances.topPerformers = echarts.init(document.getElementById('chartTopPerformers'), 'dark');
+          } else {
+            chartInstances.topPerformers.clear();
+          }
+          if (!chartInstances.bottomPerformers) {
+            chartInstances.bottomPerformers = echarts.init(document.getElementById('chartBottomPerformers'), 'dark');
+          } else {
+            chartInstances.bottomPerformers.clear();
+          }
+          renderBranchRankingOption3(resData);
+        }
+
+        // Trigger resize on visible container to fix layout calculation bugs
+        setTimeout(() => {
+          if (slide.id === 'slide-0' && chartInstances.taxType) chartInstances.taxType.resize();
+          else if (slide.id === 'slide-1' && chartInstances.monthlyTrend) chartInstances.monthlyTrend.resize();
+          else if (slide.id === 'slide-2' && chartInstances.branchVolume) chartInstances.branchVolume.resize();
+          else if (slide.id === 'slide-3') {
+            if (chartInstances.topPerformers) chartInstances.topPerformers.resize();
+            if (chartInstances.bottomPerformers) chartInstances.bottomPerformers.resize();
+          }
+        }, 50);
+        
+        // Update fiscal year text indicator
+        const trendFiscalYearLabel = document.getElementById('trendFiscalYearLabel');
+        if (trendFiscalYearLabel) {
+          const yearSelect = document.getElementById('filterFiscalYear');
+          trendFiscalYearLabel.innerText = yearSelect.options[yearSelect.selectedIndex]?.text || state.filters.fiscalYear;
+        }
+      } catch (err) {
+        console.error("Failed to fetch active slide metrics:", err);
+      }
+    }
+
+    // Populate Filter Modal Dropdowns on Page Load  
+    async function loadFilterDropdowns() {  
+      try {
+        const res = await fetch('/api/dashboard/filter-options');  
+        const options = await res.json();
+
+        const yearSelect = document.getElementById('filterFiscalYear');  
+        yearSelect.innerHTML = options.fiscalYears.map(y => `<option value="${y.id}">${y.name}</option>`).join('');
+        if (state.filters.fiscalYear) {
+          yearSelect.value = state.filters.fiscalYear;
+        }
+
+        const branchSelect = document.getElementById('filterParent');  
+        branchSelect.innerHTML = `<option value="ALL">ሁሉም ቅርንጫፎች (All Branches)</option>` +   
+          options.branches.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+        if (state.filters.parent) {
+          branchSelect.value = state.filters.parent;
+        }
+
+        const taxSelect = document.getElementById('filterPlanItem');  
+        taxSelect.innerHTML = `<option value="ALL">ሁሉም የታክስ ዓይነቶች (All Tax Types)</option>` +   
+          options.taxTypes.map(t => `<option value="${t.id}">${t.name}</option>`).join('');  
+        if (state.filters.planItem) {
+          taxSelect.value = state.filters.planItem;
+        }
+      } catch (err) {
+        console.error("Failed to load filter dropdowns:", err);
+      }
+    }
+
+    // 1. Tax Type Target vs Actual Bar Chart (Billions Birr)
+    function renderTaxTypeChart(taxRes) {
+      if (!chartInstances.taxType) {
+        chartInstances.taxType = echarts.init(document.getElementById('chartTaxType'), 'dark');
+      }
+
+      const categories = taxRes && taxRes.categories && taxRes.categories.length > 0 
+        ? taxRes.categories 
+        : ['ምንዳና ደመወዝ(1101)', 'ንግድ ትረፍ(1103)', 'የተጨማሪ እሴት ታክስ(1120)', 'የኪራይ ገቢ(1102)', 'የማዘጋጃ ቤቶች ገቢ(1700)', 'ቤት ግብር(1701)'];
+
+      const targetData = taxRes && taxRes.targetBillions && taxRes.targetBillions.length > 0 
+        ? taxRes.targetBillions 
+        : [0, 0, 0, 0, 0, 0];
+
+      const actualData = taxRes && taxRes.actualBillions && taxRes.actualBillions.length > 0 
+        ? taxRes.actualBillions 
+        : [0, 0, 0, 0, 0, 0];
+
+      const option = {
+        backgroundColor: 'transparent',
+        animation: true,
+        animationDuration: 2800,
+        animationEasing: 'cubicOut',
+        tooltip: { trigger: 'axis', formatter: '{b}<br/>{a0}: {c0}B ETB<br/>{a1}: {c1}B ETB' },
+        grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: categories,
+          axisLabel: { color: '#f8fafc', fontSize: 11, interval: 0, rotate: 10 }
+        },
+        yAxis: {
+          type: 'value',
+          name: 'Billions (B)',
+          axisLabel: { color: '#94a3b8', formatter: '{value}B' },
+          splitLine: { lineStyle: { color: '#334155' } }
+        },
+        series: [
+          {
+            name: 'እቅድ (Plan)',
+            type: 'bar',
+            data: targetData,
+            itemStyle: { color: '#06b6d4', borderRadius: [4, 4, 0, 0] },
+            label: { show: true, position: 'top', formatter: '{c}B', color: '#06b6d4', fontSize: 11 },
+            animationDelay: function (idx) {
+              return idx * 220;
+            }
+          },
+          {
+            name: 'አፈፃፀም (Actual)',
+            type: 'bar',
+            data: actualData,
+            itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] },
+            label: { show: true, position: 'top', formatter: '{c}B', color: '#60a5fa', fontSize: 11 },
+            animationDelay: function (idx) {
+              return idx * 220 + 220;
+            }
+          }
+        ]
+      };
+
+      chartInstances.taxType.setOption(option);
+    }
+
+    // 2. Monthly Achievement Smooth Line Chart
+    function renderMonthlyTrendChart(trendRes) {
+      if (!chartInstances.monthlyTrend) {
+        chartInstances.monthlyTrend = echarts.init(document.getElementById('chartMonthlyTrend'), 'dark');
+      }
+
+      const months = trendRes && trendRes.months && trendRes.months.length > 0 
+        ? trendRes.months 
+        : ['ሃምሌ', 'ነሃሴ', 'መስከረም', 'ጥቅምት', 'ህዳር', 'ታህሳስ', 'ጥር', 'የካቲት', 'መጋቢት', 'ሚያዚያ', 'ግንቦት', 'ሰኔ'];
+      const achievements = trendRes && trendRes.achievements && trendRes.achievements.length > 0 
+        ? trendRes.achievements 
+        : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+      const option = {
+        backgroundColor: 'transparent',
+        animation: true,
+        animationDuration: 3500,
+        animationEasing: 'cubicInOut',
+        tooltip: { trigger: 'axis', formatter: '{b}: {c}%' },
+        grid: { left: '3%', right: '4%', bottom: '12%', top: '12%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: months,
+          axisLabel: { color: '#f8fafc', fontSize: 12, fontWeight: 'bold' }
+        },
+        yAxis: {
+          type: 'value',
+          min: 0,
+          max: 140,
+          axisLabel: { color: '#94a3b8', formatter: '{value}%' },
+          splitLine: { lineStyle: { color: '#334155' } }
+        },
+        series: [{
+          name: 'Achievement',
+          type: 'line',
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 8,
+          data: achievements,
+          itemStyle: { color: '#8b5cf6' },
+          lineStyle: { width: 3, color: '#8b5cf6' },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(139, 92, 246, 0.4)' },
+              { offset: 1, color: 'rgba(139, 92, 246, 0.0)' }
+            ])
+          },
+          label: {
+            show: true,
+            position: 'top',
+            formatter: '{c}%',
+            color: '#c084fc',
+            fontSize: 12,
+            fontWeight: 'bold'
+          },
+          animationDelay: function (idx) {
+            return idx * 180;
+          }
+        }]
+      };
+
+      chartInstances.monthlyTrend.setOption(option);
+    }
+
+    // 3. Slide 2: Target vs Actual Volumes (Grouped Comparative)
+    function renderBranchVolumeChart(volumeRes) {
+      if (!chartInstances.branchVolume) {
+        chartInstances.branchVolume = echarts.init(document.getElementById('chartBranchVolume'), 'dark');
+      }
+
+      const branches = volumeRes && volumeRes.branches ? volumeRes.branches : [];
+      const targets = volumeRes && volumeRes.targetBillions ? volumeRes.targetBillions : [];
+      const actuals = volumeRes && volumeRes.actualBillions ? volumeRes.actualBillions : [];
+
+      const option = {
+        backgroundColor: 'transparent',
+        animation: true,
+        animationDuration: 2800,
+        animationEasing: 'cubicOut',
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}<br/>እቅድ: {c0}B ETB<br/>አፈፃፀም: {c1}B ETB' },
+        grid: { left: '15%', right: '5%', bottom: '5%', top: '5%', containLabel: true },
+        xAxis: { type: 'value', axisLabel: { formatter: '{value}B', color: '#94a3b8' }, splitLine: { lineStyle: { color: '#334155' } } },
+        yAxis: { type: 'category', data: branches, axisLabel: { color: '#f8fafc', fontSize: 11 } },
+        series: [
+          {
+            name: 'እቅድ (Plan)',
+            type: 'bar',
+            barGap: '10%',
+            data: targets,
+            itemStyle: { color: '#00c4ff', borderRadius: [0, 4, 4, 0] },
+            label: { show: true, position: 'right', formatter: '{c}B', color: '#00c4ff', fontSize: 10 },
+            animationDelay: function (idx) {
+              return idx * 120;
+            }
+          },
+          {
+            name: 'አፈፃፀም (Actual)',
+            type: 'bar',
+            data: actuals.map((val, idx) => {
+              const target = targets[idx] || 0;
+              const color = val >= target ? '#10b981' : '#3b82f6';
+              return {
+                value: val,
+                itemStyle: { color: color, borderRadius: [0, 4, 4, 0] }
+              };
+            }),
+            label: { show: true, position: 'right', formatter: '{c}B', color: '#60a5fa', fontSize: 10 },
+            animationDelay: function (idx) {
+              return idx * 120 + 120;
+            }
+          }
+        ]
+      };
+
+      chartInstances.branchVolume.setOption(option);
+    }
+
+    // 6. Slide 5 (Option 3): Top & Bottom Performers Split-Card Leaderboard
+    function renderBranchRankingOption3(branchRes) {
+      if (!chartInstances.topPerformers) {
+        chartInstances.topPerformers = echarts.init(document.getElementById('chartTopPerformers'), 'dark');
+      }
+      if (!chartInstances.bottomPerformers) {
+        chartInstances.bottomPerformers = echarts.init(document.getElementById('chartBottomPerformers'), 'dark');
+      }
+
+      const allBranches = branchRes && branchRes.branches ? branchRes.branches : [];
+      const allScores = branchRes && branchRes.scores ? branchRes.scores : [];
+
+      const limit = Math.min(5, Math.floor(allBranches.length / 2));
+
+      const topTitle = document.getElementById('topPerformersTitle');
+      const topSub = document.getElementById('topPerformersSub');
+      const bottomTitle = document.getElementById('bottomPerformersTitle');
+      const bottomSub = document.getElementById('bottomPerformersSub');
+
+      if (topTitle) topTitle.innerText = `ከፍተኛ አፈፃፀም ያላቸው ${limit} ቅርንጫፎች (Top ${limit})`;
+      if (topSub) topSub.innerText = `Top ${limit} Performing Branch Offices by Overall Achievement %`;
+      if (bottomTitle) bottomTitle.innerText = `ትኩረት የሚሹ ${limit} ቅርንጫፎች (Bottom ${limit})`;
+      if (bottomSub) bottomSub.innerText = `Lowest ${limit} Performing Branch Offices needing attention`;
+
+      const bottomBranches = allBranches.slice(0, limit);
+      const bottomScores = allScores.slice(0, limit);
+
+      const topBranches = allBranches.slice(-limit);
+      const topScores = allScores.slice(-limit);
+
+      const topOption = {
+        backgroundColor: 'transparent',
+        animation: true,
+        animationDuration: 2800,
+        animationEasing: 'cubicOut',
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}%' },
+        grid: { left: '20%', right: '10%', bottom: '5%', top: '5%', containLabel: true },
+        xAxis: { type: 'value', max: 120, axisLabel: { formatter: '{value}%', color: '#94a3b8' }, splitLine: { lineStyle: { color: '#334155' } } },
+        yAxis: { type: 'category', data: topBranches, axisLabel: { color: '#f8fafc', fontSize: 11 } },
+        series: [{
+          name: 'Top Performers',
+          type: 'bar',
+          barWidth: 14,
+          data: topScores.map(val => ({
+            value: val,
+            itemStyle: {
+              borderRadius: [0, 8, 8, 0],
+              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: '#10b981' },
+                { offset: 1, color: '#059669' }
+              ])
+            }
+          })),
+          label: { show: true, position: 'right', formatter: '{c}%', color: '#fff', fontSize: 10, fontWeight: 'bold' },
+          animationDelay: function (idx) {
+            return idx * 250;
+          }
+        }]
+      };
+
+      const bottomOption = {
+        backgroundColor: 'transparent',
+        animation: true,
+        animationDuration: 2800,
+        animationEasing: 'cubicOut',
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}%' },
+        grid: { left: '20%', right: '10%', bottom: '5%', top: '5%', containLabel: true },
+        xAxis: { type: 'value', max: 120, axisLabel: { formatter: '{value}%', color: '#94a3b8' }, splitLine: { lineStyle: { color: '#334155' } } },
+        yAxis: { type: 'category', data: bottomBranches, axisLabel: { color: '#f8fafc', fontSize: 11 } },
+        series: [{
+          name: 'Underperforming',
+          type: 'bar',
+          barWidth: 14,
+          data: bottomScores.map(val => ({
+            value: val,
+            itemStyle: {
+              borderRadius: [0, 8, 8, 0],
+              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: '#ef4444' },
+                { offset: 1, color: '#991b1b' }
+              ])
+            }
+          })),
+          label: { show: true, position: 'right', formatter: '{c}%', color: '#fff', fontSize: 10, fontWeight: 'bold' },
+          animationDelay: function (idx) {
+            return idx * 250;
+          }
+        }]
+      };
+
+      chartInstances.topPerformers.setOption(topOption);
+      chartInstances.bottomPerformers.setOption(bottomOption);
+    }
+
+    // --- SLIDESHOW CAROUSEL ROTATOR LOGIC ---
+    function goToSlide(index) {
+      if (index < 0 || index >= state.slideCount) return;
+      state.currentSlide = index;
+
+      // Update slide visibility
+      state.activeSlides.forEach((slideConfig, idx) => {
+        const slide = document.getElementById(slideConfig.id);
+        const dot = document.getElementById(`dot-${idx}`);
+
+        if (idx === index) {
+          slide?.classList.remove('slide-hidden');
+          slide?.classList.add('slide-visible');
+          if (dot) {
+            dot.classList.remove('bg-slate-600', 'w-2');
+            dot.classList.add('bg-blue-500', 'w-6');
+          }
+        } else {
+          slide?.classList.remove('slide-visible');
+          slide?.classList.add('slide-hidden');
+          if (dot) {
+            dot.classList.remove('bg-blue-500', 'w-6');
+            dot.classList.add('bg-slate-600', 'w-2');
+          }
+        }
+      });
+
+      // Update Footer Title if element exists
+      const slideTitleDisplay = document.getElementById('slideTitleDisplay');
+      if (slideTitleDisplay && state.activeSlides[index]) {
+        const currentSlideConfig = state.activeSlides[index];
+        slideTitleDisplay.innerText = `Slide ${index + 1} of ${state.slideCount}: ${currentSlideConfig.title}`;
+      }
+
+      // Update slide duration based on custom setting or default interval
+      if (state.activeSlides[index]) {
+        const slideConfig = state.activeSlides[index];
+        state.slideDuration = slideConfig.durationMs || state.carouselDefaultDuration || 12000;
+      }
+
+      // Reset progress timer
+      state.timerProgress = 0;
+
+      // CRITICAL: Refresh dynamic active metric while slide is visible to trigger entry animation
+      requestAnimationFrame(async () => {
+        await refreshActiveSlideMetric(index);
+      });
+    }
+
+    function nextSlide() {
+      if (state.slideCount === 0) return;
+      const nextIndex = (state.currentSlide + 1) % state.slideCount;
+      goToSlide(nextIndex);
+    }
+
+    function prevSlide() {
+      if (state.slideCount === 0) return;
+      const prevIndex = (state.currentSlide - 1 + state.slideCount) % state.slideCount;
+      goToSlide(prevIndex);
+    }
+
+    function toggleCarousel() {
+      state.autoRotate = !state.autoRotate;
+      updatePlayPauseButtonState();
+    }
+
+    function updatePlayPauseButtonState() {
+      const icon = document.getElementById('playPauseIcon');
+      const text = document.getElementById('playPauseText');
+      if (state.autoRotate) {
+        if (icon) icon.className = 'fa-solid fa-pause';
+        if (text) text.innerText = 'Pause';
+      } else {
+        if (icon) icon.className = 'fa-solid fa-play';
+        if (text) text.innerText = 'Play';
+      }
+    }
+
+    function startTimerLoop() {
+      setInterval(() => {
+        if (!state.autoRotate || state.slideCount === 0) return;
+
+        state.timerProgress += (100 / (state.slideDuration / 100));
+        if (state.timerProgress >= 100) {
+          state.timerProgress = 0;
+          nextSlide();
+        }
+
+        const progressBar = document.getElementById('carouselProgressBar');
+        if (progressBar) {
+          progressBar.style.width = `${state.timerProgress}%`;
+        }
+      }, 100);
+    }
+
+    // Toggle Modal
+    function toggleFilterModal() {
+      const modal = document.getElementById('filterModal');
+      const isOpening = modal.classList.contains('hidden');
+      
+      modal.classList.toggle('hidden');
+      
+      // If modal is opened, pause carousel by default
+      if (isOpening) {
+        state.autoRotate = false;
+        updatePlayPauseButtonState();
+      }
+    }
+
+    // Toggle Fullscreen Mode
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(e => console.log(e));
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Initialize Everything on Load
+    document.addEventListener("DOMContentLoaded", async () => {
+      await initializeDashboardConfig(); // 1. Load Server Config & Layout
+      await loadFilterDropdowns(); // 2. Load Dropdown Options
+      goToSlide(0); // 3. Start slideshow (renders first slide and triggers animation)
+      startTimerLoop(); // 4. Start rotation timer
+
+      // Window resize event handler
+      window.addEventListener('resize', () => {
+        Object.values(chartInstances).forEach(chart => chart && chart.resize());
+      });
+
+      // Setup ResizeObserver for automatic canvas scaling
+      const observer = new ResizeObserver(() => {
+        Object.values(chartInstances).forEach(chart => chart && chart.resize());
+      });
+      document.querySelectorAll('.slide-container').forEach(el => observer.observe(el));
+    });
+  </script>
+</body>
+</html>
