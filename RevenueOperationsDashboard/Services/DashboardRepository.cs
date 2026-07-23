@@ -13,7 +13,12 @@ namespace RevenueOperationsDashboard.Services
             _connectionString = configuration.GetConnectionString("DefaultConnection")!;  
         }
 
-        private SqlConnection GetConnection() => new SqlConnection(_connectionString);
+        private SqlConnection GetConnection()
+        {
+            var conn = new SqlConnection(_connectionString);
+            conn.Open();
+            return conn;
+        }
 
         private string? NormalizeFilter(string? val) => 
             (string.IsNullOrEmpty(val) || val.Equals("ALL", StringComparison.OrdinalIgnoreCase)) ? null : val;
@@ -42,12 +47,13 @@ namespace RevenueOperationsDashboard.Services
                 GROUP BY PlanItemName  
                 ORDER BY TargetBillions DESC;";
 
-            using var conn = GetConnection();  
-            var rows = (await conn.QueryAsync<dynamic>(sql, new {   
-                FiscalYearId = NormalizeFilter(filters.FiscalYearId),   
-                ParentId = NormalizeFilter(filters.ParentId),   
-                PlanItemId = NormalizeFilter(filters.PlanItemId)   
-            })).ToList();
+            using var conn = GetConnection();
+            var rows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sql, new {
+                FiscalYearId = NormalizeFilter(filters.FiscalYearId),
+                ParentId = NormalizeFilter(filters.ParentId),
+                PlanItemId = NormalizeFilter(filters.PlanItemId)
+            }, commandTimeout: 120))).ToList();
+
 
             var result = new TaxTypePerformanceDto();  
             foreach (var r in rows)  
@@ -67,31 +73,36 @@ namespace RevenueOperationsDashboard.Services
                     MonthName,  
                     MonthOrder,  
                     CASE   
-                        WHEN SUM(TotalTarget) > 0 THEN ROUND((SUM(TotalActual) / SUM(TotalTarget)) * 100, 2)  
-                        ELSE 0   
+                        WHEN SUM(CASE 
+                            WHEN @PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF') THEN TotalTarget
+                            WHEN @PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId THEN TotalTarget
+                            ELSE 0 
+                        END) > 0 
+                        THEN ROUND((SUM(CASE 
+                            WHEN @PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF') THEN TotalActual
+                            WHEN @PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId THEN TotalActual
+                            ELSE 0 
+                        END) / SUM(CASE 
+                            WHEN @PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF') THEN TotalTarget
+                            WHEN @PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId THEN TotalTarget
+                            ELSE 0 
+                        END)) * 100, 2)
+                        ELSE 0 
                     END AS AchievementPct  
-                FROM [dbo].[vw_RevenuePerformance_Clean]  
+                FROM [dbo].[vw_RevenuePerformance_Detail]  
                 WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)  
                   AND (@ParentId IS NULL OR ParentId = @ParentId)  
-                  AND (@PlanItemId IS NULL OR PlanItemId = @PlanItemId)  
-                  AND ParentId <> '1'
-                  AND PlanItemName IN (
-                      N'ምንዳና ደመወዝ(1101)',
-                      N'ንግድ ትረፍ(1103)',
-                      N'የተጨማሪ እሴት ታክስ ድምር(1120-1199)',
-                      N'የኪራይ ገቢ(1102)',
-                      N'የማዘጋጃ ቤቶች ገቢ(1700-1799)',
-                      N'ቤት ግብር(1701)'
-                  )
+                  AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
                 GROUP BY MonthName, MonthOrder  
                 ORDER BY MonthOrder ASC;";
 
-            using var conn = GetConnection();  
-            var rows = (await conn.QueryAsync<dynamic>(sql, new {   
-                FiscalYearId = NormalizeFilter(filters.FiscalYearId),   
-                ParentId = NormalizeFilter(filters.ParentId),   
-                PlanItemId = NormalizeFilter(filters.PlanItemId)   
-            })).ToList();
+            using var conn = GetConnection();
+            var rows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sql, new {
+                FiscalYearId = NormalizeFilter(filters.FiscalYearId),
+                ParentId = NormalizeFilter(filters.ParentId),
+                PlanItemId = NormalizeFilter(filters.PlanItemId)
+            }, commandTimeout: 120))).ToList();
+
 
             return new MonthlyTrendDto  
             {  
@@ -101,35 +112,30 @@ namespace RevenueOperationsDashboard.Services
         }
 
         // 3. Branch Performance Ranking (%)  
-        public async Task<BranchRankingDto> GetBranchRankingAsync(DashboardFilterDto filters)  
-        {  
-            const string sql = @"  
-                SELECT   
-                    ParentName AS BranchName,  
-                    CASE   
-                        WHEN SUM(TotalTarget) > 0 THEN ROUND((SUM(TotalActual) / SUM(TotalTarget)) * 100, 2)  
-                        ELSE 0   
-                    END AS AchievementPct  
-                FROM [dbo].[vw_RevenuePerformance_Clean]  
-                WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)  
-                  AND (@PlanItemId IS NULL OR PlanItemId = @PlanItemId)  
-                  AND ParentId <> '1'
-                  AND PlanItemName IN (
-                      N'ምንዳና ደመወዝ(1101)',
-                      N'ንግድ ትረፍ(1103)',
-                      N'የተጨማሪ እሴት ታክስ ድምር(1120-1199)',
-                      N'የኪራይ ገቢ(1102)',
-                      N'የማዘጋጃ ቤቶች ገቢ(1700-1799)',
-                      N'ቤት ግብር(1701)'
-                  )
+        // Uses vw_RevenuePerformance and aggregates TotalSelectedActual/TotalSelectedTarget
+        // across ALL fiscal years <= the selected year, matching the original dashboard.
+        public async Task<BranchRankingDto> GetBranchRankingAsync(DashboardFilterDto filters)
+        {
+            const string sql = @"
+                SELECT
+                    ParentName AS BranchName,
+                    CASE
+                        WHEN SUM(TotalSelectedTarget) > 0
+                        THEN ROUND(SUM(TotalSelectedActual) / SUM(TotalSelectedTarget) * 100, 2)
+                        ELSE 0
+                    END AS AchievementPct
+                FROM [dbo].[vw_RevenuePerformance]
+                WHERE (@FiscalYearId IS NULL OR FiscalYearId <= @FiscalYearId)
+                  AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
+                  AND MonthId IN (1,2,3,4,5,6,7,8,9,10,11,12)
                 GROUP BY ParentId, ParentName  
                 ORDER BY AchievementPct ASC;";
 
-            using var conn = GetConnection();  
-            var rows = (await conn.QueryAsync<dynamic>(sql, new {   
-                FiscalYearId = NormalizeFilter(filters.FiscalYearId),   
-                PlanItemId = NormalizeFilter(filters.PlanItemId)   
-            })).ToList();
+            using var conn = GetConnection();
+            var rows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sql, new {
+                FiscalYearId = NormalizeFilter(filters.FiscalYearId)
+            }, commandTimeout: 120))).ToList();
+
 
             return new BranchRankingDto  
             {  
@@ -175,28 +181,27 @@ namespace RevenueOperationsDashboard.Services
             const string sql = @"  
                 SELECT   
                     ParentName AS BranchName,  
-                    ROUND(SUM(TotalTarget) / 1000000000.0, 2) AS TargetBillions,  
-                    ROUND(SUM(TotalActual) / 1000000000.0, 2) AS ActualBillions  
-                FROM [dbo].[vw_RevenuePerformance_Clean]  
+                    ROUND(SUM(CASE 
+                        WHEN @PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF') THEN TotalTarget
+                        WHEN @PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId THEN TotalTarget
+                        ELSE 0 
+                    END) / 1000000000.0, 2) AS TargetBillions,  
+                    ROUND(SUM(CASE 
+                        WHEN @PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF') THEN TotalActual
+                        WHEN @PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId THEN TotalActual
+                        ELSE 0 
+                    END) / 1000000000.0, 2) AS ActualBillions  
+                FROM [dbo].[vw_RevenuePerformance_Detail]  
                 WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)  
-                  AND (@PlanItemId IS NULL OR PlanItemId = @PlanItemId)  
-                  AND ParentId <> '1'
-                  AND PlanItemName IN (
-                      N'ምንዳና ደመወዝ(1101)',
-                      N'ንግድ ትረፍ(1103)',
-                      N'የተጨማሪ እሴት ታክስ ድምር(1120-1199)',
-                      N'የኪራይ ገቢ(1102)',
-                      N'የማዘጋጃ ቤቶች ገቢ(1700-1799)',
-                      N'ቤት ግብር(1701)'
-                  )
+                  AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
                 GROUP BY ParentId, ParentName  
                 ORDER BY TargetBillions ASC;";
 
-            using var conn = GetConnection();  
-            var rows = (await conn.QueryAsync<dynamic>(sql, new {   
-                FiscalYearId = NormalizeFilter(filters.FiscalYearId),   
-                PlanItemId = NormalizeFilter(filters.PlanItemId)   
-            })).ToList();
+            using var conn = GetConnection();
+            var rows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sql, new {
+                FiscalYearId = NormalizeFilter(filters.FiscalYearId),
+                PlanItemId = NormalizeFilter(filters.PlanItemId)
+            }, commandTimeout: 120))).ToList();
 
             var result = new BranchVolumesDto();
             foreach (var r in rows)
