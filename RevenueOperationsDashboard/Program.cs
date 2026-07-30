@@ -8,6 +8,9 @@ builder.Services.AddControllers();
 // Add OpenApi
 builder.Services.AddOpenApi();
 
+// Add Memory Cache for Instant Response Times
+builder.Services.AddMemoryCache();
+
 // Register Dapper Repository
 builder.Services.AddScoped<DashboardRepository>();
 

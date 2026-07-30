@@ -48,6 +48,7 @@ namespace RevenueOperationsDashboard.Models
 
     public class DashboardConfigDto
     {
+        public string DefaultLanguage { get; set; } = "en";
         public DefaultFiltersDto DefaultFilters { get; set; } = new();
         public CarouselConfigDto Carousel { get; set; } = new();
     }
@@ -71,10 +72,30 @@ namespace RevenueOperationsDashboard.Models
         public string Id { get; set; } = string.Empty;
         public bool Visible { get; set; }
         public string Title { get; set; } = string.Empty;
+        public string TitleAm { get; set; } = string.Empty;
         public string Subtitle { get; set; } = string.Empty;
+        public string SubtitleAm { get; set; } = string.Empty;
         public string ApiEndpoint { get; set; } = string.Empty;
         public string ComparisonMode { get; set; } = string.Empty; // YoY, YTD, None
         public string ChartType { get; set; } = string.Empty; // bar-grouped, line-smooth, leaderboard-split, etc.
         public int? DurationMs { get; set; }
+    }
+
+    public class TopKpiCardItemDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string TitleAmharic { get; set; } = string.Empty;
+        public string TitleEnglish { get; set; } = string.Empty;
+        public decimal Actual { get; set; }
+        public decimal Target { get; set; }
+        public decimal AchievementPct { get; set; }
+        public string Unit { get; set; } = "ETB";
+        public string FormattedActual { get; set; } = string.Empty;
+        public string FormattedTarget { get; set; } = string.Empty;
+    }
+
+    public class TopCardsResponseDto
+    {
+        public List<TopKpiCardItemDto> Cards { get; set; } = new();
     }
 }

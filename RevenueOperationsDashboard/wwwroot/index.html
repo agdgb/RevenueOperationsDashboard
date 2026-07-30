@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="am" class="dark">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Real-Time Service Performance Operations Center</title>
 
   <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="./tailwindcss.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -29,10 +30,10 @@
   </script>
 
   <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="./css/all.min.css" />
 
   <!-- Apache ECharts -->
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="./echarts.min.js"></script>
 
   <style>
     body {
@@ -49,8 +50,17 @@
     }
 
     @keyframes pulseGlow {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.3; transform: scale(0.85); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.3;
+        transform: scale(0.85);
+      }
     }
 
     main.slide-viewport {
@@ -88,34 +98,40 @@
       width: 6px;
       height: 6px;
     }
+
     ::-webkit-scrollbar-track {
       background: #0f172a;
     }
+
     ::-webkit-scrollbar-thumb {
       background: #334155;
       border-radius: 3px;
     }
   </style>
 </head>
+
 <body class="h-screen w-screen overflow-hidden p-4 relative flex flex-col bg-brandDark text-slate-100">
 
   <!-- FLOATING NAVIGATION ARROWS (VERTICALLY CENTERED & HORIZONTALLY SPACED) -->
-  <button onclick="prevSlide()" class="fixed left-6 top-1/2 -translate-y-1/2 z-50 p-4 rounded-full bg-slate-900/80 text-slate-300 hover:text-white border border-slate-700/80 hover:border-cyan-500/80 hover:bg-slate-800 backdrop-blur-md shadow-2xl transition-all hover:scale-110 active:scale-95 focus:outline-none group">
+  <button onclick="prevSlide()"
+    class="fixed left-6 top-1/2 -translate-y-1/2 z-50 p-4 rounded-full bg-transparent text-slate-300 hover:text-white border border-white/20 hover:border-cyan-500/80 hover:bg-white/10 backdrop-blur-md shadow-2xl transition-all hover:scale-110 active:scale-95 focus:outline-none group">
     <i class="fa-solid fa-chevron-left text-2xl group-hover:-translate-x-0.5 transition-transform"></i>
   </button>
 
-  <button onclick="nextSlide()" class="fixed right-6 top-1/2 -translate-y-1/2 z-50 p-4 rounded-full bg-slate-900/80 text-slate-300 hover:text-white border border-slate-700/80 hover:border-cyan-500/80 hover:bg-slate-800 backdrop-blur-md shadow-2xl transition-all hover:scale-110 active:scale-95 focus:outline-none group">
+  <button onclick="nextSlide()"
+    class="fixed right-6 top-1/2 -translate-y-1/2 z-50 p-4 rounded-full bg-transparent text-slate-300 hover:text-white border border-white/20 hover:border-cyan-500/80 hover:bg-white/10 backdrop-blur-md shadow-2xl transition-all hover:scale-110 active:scale-95 focus:outline-none group">
     <i class="fa-solid fa-chevron-right text-2xl group-hover:translate-x-0.5 transition-transform"></i>
   </button>
 
   <!-- GLOBAL FILTER MODAL OVERLAY -->
-  <div id="filterModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden transition-opacity">
+  <div id="filterModal"
+    class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden transition-opacity">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-6">
       <div class="flex items-center justify-between border-b border-slate-800 pb-4">
         <div class="flex items-center gap-3">
           <i class="fa-solid fa-sliders text-blue-400 text-xl"></i>
           <div>
-            <h3 class="text-lg font-bold text-white">Global Dashboard Filters</h3>
+            <h3 class="text-lg font-bold text-white" id="lblGlobalFilters">Global Dashboard Filters</h3>
             <p class="text-xs text-slate-400">Refine metrics across all Operations Center slides</p>
           </div>
         </div>
@@ -127,22 +143,26 @@
       <!-- Filter Form Elements -->
       <div class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">በጀት ዓመት (Fiscal Year)</label>
-          <select id="filterFiscalYear" onchange="applyFilters()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+          <label id="lblFiscalYear" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Fiscal Year</label>
+          <select id="filterFiscalYear" onchange="applyFilters()"
+            class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
             <!-- Loaded dynamically from API -->
           </select>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">ቅርንጫፍ / ክፍለ ከተማ (Parent Branch)</label>
-          <select id="filterParent" onchange="applyFilters()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+          <label id="lblParentBranch" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Parent Branch</label>
+          <select id="filterParent" onchange="applyFilters()"
+            class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
             <!-- Loaded dynamically from API -->
           </select>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የታክስ ዓይነት (Plan / Tax Item)</label>
-          <select id="filterPlanItem" onchange="applyFilters()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+          <label id="lblPlanTaxItem" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Plan / Tax
+            Item</label>
+          <select id="filterPlanItem" onchange="applyFilters()"
+            class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
             <!-- Loaded dynamically from API -->
           </select>
         </div>
@@ -150,10 +170,11 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center justify-between border-t border-slate-800 pt-4">
-        <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-white underline">
+        <button onclick="resetFilters()" id="lblClearFilters" class="text-xs text-slate-400 hover:text-white underline">
           Clear All Filters
         </button>
-        <button onclick="toggleFilterModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm px-5 py-2 rounded-lg transition">
+        <button onclick="toggleFilterModal()" id="lblApplyClose"
+          class="bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm px-5 py-2 rounded-lg transition">
           Apply & Close
         </button>
       </div>
@@ -161,91 +182,95 @@
   </div>
 
 
+  <!-- PERSISTENT TOP KPI CARDS (VISIBLE ON EVERY SLIDE) -->
+  <header id="topKpiHeader" class="mb-4 flex-shrink-0 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 z-30">
+    <!-- Rendered dynamically via ECharts -->
+  </header>
+
   <!-- MAIN SLIDESHOW VIEWPORT -->
   <main class="slide-viewport flex-1 w-full h-full relative overflow-hidden flex flex-col min-h-0">
 
+    <!-- Slide 0: Tax Type Target vs Actual -->
     <div id="slide-0" class="slide-container slide-visible h-full w-full flex-col gap-3 min-h-0">
-      <div class="bg-cardBg border border-borderDark rounded-xl p-4 flex flex-col h-full w-full shadow-lg min-h-0 overflow-hidden">
+      <div
+        class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden">
         <div id="chartTaxType" class="w-full flex-1 min-h-[300px]"></div>
       </div>
     </div>
 
-
+    <!-- Slide 1: Monthly Achievement Trend % Curve -->
     <div id="slide-1" class="slide-container slide-hidden h-full w-full flex-col gap-3 min-h-0">
-      <div class="bg-cardBg border border-borderDark rounded-xl p-4 flex flex-col h-full w-full shadow-lg min-h-0 overflow-hidden">
+      <div
+        class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden">
         <div id="chartMonthlyTrend" class="w-full flex-1 min-h-[300px]"></div>
       </div>
     </div>
 
-
     <!-- Slide 2: Branch Achievement % by Office -->
     <div id="slide-2" class="slide-container slide-hidden h-full w-full flex-col gap-3 min-h-0">
-      <div class="bg-cardBg border border-borderDark rounded-xl p-4 flex flex-col h-full w-full shadow-lg min-h-0 overflow-hidden">
+      <div
+        class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden">
         <div id="chartBranchVolume" class="w-full flex-1 min-h-[300px]"></div>
-      </div>
-    </div>
-
-    <!-- Slide 3: Leaderboards (Top vs Bottom Performers) -->
-    <div id="slide-3" class="slide-container slide-hidden h-full w-full gap-4 min-h-0">
-      <!-- Left Card: Top Performers -->
-      <div class="flex-1 bg-cardBg border border-borderDark rounded-xl p-4 flex flex-col h-full shadow-lg min-h-0 overflow-hidden">
-        <div class="flex items-center justify-between mb-2 flex-shrink-0">
-          <div>
-            <h2 id="topPerformersTitle" class="text-base md:text-lg font-bold text-emerald-400">ከፍተኛ አፈፃፀም ያላቸው ቅርንጫፎች</h2>
-            <p id="topPerformersSub" class="text-xs text-slate-400">Top Performing Branch Offices by Overall Achievement %</p>
-          </div>
-          <span class="text-xs bg-emerald-950 text-emerald-300 px-3 py-1 rounded-lg font-semibold border border-emerald-800">Leaderboard</span>
-        </div>
-        <div id="chartTopPerformers" class="w-full flex-1 min-h-[300px]"></div>
-      </div>
-
-      <!-- Right Card: Bottom Performers -->
-      <div class="flex-1 bg-cardBg border border-borderDark rounded-xl p-4 flex flex-col h-full shadow-lg min-h-0 overflow-hidden">
-        <div class="flex items-center justify-between mb-2 flex-shrink-0">
-          <div>
-            <h2 id="bottomPerformersTitle" class="text-base md:text-lg font-bold text-rose-400">ትኩረት የሚሹ ቅርንጫፎች</h2>
-            <p id="bottomPerformersSub" class="text-xs text-slate-400">Lowest Performing Branch Offices needing attention</p>
-          </div>
-          <span class="text-xs bg-rose-950 text-rose-300 px-3 py-1 rounded-lg font-semibold border border-rose-800">Underperforming</span>
-        </div>
-        <div id="chartBottomPerformers" class="w-full flex-1 min-h-[300px]"></div>
       </div>
     </div>
 
   </main>
 
-  <!-- DYNAMIC PREMIUM FOOTER TOOLBAR -->
-  <footer class="mt-4 flex-shrink-0 bg-slate-900/60 border border-slate-800/80 backdrop-blur-md rounded-xl p-3 flex items-center justify-between z-40">
-    <div class="flex items-center gap-4">
-      <button id="playPauseBtn" onclick="toggleCarousel()" class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition">
+  <!-- DYNAMIC PREMIUM FOOTER TOOLBAR (HOVER TO SHOW) -->
+  <div class="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 md:px-6 md:pb-6 group flex justify-center">
+    <!-- Invisible trigger area at the bottom edge -->
+    <div class="absolute bottom-0 left-0 w-full h-12 cursor-pointer z-0"></div>
+    <footer
+      class="w-full relative z-10 flex-shrink-0 bg-slate-900/60 border border-slate-800/80 backdrop-blur-md rounded-xl p-3 flex items-center justify-between transition-all duration-300 transform translate-y-[150%] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 shadow-2xl">
+      <div class="flex items-center gap-4">
+      <button id="playPauseBtn" onclick="toggleCarousel()"
+        class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition">
         <i id="playPauseIcon" class="fa-solid fa-pause"></i>
         <span id="playPauseText">Pause</span>
       </button>
       <div class="w-32 bg-slate-800 rounded-full h-1.5 overflow-hidden">
         <div id="carouselProgressBar" class="bg-blue-500 h-full w-0 transition-all duration-100"></div>
       </div>
-      <span id="slideTitleDisplay" class="text-xs font-medium text-slate-400">Slide 1 of 3: Tax Type Target vs Actual</span>
+      <span id="slideTitleDisplay" class="text-xs font-medium text-slate-400">Slide 1 of 3: Tax Type Target vs
+        Actual</span>
     </div>
-    
+
     <div class="flex items-center gap-3">
       <!-- Dot Indicators -->
       <div id="carouselDots" class="flex items-center gap-1.5 mr-4"></div>
 
       <!-- Action Buttons -->
-      <button onclick="toggleFilterModal()" class="flex items-center gap-2 bg-blue-600/80 hover:bg-blue-600 text-white font-semibold text-xs px-4 py-2 rounded-lg border border-blue-500/30 transition shadow-lg">
-        <i class="fa-solid fa-sliders"></i> Filters
+      <select id="themeSelector" onchange="changeTheme(this.value)" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2 py-2 rounded-lg border border-slate-700/50 transition focus:outline-none cursor-pointer">
+        <option value="ocean">Ocean (Default)</option>
+        <option value="national">National (Green/Yellow/Red)</option>
+        <option value="forest">Forest</option>
+        <option value="sunset">Sunset</option>
+        <option value="grayscale">Grayscale</option>
+      </select>
+
+      <button onclick="toggleLanguage()" id="langToggleBtn"
+        class="flex items-center justify-center bg-slate-800/80 hover:bg-slate-700 text-white font-bold text-xs w-9 h-9 rounded-lg border border-slate-700/50 transition shadow-lg">
+        EN
       </button>
-      
+
+      <button onclick="toggleFilterModal()"
+        class="flex items-center gap-2 bg-blue-600/80 hover:bg-blue-600 text-white font-semibold text-xs px-4 py-2 rounded-lg border border-blue-500/30 transition shadow-lg">
+        <i class="fa-solid fa-sliders"></i> <span id="lblFiltersBtn">Filters</span>
+      </button>
+
       <button onclick="toggleFullscreen()" class="text-slate-400 hover:text-white transition p-1">
         <i class="fa-solid fa-expand text-sm"></i>
       </button>
     </div>
   </footer>
+  </div>
 
   <!-- JASS SCRIPT LOGIC & DYNAMIC INTEGRATION -->
   <script>
     // Global Application State
     const state = {
+      currentLang: 'en', // 'en' or 'am'
+      currentTheme: 'ocean',
       currentSlide: 0,
       slideCount: 0,
       activeSlides: [],
@@ -263,12 +288,186 @@
     // ECharts Instances Map
     const chartInstances = {};
 
+    // Theme Engine Registry
+    const appThemes = {
+      ocean: {
+        bg: '#0b1120', cardBg: 'rgba(30, 41, 59, 0.95)', border: '#334155',
+        primary: '#06b6d4', secondary: '#3b82f6',
+        success: '#10b981', warning: '#f59e0b', danger: '#ef4444'
+      },
+      national: {
+        bg: '#020617', cardBg: 'rgba(15, 23, 42, 0.95)', border: '#1e293b',
+        primary: '#10b981', secondary: '#f59e0b',
+        success: '#10b981', warning: '#f59e0b', danger: '#ef4444'
+      },
+      forest: {
+        bg: '#022c22', cardBg: 'rgba(6, 78, 59, 0.95)', border: '#065f46',
+        primary: '#34d399', secondary: '#10b981',
+        success: '#10b981', warning: '#fbbf24', danger: '#ef4444'
+      },
+      sunset: {
+        bg: '#2e1022', cardBg: 'rgba(74, 23, 54, 0.95)', border: '#701a4f',
+        primary: '#f97316', secondary: '#ef4444',
+        success: '#10b981', warning: '#f59e0b', danger: '#ef4444'
+      },
+      grayscale: {
+        bg: '#111827', cardBg: 'rgba(31, 41, 55, 0.95)', border: '#374151',
+        primary: '#9ca3af', secondary: '#4b5563',
+        success: '#6b7280', warning: '#9ca3af', danger: '#d1d5db'
+      }
+    };
+
+    // Translations
+    const db_am_to_en = {
+      "ምንዳና ደመወዝ(1101)": "Employment Tax (1101)",
+      "ንግድ ትረፍ(1103)": "Business Profit (1103)",
+      "የተጨማሪ እሴት ታክስ ድምር(1120-1199)": "Value Added Tax (1120)",
+      "የኪራይ ገቢ(1102)": "Rental Income (1102)",
+      "የማዘጋጃ ቤቶች ገቢ(1700-1799)": "Municipal Revenue (1700)",
+      "ቤት ግብር(1701)": "Property Tax (1701)",
+      "ሐምሌ": "Jul", "ሀምሌ": "Jul",
+      "ነሐሴ": "Aug", "ነሀሴ": "Aug",
+      "መስከረም": "Sep",
+      "ጥቅምት": "Oct",
+      "ኅዳር": "Nov", "ህዳር": "Nov",
+      "ታኅሣሥ": "Dec", "ታህሳስ": "Dec",
+      "ጥር": "Jan",
+      "የካቲት": "Feb",
+      "መጋቢት": "Mar",
+      "ሚያዝያ": "Apr", "ሚያዚያ": "Apr",
+      "ግንቦት": "May",
+      "ሰኔ": "Jun",
+      "አዲስ አበባ ከተማ አስተዳደር ገቢዎች ቢሮ": "Addis Ababa City Admin Revenue Bureau",
+      "ትላልቅ ግብር ከፋዮች ቅ/ጽ/ቤት": "Large Taxpayers Branch Office",
+      "መካከለኛ ግብር ከፋዮች ቅ/ጽ/ቤት": "Medium Taxpayers Branch Office",
+      "አዲስ አበባ አነስተኛ ግብር ከፋዮች ቅ/ጽ/ቤት": "Addis Ababa Small Taxpayers Branch",
+      "ምስራቅ አዲስ አበባ አነስተኛ ግ/ከ/ቅ/ጽ/ቤት": "East AA Small Taxpayers Branch",
+      "ምዕራብ አዲስ አበባ አነስተኛ ግ/ከ/ቅ/ጽ/ቤት": "West AA Small Taxpayers Branch",
+      "አዳማ ቅ/ጽ/ቤት": "Adama Branch Office",
+      "ድሬዳዋ ቅ/ጽ/ቤት": "Dire Dawa Branch Office",
+      "ባህርዳር ቅ/ጽ/ቤት": "Bahir Dar Branch Office",
+      "መቀሌ ቅ/ጽ/ቤት": "Mekelle Branch Office",
+      "ጂማ ቅ/ጽ/ቤት": "Jimma Branch Office",
+      "ደሴ ቅ/ጽ/ቤት": "Dessie Branch Office",
+      "ሀዋሳ ቅ/ጽ/ቤት": "Hawassa Branch Office"
+    };
+
+    const ui_en_to_am = {
+      "Global Dashboard Filters": "የዳሽቦርድ ማጣሪያዎች",
+      "Fiscal Year": "በጀት ዓመት",
+      "Parent Branch": "ዋና ቅርንጫፍ",
+      "Plan / Tax Item": "የእቅድ / የታክስ አይነት",
+      "Clear All Filters": "ማጣሪያዎችን አጽዳ",
+      "Apply & Close": "ተግብር እና ዝጋ",
+      "All Branches": "ሁሉም ቅርንጫፎች",
+      "All Tax Types": "ሁሉም የታክስ አይነቶች",
+      "Filters": "መለያ",
+      "Slide": "ገጽ",
+      "of": "ከ",
+      "Plan": "እቅድ",
+      "Actual": "ክንውን",
+      "Act": "ክንውን",
+      "Target": "እቅድ",
+      "Performance": "አፈፃፀም",
+      "Pause": "አቁም",
+      "Resume": "ቀጥል"
+    };
+
+    function t_db(text) {
+      if (!text) return text;
+      // Database values are Amharic. If currentLang is 'en', we translate to English.
+      if (state.currentLang === 'en') {
+        // Strip trailing spaces and try to match
+        const cleanText = text.toString().trim();
+        return db_am_to_en[cleanText] || text;
+      }
+      return text;
+    }
+
+    function t_ui(text) {
+      if (!text) return text;
+      if (state.currentLang === 'am') {
+        return ui_en_to_am[text] || text;
+      }
+      return text;
+    }
+
+    function toggleLanguage() {
+      state.currentLang = state.currentLang === 'en' ? 'am' : 'en';
+      document.getElementById('langToggleBtn').innerText = state.currentLang === 'en' ? 'EN' : 'አማ';
+      updateUILanguage();
+      
+      // Refresh UI components that use language
+      loadFilterDropdowns(); // Re-render dropdowns to apply language
+      applyFilters(); // Re-fetch or re-render charts and cards
+    }
+
+    function changeTheme(themeKey) {
+      if (!appThemes[themeKey]) return;
+      state.currentTheme = themeKey;
+      const theme = appThemes[themeKey];
+
+      // Update Global CSS Variables / Body
+      document.body.style.backgroundColor = theme.bg;
+      
+      // We manually update card backgrounds that are using tailwind classes
+      const cards = document.querySelectorAll('.bg-cardBg, .bg-slate-900\\/95, .bg-slate-900\\/60');
+      cards.forEach(card => {
+        // Just setting background and border explicitly
+        card.style.backgroundColor = theme.cardBg;
+        card.style.borderColor = theme.border;
+      });
+
+      // Update footer
+      const footer = document.querySelector('footer');
+      if (footer) {
+        footer.style.backgroundColor = theme.bg;
+        footer.style.borderColor = theme.border;
+      }
+
+      // Trigger a re-render of charts and top cards
+      loadTopCards();
+      refreshActiveSlideMetric(state.currentSlide);
+    }
+
+    function updateUILanguage() {
+      if(document.getElementById('lblGlobalFilters')) document.getElementById('lblGlobalFilters').innerText = t_ui("Global Dashboard Filters");
+      if(document.getElementById('lblFiscalYear')) document.getElementById('lblFiscalYear').innerText = t_ui("Fiscal Year");
+      if(document.getElementById('lblParentBranch')) document.getElementById('lblParentBranch').innerText = t_ui("Parent Branch");
+      if(document.getElementById('lblPlanTaxItem')) document.getElementById('lblPlanTaxItem').innerText = t_ui("Plan / Tax Item");
+      if(document.getElementById('lblClearFilters')) document.getElementById('lblClearFilters').innerText = t_ui("Clear All Filters");
+      if(document.getElementById('lblApplyClose')) document.getElementById('lblApplyClose').innerText = t_ui("Apply & Close");
+      if(document.getElementById('lblFiltersBtn')) document.getElementById('lblFiltersBtn').innerText = t_ui("Filters");
+      updatePlayPauseButtonState();
+      
+      // Update Slide Titles
+      if(state.config && state.config.carousel && state.config.carousel.slides) {
+        state.config.carousel.slides.forEach(slideConfig => {
+          const slideEl = document.getElementById(slideConfig.id);
+          if(slideEl) {
+            const titleEl = slideEl.querySelector('h2');
+            const subEl = slideEl.querySelector('p');
+            if (titleEl) titleEl.innerText = state.currentLang === 'am' && slideConfig.titleAm ? slideConfig.titleAm : slideConfig.title;
+            if (subEl) subEl.innerText = state.currentLang === 'am' && slideConfig.subtitleAm ? slideConfig.subtitleAm : slideConfig.subtitle;
+          }
+        });
+      }
+      updateFooterTitle(state.currentSlide);
+    }
+
     // Initialize Dashboard Layout and Config from Server
     async function initializeDashboardConfig() {
       try {
         const res = await fetch('/api/dashboard/config');
         const config = await res.json();
         state.config = config;
+
+        // Apply default language
+        if (config.defaultLanguage) {
+          state.currentLang = config.defaultLanguage;
+          document.getElementById('langToggleBtn').innerText = state.currentLang === 'en' ? 'EN' : 'አማ';
+          updateUILanguage();
+        }
 
         // Set default filters
         state.filters.fiscalYear = config.defaultFilters.fiscalYearId;
@@ -294,8 +493,8 @@
             // Update Title / Subtitle if custom elements exist
             const titleEl = slideEl.querySelector('h2');
             const subEl = slideEl.querySelector('p');
-            if (titleEl) titleEl.innerText = slideConfig.title;
-            if (subEl) subEl.innerText = slideConfig.subtitle;
+            if (titleEl) titleEl.innerText = state.currentLang === 'am' && slideConfig.titleAm ? slideConfig.titleAm : slideConfig.title;
+            if (subEl) subEl.innerText = state.currentLang === 'am' && slideConfig.subtitleAm ? slideConfig.subtitleAm : slideConfig.subtitle;
 
             // Re-append to main viewport to guarantee server-side order
             mainViewport.appendChild(slideEl);
@@ -319,20 +518,121 @@
       }
     }
 
+    // Load and Render Top KPI Cards (Persistent across slides)
+    async function loadTopCards() {
+      try {
+        const params = new URLSearchParams({
+          fiscalYearId: state.filters.fiscalYear || 'ALL',
+          parentId: state.filters.parent || 'ALL',
+          planItemId: state.filters.planItem || 'ALL'
+        });
+        const res = await fetch(`/api/dashboard/top-cards?${params}`);
+        const data = await res.json();
+        renderTopKpiCards(data.cards);
+      } catch (err) {
+        console.error("Failed to load top KPI cards:", err);
+      }
+    }
+
+    function renderTopKpiCards(cards) {
+      const headerContainer = document.getElementById('topKpiHeader');
+      if (!headerContainer || !cards) return;
+
+      const theme = appThemes[state.currentTheme] || appThemes.ocean;
+
+      headerContainer.innerHTML = cards.map(card => {
+        let statusColor = theme.success;
+        if (card.achievementPct < 90) statusColor = theme.warning;
+        if (card.achievementPct < 70) statusColor = theme.danger;
+
+        const badgeBg = `background-color: ${statusColor}1A; color: ${statusColor}; border-color: ${statusColor}80`;
+        const cardGlow = `border-color: ${statusColor}80; box-shadow: 0 0 18px ${statusColor}38`;
+
+        let formattedTarget = card.formattedTarget;
+        if (state.currentLang === 'am') {
+          formattedTarget = formattedTarget.replace('Target:', 'እቅድ:').replace('Act:', 'ክንውን:');
+        }
+
+        return `
+          <div class="bg-cardBg border rounded-2xl p-4 md:p-5 flex flex-col justify-between shadow-2xl relative overflow-hidden backdrop-blur-md transition-all hover:scale-[1.03] group min-h-[120px]" style="background-color: ${theme.cardBg}; ${cardGlow}">
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <div class="min-w-0 flex-1">
+                <h4 class="text-sm md:text-base font-extrabold text-slate-100 truncate" title="${state.currentLang === 'am' ? card.titleAmharic : card.titleEnglish}">${state.currentLang === 'am' ? card.titleAmharic : card.titleEnglish}</h4>
+              </div>
+              <span class="text-xs font-black px-2.5 py-1 rounded-lg border" style="${badgeBg}">${card.achievementPct}%</span>
+            </div>
+            
+            <div class="flex items-center justify-between mt-2">
+              <div class="min-w-0 flex-1 pr-2">
+                <div class="text-xl md:text-3xl font-black text-white tracking-tight truncate">${card.formattedActual}</div>
+                <div class="text-xs md:text-sm font-semibold text-slate-400 truncate mt-1">${formattedTarget}</div>
+              </div>
+              <div id="gauge_${card.id}" class="w-16 h-16 flex-shrink-0"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Initialize ECharts gauge rings after DOM insertion
+      setTimeout(() => {
+        cards.forEach(card => {
+          const chartDom = document.getElementById(`gauge_${card.id}`);
+          if (!chartDom) return;
+
+          let myChart = chartInstances[`gauge_${card.id}`];
+          if (myChart) {
+            myChart.dispose(); // Destroy old instance bound to dead DOM element
+          }
+          myChart = echarts.init(chartDom);
+          chartInstances[`gauge_${card.id}`] = myChart;
+
+          let ringColor = theme.success;
+          if (card.achievementPct < 90) ringColor = theme.warning;
+          if (card.achievementPct < 70) ringColor = theme.danger;
+          const option = {
+            series: [{
+              type: 'gauge',
+              startAngle: 90,
+              endAngle: -270,
+              pointer: { show: false },
+              progress: {
+                show: true,
+                overlap: false,
+                roundCap: true,
+                clip: false,
+                itemStyle: { color: ringColor }
+              },
+              axisLine: {
+                lineStyle: { width: 4.5, color: [[1, 'rgba(51, 65, 85, 0.4)']] }
+              },
+              splitLine: { show: false },
+              axisTick: { show: false },
+              axisLabel: { show: false },
+              data: [{ value: Math.min(card.achievementPct, 100) }],
+              detail: { show: false }
+            }]
+          };
+          myChart.setOption(option);
+        });
+      }, 50);
+    }
+
     // Apply Filter Changes
     async function applyFilters() {
       state.filters.fiscalYear = document.getElementById('filterFiscalYear').value;
       state.filters.parent = document.getElementById('filterParent').value;
       state.filters.planItem = document.getElementById('filterPlanItem').value;
 
-      // Update Filter Summary text if element exists
       const filterSummaryText = document.getElementById('filterSummaryText');
       if (filterSummaryText) {
-        const parentLabel = state.filters.parent === 'ALL' ? 'All Branches' : document.getElementById('filterParent').options[document.getElementById('filterParent').selectedIndex].text;
-        filterSummaryText.innerText = `Fiscal Year: ${state.filters.fiscalYear} | ${parentLabel}`;
+        const parentLabel = state.filters.parent === 'ALL' ? t_ui('All Branches') : document.getElementById('filterParent').options[document.getElementById('filterParent').selectedIndex].text;
+        filterSummaryText.innerText = `${t_ui("Fiscal Year")}: ${state.filters.fiscalYear} | ${parentLabel}`;
       }
 
-      await refreshActiveSlideMetric(state.currentSlide);
+      await Promise.all([
+        loadTopCards(),
+        refreshActiveSlideMetric(state.currentSlide)
+      ]);
     }
 
     async function resetFilters() {
@@ -351,50 +651,58 @@
     }
 
     // Dynamic API Fetch & Render Pipeline for Visible Slide Only
-    async function refreshActiveSlideMetric(index) {  
+    async function refreshActiveSlideMetric(index) {
       try {
         const slide = state.activeSlides[index];
         if (!slide) return;
 
-        const query = new URLSearchParams({  
-          fiscalYearId: state.filters.fiscalYear,  
-          parentId: state.filters.parent,  
-          planItemId: state.filters.planItem  
+        const query = new URLSearchParams({
+          fiscalYearId: state.filters.fiscalYear,
+          parentId: state.filters.parent,
+          planItemId: state.filters.planItem
         }).toString();
 
         const resData = await fetch(`${slide.apiEndpoint}?${query}`).then(r => r.json());
 
-        // Ensure canvas size is initialized prior to rendering so animation runs cleanly
         if (slide.id === 'slide-0') {
-          if (!chartInstances.taxType) {
-            chartInstances.taxType = echarts.init(document.getElementById('chartTaxType'), 'dark');
+          const taxDom = document.getElementById('chartTaxType');
+          if (taxDom) {
+            if (!chartInstances.taxType) {
+              chartInstances.taxType = echarts.init(taxDom, 'dark');
+            }
+            chartInstances.taxType.resize();
+            renderTaxTypeChart(resData, slide);
           }
-          chartInstances.taxType.resize();
-          renderTaxTypeChart(resData);
         } else if (slide.id === 'slide-1') {
-          if (!chartInstances.monthlyTrend) {
-            chartInstances.monthlyTrend = echarts.init(document.getElementById('chartMonthlyTrend'), 'dark');
+          const trendDom = document.getElementById('chartMonthlyTrend');
+          if (trendDom) {
+            if (!chartInstances.monthlyTrend) {
+              chartInstances.monthlyTrend = echarts.init(trendDom, 'dark');
+            }
+            chartInstances.monthlyTrend.resize();
+            renderMonthlyTrendChart(resData, slide);
           }
-          chartInstances.monthlyTrend.resize();
-          renderMonthlyTrendChart(resData);
         } else if (slide.id === 'slide-2') {
-          if (!chartInstances.branchVolume) {
-            chartInstances.branchVolume = echarts.init(document.getElementById('chartBranchVolume'), 'dark');
+          const branchDom = document.getElementById('chartBranchVolume');
+          if (branchDom) {
+            if (!chartInstances.branchVolume) {
+              chartInstances.branchVolume = echarts.init(branchDom, 'dark');
+            }
+            chartInstances.branchVolume.resize();
+            renderBranchVolumeChart(resData, slide);
           }
-          chartInstances.branchVolume.resize();
-          renderBranchVolumeChart(resData);
         } else if (slide.id === 'slide-3') {
-          if (!chartInstances.topPerformers) {
+          if (!chartInstances.topPerformers && document.getElementById('chartTopPerformers')) {
             chartInstances.topPerformers = echarts.init(document.getElementById('chartTopPerformers'), 'dark');
           }
-          if (!chartInstances.bottomPerformers) {
+          if (!chartInstances.bottomPerformers && document.getElementById('chartBottomPerformers')) {
             chartInstances.bottomPerformers = echarts.init(document.getElementById('chartBottomPerformers'), 'dark');
           }
-          chartInstances.topPerformers.resize();
-          chartInstances.bottomPerformers.resize();
-          renderBranchRankingOption3(resData);
+          if (chartInstances.topPerformers) chartInstances.topPerformers.resize();
+          if (chartInstances.bottomPerformers) chartInstances.bottomPerformers.resize();
+          renderBranchRankingOption3(resData, slide);
         }
-        
+
         // Update fiscal year text indicator
         const trendFiscalYearLabel = document.getElementById('trendFiscalYearLabel');
         if (trendFiscalYearLabel) {
@@ -407,27 +715,27 @@
     }
 
     // Populate Filter Modal Dropdowns on Page Load  
-    async function loadFilterDropdowns() {  
+    async function loadFilterDropdowns() {
       try {
-        const res = await fetch('/api/dashboard/filter-options');  
+        const res = await fetch('/api/dashboard/filter-options');
         const options = await res.json();
 
-        const yearSelect = document.getElementById('filterFiscalYear');  
-        yearSelect.innerHTML = options.fiscalYears.map(y => `<option value="${y.id}">${y.name}</option>`).join('');
+        const yearSelect = document.getElementById('filterFiscalYear');
+        yearSelect.innerHTML = options.fiscalYears.map(y => `<option value="${y.id}">${t_db(y.name)}</option>`).join('');
         if (state.filters.fiscalYear) {
           yearSelect.value = state.filters.fiscalYear;
         }
 
-        const branchSelect = document.getElementById('filterParent');  
-        branchSelect.innerHTML = `<option value="ALL">ሁሉም ቅርንጫፎች (All Branches)</option>` +   
-          options.branches.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+        const branchSelect = document.getElementById('filterParent');
+        branchSelect.innerHTML = `<option value="ALL">${t_ui('All Branches')}</option>` +
+          options.branches.map(b => `<option value="${b.id}">${t_db(b.name)}</option>`).join('');
         if (state.filters.parent) {
           branchSelect.value = state.filters.parent;
         }
 
-        const taxSelect = document.getElementById('filterPlanItem');  
-        taxSelect.innerHTML = `<option value="ALL">ሁሉም የታክስ ዓይነቶች (All Tax Types)</option>` +   
-          options.taxTypes.map(t => `<option value="${t.id}">${t.name}</option>`).join('');  
+        const taxSelect = document.getElementById('filterPlanItem');
+        taxSelect.innerHTML = `<option value="ALL">${t_ui('All Tax Types')}</option>` +
+          options.taxTypes.map(t => `<option value="${t.id}">${t_db(t.name)}</option>`).join('');
         if (state.filters.planItem) {
           taxSelect.value = state.filters.planItem;
         }
@@ -436,23 +744,25 @@
       }
     }
 
-    // 1. Tax Type Target vs Actual Bar Chart (Billions Birr)
-    function renderTaxTypeChart(taxRes) {
+    // 1. Tax Type Target vs Actual Bar Chart
+    function renderTaxTypeChart(taxRes, slideConfig) {
       if (!chartInstances.taxType) {
         chartInstances.taxType = echarts.init(document.getElementById('chartTaxType'), 'dark');
       }
 
-      const categories = taxRes && taxRes.categories && taxRes.categories.length > 0 
-        ? taxRes.categories 
-        : ['ምንዳና ደመወዝ(1101)', 'ንግድ ትረፍ(1103)', 'የተጨማሪ እሴት ታክስ(1120)', 'የኪራይ ገቢ(1102)', 'የማዘጋጃ ቤቶች ገቢ(1700)', 'ቤት ግብር(1701)'];
+      const categories = taxRes && taxRes.categories && taxRes.categories.length > 0
+        ? taxRes.categories.map(c => t_db(c))
+        : ['Employment Tax (1101)', 'Business Profit (1103)', 'Value Added Tax (1120)', 'Rental Income (1102)', 'Municipal Revenue (1700)', 'Property Tax (1701)'].map(c => t_db(c));
 
-      const targetData = taxRes && taxRes.targetBillions && taxRes.targetBillions.length > 0 
-        ? taxRes.targetBillions 
+      const targetData = taxRes && taxRes.targetBillions && taxRes.targetBillions.length > 0
+        ? taxRes.targetBillions
         : [0, 0, 0, 0, 0, 0];
 
-      const actualData = taxRes && taxRes.actualBillions && taxRes.actualBillions.length > 0 
-        ? taxRes.actualBillions 
+      const actualData = taxRes && taxRes.actualBillions && taxRes.actualBillions.length > 0
+        ? taxRes.actualBillions
         : [0, 0, 0, 0, 0, 0];
+
+      const theme = appThemes[state.currentTheme] || appThemes.ocean;
 
       const option = {
         backgroundColor: 'transparent',
@@ -462,8 +772,8 @@
         animationEasing: 'cubicOut',
         animationEasingUpdate: 'cubicOut',
         title: {
-          text: 'የገቢ አፈፃፀም በታክስ ዓይነት በቢሊዮን ብር',
-          subtext: 'Tax Type Performance Breakdown (Target vs. Actual in Billions ETB)',
+          text: state.currentLang === 'am' && slideConfig && slideConfig.titleAm ? slideConfig.titleAm : (slideConfig && slideConfig.title ? slideConfig.title : t_ui('Tax Type Performance')),
+          subtext: state.currentLang === 'am' && slideConfig && slideConfig.subtitleAm ? slideConfig.subtitleAm : (slideConfig && slideConfig.subtitle ? slideConfig.subtitle : t_ui('Target vs. Actual')),
           left: 'center',
           top: 10,
           textStyle: { color: '#f8fafc', fontSize: 18, fontWeight: 'bold' },
@@ -475,35 +785,35 @@
           left: 'center',
           icon: 'circle',
           textStyle: { color: '#cbd5e1', fontSize: 12 },
-          data: ['እቅድ (Plan)', 'አፈፃፀም (Actual)']
+          data: [t_ui('Plan'), t_ui('Actual')]
         },
-        tooltip: { trigger: 'axis', formatter: '{b}<br/>{a0}: {c0}B ETB<br/>{a1}: {c1}B ETB' },
+        tooltip: { trigger: 'axis', formatter: '{b}<br/>{a0}: {c0}<br/>{a1}: {c1}' },
         grid: { left: '3%', right: '4%', bottom: '50px', top: '75px', containLabel: true },
         xAxis: {
           type: 'category',
           data: categories,
-          axisLabel: { color: '#f8fafc', fontSize: 11, interval: 0, rotate: 10 }
+          axisLabel: { color: '#f8fafc', fontSize: 12, fontWeight: 'bold', interval: 0, rotate: 10 }
         },
         yAxis: {
           type: 'value',
-          name: 'Billions (B)',
-          axisLabel: { color: '#94a3b8', formatter: '{value}B' },
-          splitLine: { lineStyle: { color: '#334155' } }
+          name: '',
+          axisLabel: { color: '#94a3b8', formatter: '{value}' },
+          splitLine: { lineStyle: { color: theme.border } }
         },
         series: [
           {
-            name: 'እቅድ (Plan)',
+            name: t_ui('Plan'),
             type: 'bar',
             data: targetData,
-            itemStyle: { color: '#06b6d4', borderRadius: [4, 4, 0, 0] },
-            label: { show: true, position: 'top', formatter: '{c}B', color: '#06b6d4', fontSize: 14, fontWeight: 'bold' }
+            itemStyle: { color: theme.primary, borderRadius: [4, 4, 0, 0] },
+            label: { show: true, position: 'top', formatter: '{c}', color: theme.primary, fontSize: 15, fontWeight: '900', textShadowColor: theme.bg, textShadowBlur: 4 }
           },
           {
-            name: 'አፈፃፀም (Actual)',
+            name: t_ui('Actual'),
             type: 'bar',
             data: actualData,
-            itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] },
-            label: { show: true, position: 'top', formatter: '{c}B', color: '#60a5fa', fontSize: 14, fontWeight: 'bold' }
+            itemStyle: { color: theme.secondary, borderRadius: [4, 4, 0, 0] },
+            label: { show: true, position: 'top', formatter: '{c}', color: theme.secondary, fontSize: 15, fontWeight: '900', textShadowColor: theme.bg, textShadowBlur: 4 }
           }
         ]
       };
@@ -512,17 +822,19 @@
     }
 
     // 2. Monthly Achievement Smooth Line Chart
-    function renderMonthlyTrendChart(trendRes) {
+    function renderMonthlyTrendChart(trendRes, slideConfig) {
       if (!chartInstances.monthlyTrend) {
         chartInstances.monthlyTrend = echarts.init(document.getElementById('chartMonthlyTrend'), 'dark');
       }
 
-      const months = trendRes && trendRes.months && trendRes.months.length > 0 
-        ? trendRes.months 
-        : ['ሃምሌ', 'ነሃሴ', 'መስከረም', 'ጥቅምት', 'ህዳር', 'ታህሳስ', 'ጥር', 'የካቲት', 'መጋቢት', 'ሚያዚያ', 'ግንቦት', 'ሰኔ'];
-      const achievements = trendRes && trendRes.achievements && trendRes.achievements.length > 0 
-        ? trendRes.achievements 
+      const months = trendRes && trendRes.months && trendRes.months.length > 0
+        ? trendRes.months.map(m => t_db(m))
+        : ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map(m => t_db(m));
+      const achievements = trendRes && trendRes.achievements && trendRes.achievements.length > 0
+        ? trendRes.achievements
         : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+      const theme = appThemes[state.currentTheme] || appThemes.ocean;
 
       const option = {
         backgroundColor: 'transparent',
@@ -532,8 +844,8 @@
         animationEasing: 'cubicOut',
         animationEasingUpdate: 'cubicOut',
         title: {
-          text: 'የገቢ አፈፃፀም በወራት ንፅፅር',
-          subtext: 'Monthly Achievement Percentage Curve across Fiscal Calendar',
+          text: state.currentLang === 'am' && slideConfig && slideConfig.titleAm ? slideConfig.titleAm : (slideConfig && slideConfig.title ? slideConfig.title : t_ui('Monthly Achievement Trend')),
+          subtext: state.currentLang === 'am' && slideConfig && slideConfig.subtitleAm ? slideConfig.subtitleAm : (slideConfig && slideConfig.subtitle ? slideConfig.subtitle : t_ui('Monthly Achievement Percentage Curve across Fiscal Calendar')),
           left: 'center',
           top: 10,
           textStyle: { color: '#f8fafc', fontSize: 18, fontWeight: 'bold' },
@@ -545,7 +857,7 @@
           left: 'center',
           icon: 'circle',
           textStyle: { color: '#cbd5e1', fontSize: 12 },
-          data: ['Achievement']
+          data: [t_ui('Achievement Percentage') || 'Achievement']
         },
         tooltip: { trigger: 'axis', formatter: '{b}: {c}%' },
         grid: { left: '3%', right: '4%', bottom: '50px', top: '75px', containLabel: true },
@@ -559,30 +871,49 @@
           min: 0,
           max: 140,
           axisLabel: { color: '#94a3b8', formatter: '{value}%' },
-          splitLine: { lineStyle: { color: '#334155' } }
+          splitLine: { lineStyle: { color: theme.border } }
         },
         series: [{
-          name: 'Achievement',
+          name: t_ui('Achievement Percentage') || 'Achievement',
           type: 'line',
           smooth: true,
           symbol: 'circle',
-          symbolSize: 8,
+          symbolSize: 9,
           data: achievements,
-          itemStyle: { color: '#06b6d4' },
-          lineStyle: { width: 3, color: '#06b6d4' },
+          itemStyle: { color: theme.primary },
+          lineStyle: { width: 4, color: theme.primary },
           areaStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: 'rgba(6, 182, 212, 0.4)' },
-              { offset: 1, color: 'rgba(6, 182, 212, 0.0)' }
+              { offset: 0, color: theme.primary + '73' }, // 45% opacity
+              { offset: 1, color: theme.primary + '00' }  // 0% opacity
             ])
           },
           label: {
             show: true,
             position: 'top',
             formatter: '{c}%',
-            color: '#67e8f9',
-            fontSize: 14,
-            fontWeight: 'bold'
+            color: theme.primary,
+            fontSize: 15,
+            fontWeight: '900',
+            textShadowColor: theme.bg,
+            textShadowBlur: 4
+          },
+          markLine: {
+            symbol: ['none', 'none'],
+            label: {
+              show: true,
+              position: 'end',
+              formatter: '100% Target Baseline',
+              color: theme.warning,
+              fontSize: 12,
+              fontWeight: 'bold'
+            },
+            lineStyle: {
+              type: 'dashed',
+              color: theme.warning,
+              width: 2
+            },
+            data: [{ yAxis: 100 }]
           }
         }]
       };
@@ -590,26 +921,28 @@
       chartInstances.monthlyTrend.setOption(option, { notMerge: true });
     }
 
-    // 3. Slide 2: Branch Achievement % Horizontal Bar Chart (redesigned)
-    function renderBranchVolumeChart(branchRes) {
+    // 3. Slide 2: Branch Achievement % Horizontal Bar Chart
+    function renderBranchVolumeChart(branchRes, slideConfig) {
       if (!chartInstances.branchVolume) {
         chartInstances.branchVolume = echarts.init(document.getElementById('chartBranchVolume'), 'dark');
       }
 
       // branchRes has { branches, scores } from /api/dashboard/branch-ranking
-      let branches = branchRes && branchRes.branches ? [...branchRes.branches] : [];
-      let scores   = branchRes && branchRes.scores   ? [...branchRes.scores]   : [];
+      let branches = branchRes && branchRes.branches ? branchRes.branches.map(b => t_db(b)) : [];
+      let scores = branchRes && branchRes.scores ? [...branchRes.scores] : [];
 
       // For horizontal bars, ECharts renders bottom→top, so sort ascending
       // so the best performer appears at the top of the chart.
       const paired = branches.map((b, i) => ({ branch: b, score: scores[i] }));
       paired.sort((a, b) => a.score - b.score);
       branches = paired.map(p => p.branch);
-      scores   = paired.map(p => p.score);
+      scores = paired.map(p => p.score);
+
+      const theme = appThemes[state.currentTheme] || appThemes.ocean;
 
       // Slide 1 color scheme: cyan = at/above target, blue = below target
       function barColor(val) {
-        return val >= 100 ? '#06b6d4' : '#3b82f6';
+        return val >= 100 ? theme.primary : theme.secondary;
       }
 
       const option = {
@@ -620,8 +953,8 @@
         animationEasing: 'cubicOut',
         animationEasingUpdate: 'cubicOut',
         title: {
-          text: 'የገቢ አፈፃፀም በቅርንጫፍ ጽ/ቤት',
-          subtext: 'Comparing target achievement percentages across all branch offices',
+          text: state.currentLang === 'am' && slideConfig && slideConfig.titleAm ? slideConfig.titleAm : (slideConfig && slideConfig.title ? slideConfig.title : t_ui('Branch Office Achievement')),
+          subtext: state.currentLang === 'am' && slideConfig && slideConfig.subtitleAm ? slideConfig.subtitleAm : (slideConfig && slideConfig.subtitle ? slideConfig.subtitle : t_ui('Comparing target achievement percentages across all branch offices')),
           left: 'center',
           top: 10,
           textStyle: { color: '#f8fafc', fontSize: 18, fontWeight: 'bold' },
@@ -633,7 +966,7 @@
           left: 'center',
           icon: 'circle',
           textStyle: { color: '#cbd5e1', fontSize: 12 },
-          data: ['አፈፃፀም %']
+          data: [t_ui('Achievement Percentage') || 'Achievement %']
         },
         tooltip: {
           trigger: 'axis',
@@ -649,7 +982,7 @@
           min: 0,
           max: 120,
           axisLabel: { color: '#94a3b8', formatter: '{value}%' },
-          splitLine: { lineStyle: { color: '#1e293b', type: 'dashed' } },
+          splitLine: { lineStyle: { color: theme.border, type: 'dashed' } },
           axisLine: { show: false },
           axisTick: { show: false }
         },
@@ -658,16 +991,16 @@
           data: branches,
           axisLabel: {
             color: '#e2e8f0',
-            fontSize: 11,
-            fontFamily: 'Noto Sans Ethiopic, sans-serif'
+            fontSize: 14,
+            margin: 16
           },
           axisTick: { show: false },
-          axisLine: { lineStyle: { color: '#334155' } }
+          axisLine: { lineStyle: { color: theme.border } }
         },
         series: [{
-          name: 'አፈፃፀም %',
+          name: t_ui('Achievement Percentage') || 'Achievement %',
           type: 'bar',
-          barWidth: 16,
+          barCategoryGap: '40%',
           data: scores.map((val, idx) => ({
             value: val,
             itemStyle: {
@@ -680,21 +1013,21 @@
             position: 'right',
             formatter: '{c}%',
             color: '#f1f5f9',
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: 'bold'
           },
           markLine: {
             silent: true,
             symbol: 'none',
             lineStyle: {
-              color: '#eab308',
+              color: theme.warning,
               type: 'dashed',
               width: 2
             },
             label: {
               position: 'insideEndTop',
               formatter: '100% (Target)',
-              color: '#eab308',
+              color: theme.warning,
               fontSize: 11,
               fontWeight: 'bold'
             },
@@ -708,7 +1041,7 @@
 
 
     // 6. Slide 5 (Option 3): Top & Bottom Performers Split-Card Leaderboard
-    function renderBranchRankingOption3(branchRes) {
+    function renderBranchRankingOption3(branchRes, slideConfig) {
       if (!chartInstances.topPerformers) {
         chartInstances.topPerformers = echarts.init(document.getElementById('chartTopPerformers'), 'dark');
       }
@@ -726,9 +1059,9 @@
       const bottomTitle = document.getElementById('bottomPerformersTitle');
       const bottomSub = document.getElementById('bottomPerformersSub');
 
-      if (topTitle) topTitle.innerText = `ከፍተኛ አፈፃፀም ያላቸው ${limit} ቅርንጫፎች (Top ${limit})`;
+      if (topTitle) topTitle.innerText = `Top ${limit} Branches`;
       if (topSub) topSub.innerText = `Top ${limit} Performing Branch Offices by Overall Achievement %`;
-      if (bottomTitle) bottomTitle.innerText = `ትኩረት የሚሹ ${limit} ቅርንጫፎች (Bottom ${limit})`;
+      if (bottomTitle) bottomTitle.innerText = `Bottom ${limit} Branches`;
       if (bottomSub) bottomSub.innerText = `Lowest ${limit} Performing Branch Offices needing attention`;
 
       const bottomBranches = allBranches.slice(0, limit);
@@ -737,6 +1070,8 @@
       const topBranches = allBranches.slice(-limit);
       const topScores = allScores.slice(-limit);
 
+      const theme = appThemes[state.currentTheme] || appThemes.ocean;
+
       const topOption = {
         backgroundColor: 'transparent',
         animation: true,
@@ -744,23 +1079,23 @@
         animationEasing: 'cubicOut',
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}%' },
         grid: { left: '20%', right: '10%', bottom: '5%', top: '5%', containLabel: true },
-        xAxis: { type: 'value', max: 120, axisLabel: { formatter: '{value}%', color: '#94a3b8' }, splitLine: { lineStyle: { color: '#334155' } } },
-        yAxis: { type: 'category', data: topBranches, axisLabel: { color: '#f8fafc', fontSize: 11 } },
+        xAxis: { type: 'value', max: 120, axisLabel: { formatter: '{value}%', color: '#94a3b8' }, splitLine: { lineStyle: { color: theme.border } } },
+        yAxis: { type: 'category', data: topBranches, axisLabel: { color: '#f8fafc', fontSize: 14, margin: 16 } },
         series: [{
           name: 'Top Performers',
           type: 'bar',
-          barWidth: 14,
+          barCategoryGap: '40%',
           data: topScores.map(val => ({
             value: val,
             itemStyle: {
               borderRadius: [0, 8, 8, 0],
               color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                { offset: 0, color: '#10b981' },
-                { offset: 1, color: '#059669' }
+                { offset: 0, color: theme.success },
+                { offset: 1, color: theme.success + '99' } // Darker variant by opacity
               ])
             }
           })),
-          label: { show: true, position: 'right', formatter: '{c}%', color: '#fff', fontSize: 10, fontWeight: 'bold' },
+          label: { show: true, position: 'right', formatter: '{c}%', color: '#fff', fontSize: 16, fontWeight: 'bold' },
           animationDelay: function (idx) {
             return idx * 250;
           }
@@ -774,23 +1109,23 @@
         animationEasing: 'cubicOut',
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}%' },
         grid: { left: '20%', right: '10%', bottom: '5%', top: '5%', containLabel: true },
-        xAxis: { type: 'value', max: 120, axisLabel: { formatter: '{value}%', color: '#94a3b8' }, splitLine: { lineStyle: { color: '#334155' } } },
-        yAxis: { type: 'category', data: bottomBranches, axisLabel: { color: '#f8fafc', fontSize: 11 } },
+        xAxis: { type: 'value', max: 120, axisLabel: { formatter: '{value}%', color: '#94a3b8' }, splitLine: { lineStyle: { color: theme.border } } },
+        yAxis: { type: 'category', data: bottomBranches, axisLabel: { color: '#f8fafc', fontSize: 14, margin: 16 } },
         series: [{
           name: 'Underperforming',
           type: 'bar',
-          barWidth: 14,
+          barCategoryGap: '40%',
           data: bottomScores.map(val => ({
             value: val,
             itemStyle: {
               borderRadius: [0, 8, 8, 0],
               color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                { offset: 0, color: '#ef4444' },
-                { offset: 1, color: '#991b1b' }
+                { offset: 0, color: theme.danger },
+                { offset: 1, color: theme.danger + '99' } // Darker variant by opacity
               ])
             }
           })),
-          label: { show: true, position: 'right', formatter: '{c}%', color: '#fff', fontSize: 10, fontWeight: 'bold' },
+          label: { show: true, position: 'right', formatter: '{c}%', color: '#fff', fontSize: 16, fontWeight: 'bold' },
           animationDelay: function (idx) {
             return idx * 250;
           }
@@ -829,11 +1164,7 @@
       });
 
       // Update Footer Title if element exists
-      const slideTitleDisplay = document.getElementById('slideTitleDisplay');
-      if (slideTitleDisplay && state.activeSlides[index]) {
-        const currentSlideConfig = state.activeSlides[index];
-        slideTitleDisplay.innerText = `Slide ${index + 1} of ${state.slideCount}: ${currentSlideConfig.title}`;
-      }
+      updateFooterTitle(index);
 
       // Update slide duration based on custom setting or default interval
       if (state.activeSlides[index]) {
@@ -872,10 +1203,19 @@
       const text = document.getElementById('playPauseText');
       if (state.autoRotate) {
         if (icon) icon.className = 'fa-solid fa-pause';
-        if (text) text.innerText = 'Pause';
+        if (text) text.innerText = t_ui('Pause');
       } else {
         if (icon) icon.className = 'fa-solid fa-play';
-        if (text) text.innerText = 'Play';
+        if (text) text.innerText = t_ui('Resume');
+      }
+    }
+
+    function updateFooterTitle(index) {
+      const slideTitleDisplay = document.getElementById('slideTitleDisplay');
+      if (slideTitleDisplay && state.activeSlides[index]) {
+        const currentSlideConfig = state.activeSlides[index];
+        const dispTitle = state.currentLang === 'am' && currentSlideConfig.titleAm ? currentSlideConfig.titleAm : currentSlideConfig.title;
+        slideTitleDisplay.innerText = `${t_ui('Slide')} ${index + 1} ${t_ui('of')} ${state.slideCount}: ${dispTitle}`;
       }
     }
 
@@ -900,9 +1240,9 @@
     function toggleFilterModal() {
       const modal = document.getElementById('filterModal');
       const isOpening = modal.classList.contains('hidden');
-      
+
       modal.classList.toggle('hidden');
-      
+
       // If modal is opened, pause carousel by default
       if (isOpening) {
         state.autoRotate = false;
@@ -923,10 +1263,22 @@
 
     // Initialize Everything on Load
     document.addEventListener("DOMContentLoaded", async () => {
-      await initializeDashboardConfig(); // 1. Load Server Config & Layout
-      await loadFilterDropdowns(); // 2. Load Dropdown Options
-      goToSlide(0); // 3. Start slideshow (renders first slide and triggers animation)
-      startTimerLoop(); // 4. Start rotation timer
+      // Apply initial default theme
+      changeTheme(state.currentTheme);
+
+      try {
+        await initializeDashboardConfig(); // 1. Load Server Config & Layout
+      } catch (err) {
+        console.error("Config load error:", err);
+      }
+
+      // 2. Start progress timer loop IMMEDIATELY so UI progress bar runs without delay
+      startTimerLoop();
+
+      // 3. Immediately render slide 0 and load cards + filter options in parallel
+      goToSlide(0);
+      loadTopCards().catch(err => console.error("Top cards error:", err));
+      loadFilterDropdowns().catch(err => console.error("Filter options error:", err));
 
       // Window resize event handler
       window.addEventListener('resize', () => {
@@ -941,4 +1293,5 @@
     });
   </script>
 </body>
+
 </html>
