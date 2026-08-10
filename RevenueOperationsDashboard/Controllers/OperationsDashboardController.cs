@@ -52,6 +52,19 @@ namespace RevenueOperationsDashboard.Controllers
             return Ok(data);
         }
 
+        [HttpGet("yoy-monthly-trend")]
+        public async Task<ActionResult<YoYMonthlyTrendDto>> GetYoYMonthlyTrend([FromQuery] DashboardFilterDto filters)
+        {
+            try
+            {
+                return await _repo.GetYoYMonthlyTrendAsync(filters);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
         [HttpGet("branch-ranking")]  
         public async Task<IActionResult> GetBranchRanking([FromQuery] DashboardFilterDto filters)  
         {
@@ -91,7 +104,7 @@ namespace RevenueOperationsDashboard.Controllers
         [HttpGet("top-cards")]
         public async Task<IActionResult> GetTopCards([FromQuery] DashboardFilterDto filters)
         {
-            string cacheKey = $"top_cards_{filters.FiscalYearId}_{filters.ParentId}";
+            string cacheKey = $"top_cards_{filters.FiscalYearId}_{filters.ParentId}_{filters.Lang ?? "am"}";
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);

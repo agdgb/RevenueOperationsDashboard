@@ -8,6 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.79" />
+    <PackageReference Include="Humanizer" Version="3.0.10" />
+    <PackageReference Include="HumanNumbers" Version="2.0.2" />
+    <PackageReference Include="HumanNumbers.AspNetCore" Version="2.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
   </ItemGroup>

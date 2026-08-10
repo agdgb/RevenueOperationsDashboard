@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,14 +9,16 @@
   <link href="./bootstrap.min.css" rel="stylesheet">
   <style>
     /* Full-screen setup */
-    html, body, .slideshow-container {
+    html,
+    body,
+    .slideshow-container {
       height: 100vh;
       width: 100vw;
       overflow: hidden;
       background-color: #000;
       position: relative;
     }
-    
+
     /* Absolute positioning layers the slides directly on top of each other */
     .slide-item {
       position: absolute;
@@ -25,8 +28,10 @@
       height: 100%;
       opacity: 0;
       z-index: 1;
-      transition: opacity 1.5s ease-in-out; /* Smooth fade effect */
-      pointer-events: none; /* Prevents hidden iframes from blocking clicks */
+      transition: opacity 1.5s ease-in-out;
+      /* Smooth fade effect */
+      pointer-events: none;
+      /* Prevents hidden iframes from blocking clicks */
     }
 
     /* Active slide is visible and interactable */
@@ -72,7 +77,8 @@
 
     .footer-btn:hover {
       background: rgba(255, 255, 255, 0.2);
-      color: #0d6efd; /* Bootstrap Primary Blue highlight */
+      color: #0d6efd;
+      /* Bootstrap Primary Blue highlight */
     }
 
     .slide-indicator {
@@ -83,8 +89,9 @@
     }
   </style>
 </head>
+
 <body>
- 
+
   <div class="slideshow-container">
 
     <!-- Slide 3 -->
@@ -92,17 +99,15 @@
       <iframe src="http://10.100.102.100:81/" allowfullscreen></iframe>
     </div>
     <!-- Slide 2 -->
-  <div class="slide-item">
-    <iframe
-        src="http://10.100.102.100:86/debit.html"
-        id="dashboard-frame"
-        allowfullscreen>
-    </iframe>
-</div>
+    <div class="slide-item">
+      <iframe src="http://10.100.102.100:86/debit.html" id="dashboard-frame" allowfullscreen>
+      </iframe>
+    </div>
 
     <!-- Slide 1 -->
     <div class="slide-item">
-      <iframe src="http://10.100.102.110:55396/bi/site/site1/slideshow/f4542758-0f8e-4e3b-a3f6-8e78a13eda27/db1" allowfullscreen></iframe>
+      <iframe src="http://10.100.102.110:55396/bi/site/site1/slideshow/f4542758-0f8e-4e3b-a3f6-8e78a13eda27/db1"
+        allowfullscreen></iframe>
     </div>
 
     <!-- Bottom Left Navigation Footer Bar -->
@@ -120,7 +125,7 @@
     let currentSlideIndex = 0;
 
     // Slide rotation interval (3 minutes)
-    const rotationInterval = 3 * 60 * 1000; 
+    const rotationInterval = 3 * 60 * 1000;
 
     function updateCounter() {
       // Updates the text inside the footer toolbar dynamically (e.g., "Slide 2 / 3")
@@ -130,13 +135,13 @@
     function showSlide(index) {
       // Remove the active class from the old slide
       slides[currentSlideIndex].classList.remove('active');
-      
+
       // Calculate the new index safely loop back around
       currentSlideIndex = (index + slides.length) % slides.length;
-      
+
       // Add the active class to the new slide
       slides[currentSlideIndex].classList.add('active');
-      
+
       // Update our footer label counter text
       updateCounter();
     }
@@ -154,7 +159,7 @@
 
     // Start the slideshow master timer
     let slideTimer = setInterval(autoAdvance, rotationInterval);
-    
+
     // Run the initial counter setup on page load
     updateCounter();
 
@@ -167,4 +172,5 @@
     }, reloadInterval);
   </script>
 </body>
+
 </html>

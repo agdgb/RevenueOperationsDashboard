@@ -107,21 +107,108 @@
       background: #334155;
       border-radius: 3px;
     }
+
+    /* Edge Hover Trigger Zones & Floating Animated Navigation */
+    .nav-side-zone {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 110px;
+      z-index: 45;
+      display: flex;
+      align-items: center;
+      pointer-events: auto;
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-side-zone.left-zone {
+      left: 0;
+      justify-content: flex-start;
+      padding-left: 1.5rem;
+    }
+
+    .nav-side-zone.right-zone {
+      right: 0;
+      justify-content: flex-end;
+      padding-right: 1.5rem;
+    }
+
+    .nav-side-btn {
+      width: 52px;
+      height: 52px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                  background 0.25s,
+                  border-color 0.25s,
+                  box-shadow 0.25s,
+                  color 0.25s;
+      pointer-events: none;
+    }
+
+    .nav-side-zone.left-zone .nav-side-btn {
+      transform: translateX(-24px) scale(0.85);
+    }
+
+    .nav-side-zone.right-zone .nav-side-btn {
+      transform: translateX(24px) scale(0.85);
+    }
+
+    /* Reveal gracefully on edge hover or button focus */
+    .nav-side-zone:hover .nav-side-btn,
+    .nav-side-btn:focus-visible {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .nav-side-btn:hover {
+      background: rgba(30, 41, 59, 0.92);
+      border-color: rgba(6, 182, 212, 0.65);
+      color: #38bdf8;
+      box-shadow: 0 0 25px rgba(6, 182, 212, 0.4), 0 8px 32px rgba(0, 0, 0, 0.5);
+      transform: translateX(0) scale(1.1);
+    }
+
+    .nav-side-btn:active {
+      transform: translateX(0) scale(0.92);
+    }
+
+    /* Screen Inactivity Mode: Auto-fade controls when idle */
+    body.user-idle .nav-side-zone,
+    body.user-idle .nav-side-btn {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      cursor: none;
+    }
   </style>
 </head>
 
 <body class="h-screen w-screen overflow-hidden p-4 relative flex flex-col bg-brandDark text-slate-100">
 
-  <!-- FLOATING NAVIGATION ARROWS (VERTICALLY CENTERED & HORIZONTALLY SPACED) -->
-  <button onclick="prevSlide()"
-    class="fixed left-6 top-1/2 -translate-y-1/2 z-50 p-4 rounded-full bg-transparent text-slate-300 hover:text-white border border-white/20 hover:border-cyan-500/80 hover:bg-white/10 backdrop-blur-md shadow-2xl transition-all hover:scale-110 active:scale-95 focus:outline-none group">
-    <i class="fa-solid fa-chevron-left text-2xl group-hover:-translate-x-0.5 transition-transform"></i>
-  </button>
+  <!-- FLOATING NAVIGATION ARROWS (ANIMATED ON EDGE HOVER & INACTIVITY AUTO-HIDE) -->
+  <div class="nav-side-zone left-zone" aria-label="Previous Slide Trigger">
+    <button onclick="prevSlide()" class="nav-side-btn group" title="Previous Slide (or Left Arrow)">
+      <i class="fa-solid fa-chevron-left text-xl transition-transform duration-300 group-hover:-translate-x-0.5"></i>
+    </button>
+  </div>
 
-  <button onclick="nextSlide()"
-    class="fixed right-6 top-1/2 -translate-y-1/2 z-50 p-4 rounded-full bg-transparent text-slate-300 hover:text-white border border-white/20 hover:border-cyan-500/80 hover:bg-white/10 backdrop-blur-md shadow-2xl transition-all hover:scale-110 active:scale-95 focus:outline-none group">
-    <i class="fa-solid fa-chevron-right text-2xl group-hover:translate-x-0.5 transition-transform"></i>
-  </button>
+  <div class="nav-side-zone right-zone" aria-label="Next Slide Trigger">
+    <button onclick="nextSlide()" class="nav-side-btn group" title="Next Slide (or Right Arrow / Space)">
+      <i class="fa-solid fa-chevron-right text-xl transition-transform duration-300 group-hover:translate-x-0.5"></i>
+    </button>
+  </div>
 
   <!-- GLOBAL FILTER MODAL OVERLAY -->
   <div id="filterModal"
@@ -214,14 +301,22 @@
       </div>
     </div>
 
+    <!-- Slide 3: YoY Monthly Trend Comparison -->
+    <div id="slide-3" class="slide-container slide-hidden h-full w-full flex-col gap-3 min-h-0">
+      <div
+        class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden">
+        <div id="chartYoYMonthlyTrend" class="w-full flex-1 min-h-[300px]"></div>
+      </div>
+    </div>
+
   </main>
 
-  <!-- DYNAMIC PREMIUM FOOTER TOOLBAR (HOVER TO SHOW) -->
-  <div class="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 md:px-6 md:pb-6 group flex justify-center">
+  <!-- DYNAMIC FOOTER TOOLBAR (HOVER TO SHOW) -->
+  <div class="fixed bottom-0 left-0 right-0 z-50 group">
     <!-- Invisible trigger area at the bottom edge -->
-    <div class="absolute bottom-0 left-0 w-full h-12 cursor-pointer z-0"></div>
+    <div class="absolute bottom-0 left-0 w-full h-16 cursor-pointer z-0"></div>
     <footer
-      class="w-full relative z-10 flex-shrink-0 bg-slate-900/60 border border-slate-800/80 backdrop-blur-md rounded-xl p-3 flex items-center justify-between transition-all duration-300 transform translate-y-[150%] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 shadow-2xl">
+      class="w-full relative z-10 flex-shrink-0 bg-cardBg border-t border-borderDark p-3 flex items-center justify-between transition-all duration-300 transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
       <div class="flex items-center gap-4">
       <button id="playPauseBtn" onclick="toggleCarousel()"
         class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition">
@@ -392,17 +487,68 @@
       return text;
     }
 
+    function formatHumanValue(val, isCurrency, lang) {
+      if (val === null || val === undefined || isNaN(Number(val))) return '0';
+      const isAm = (lang || state.currentLang) === 'am';
+      const num = Number(val);
+      const abs = Math.abs(num);
+      const cur = isCurrency ? (isAm ? 'ብር ' : 'ETB ') : '';
+
+      if (abs >= 1e12) {
+        return `${cur}${(num / 1e12).toFixed(2)}${isAm ? 'ት' : 'T'}`;
+      }
+      if (abs >= 1e9) {
+        return `${cur}${(num / 1e9).toFixed(2)}${isAm ? 'ቢ' : 'B'}`;
+      }
+      if (abs >= 1e6) {
+        return `${cur}${(num / 1e6).toFixed(2)}${isAm ? 'ሚ' : 'M'}`;
+      }
+      if (abs >= 1e3) {
+        return `${cur}${(num / 1e3).toFixed(2)}${isAm ? 'ሺ' : 'K'}`;
+      }
+      return `${cur}${num.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+    }
+
     function toggleLanguage() {
       state.currentLang = state.currentLang === 'en' ? 'am' : 'en';
       document.getElementById('langToggleBtn').innerText = state.currentLang === 'en' ? 'EN' : 'አማ';
       updateUILanguage();
       
-      // Refresh UI components that use language
-      loadFilterDropdowns(); // Re-render dropdowns to apply language
-      applyFilters(); // Re-fetch or re-render charts and cards
+      // 1. Instantly update all top KPI card texts and values in place from cached cards
+      if (state.cachedCards) {
+        updateTopCardValues(state.cachedCards);
+      }
+      
+      // 2. Instantly update active slide chart texts/labels in place if cached data exists
+      if (state.activeSlideData && state.activeSlideData[state.currentSlide]) {
+        renderActiveSlideChart(state.currentSlide, state.activeSlideData[state.currentSlide]);
+      }
+      
+      // 3. Update filter dropdown labels in place without losing selection
+      updateDropdownLabels();
     }
 
-    function changeTheme(themeKey) {
+    function updateDropdownLabels() {
+      const yearSelect = document.getElementById('filterFiscalYear');
+      const branchSelect = document.getElementById('filterParent');
+      const taxSelect = document.getElementById('filterPlanItem');
+
+      if (branchSelect && branchSelect.options.length > 0) {
+        branchSelect.options[0].text = t_ui('All Branches');
+      }
+      if (taxSelect && taxSelect.options.length > 0) {
+        taxSelect.options[0].text = t_ui('All Tax Types');
+      }
+
+      // Update Filter Summary text in header
+      const filterSummaryText = document.getElementById('filterSummaryText');
+      if (filterSummaryText && yearSelect && branchSelect) {
+        const parentLabel = state.filters.parent === 'ALL' ? t_ui('All Branches') : (branchSelect.options[branchSelect.selectedIndex]?.text || state.filters.parent);
+        filterSummaryText.innerText = `${t_ui("Fiscal Year")}: ${state.filters.fiscalYear} | ${parentLabel}`;
+      }
+    }
+
+    function changeTheme(themeKey, skipDataReload = false) {
       if (!appThemes[themeKey]) return;
       state.currentTheme = themeKey;
       const theme = appThemes[themeKey];
@@ -425,9 +571,19 @@
         footer.style.borderColor = theme.border;
       }
 
-      // Trigger a re-render of charts and top cards
-      loadTopCards();
-      refreshActiveSlideMetric(state.currentSlide);
+      if (!skipDataReload) {
+        // Trigger an in-place update of top cards and charts
+        if (state.cachedCards) {
+          updateTopCardValues(state.cachedCards);
+        } else {
+          loadTopCards();
+        }
+        if (state.activeSlideData && state.activeSlideData[state.currentSlide]) {
+          renderActiveSlideChart(state.currentSlide, state.activeSlideData[state.currentSlide]);
+        } else {
+          refreshActiveSlideMetric(state.currentSlide);
+        }
+      }
     }
 
     function updateUILanguage() {
@@ -524,7 +680,8 @@
         const params = new URLSearchParams({
           fiscalYearId: state.filters.fiscalYear || 'ALL',
           parentId: state.filters.parent || 'ALL',
-          planItemId: state.filters.planItem || 'ALL'
+          planItemId: state.filters.planItem || 'ALL',
+          lang: state.currentLang || 'am'
         });
         const res = await fetch(`/api/dashboard/top-cards?${params}`);
         const data = await res.json();
@@ -537,9 +694,18 @@
     function renderTopKpiCards(cards) {
       const headerContainer = document.getElementById('topKpiHeader');
       if (!headerContainer || !cards) return;
+      state.cachedCards = cards;
 
       const theme = appThemes[state.currentTheme] || appThemes.ocean;
 
+      // Check if cards DOM already rendered; if so, update in-place without rebuilding DOM
+      const existingBoxes = headerContainer.querySelectorAll('.kpi-card-box');
+      if (existingBoxes.length === cards.length) {
+        updateTopCardValues(cards);
+        return;
+      }
+
+      // Initial DOM layout construction (only runs once on first render)
       headerContainer.innerHTML = cards.map(card => {
         let statusColor = theme.success;
         if (card.achievementPct < 90) statusColor = theme.warning;
@@ -547,33 +713,35 @@
 
         const badgeBg = `background-color: ${statusColor}1A; color: ${statusColor}; border-color: ${statusColor}80`;
         const cardGlow = `border-color: ${statusColor}80; box-shadow: 0 0 18px ${statusColor}38`;
+        const isCurrency = card.id === 'kpi1';
 
-        let formattedTarget = card.formattedTarget;
-        if (state.currentLang === 'am') {
-          formattedTarget = formattedTarget.replace('Target:', 'እቅድ:').replace('Act:', 'ክንውን:');
-        }
+        const actualText = isCurrency ? `${card.achievementPct}%` : formatHumanValue(card.actual, false, state.currentLang);
+        const targetText = isCurrency
+          ? `${formatHumanValue(card.actual, true, state.currentLang)} (${formatHumanValue(card.target, true, state.currentLang)})`
+          : formatHumanValue(card.target, false, state.currentLang);
+        const titleText = state.currentLang === 'am' ? card.titleAmharic : card.titleEnglish;
 
         return `
-          <div class="bg-cardBg border rounded-2xl p-4 md:p-5 flex flex-col justify-between shadow-2xl relative overflow-hidden backdrop-blur-md transition-all hover:scale-[1.03] group min-h-[120px]" style="background-color: ${theme.cardBg}; ${cardGlow}">
+          <div id="card_box_${card.id}" class="kpi-card-box bg-cardBg border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative overflow-hidden backdrop-blur-md transition-all hover:scale-[1.03] group min-h-[120px]" style="background-color: ${theme.cardBg}; ${cardGlow}">
             <div class="flex items-center justify-between gap-2 mb-2">
               <div class="min-w-0 flex-1">
-                <h4 class="text-sm md:text-base font-extrabold text-slate-100 truncate" title="${state.currentLang === 'am' ? card.titleAmharic : card.titleEnglish}">${state.currentLang === 'am' ? card.titleAmharic : card.titleEnglish}</h4>
+                <h4 id="card_title_${card.id}" class="text-xs 2xl:text-sm font-extrabold text-slate-100 whitespace-normal line-clamp-2" title="${titleText}">${titleText}</h4>
               </div>
-              <span class="text-xs font-black px-2.5 py-1 rounded-lg border" style="${badgeBg}">${card.achievementPct}%</span>
+              <span id="card_badge_${card.id}" class="text-xs font-black px-2.5 py-1 rounded-lg border flex-shrink-0" style="${badgeBg}">${card.achievementPct}%</span>
             </div>
             
-            <div class="flex items-center justify-between mt-2">
-              <div class="min-w-0 flex-1 pr-2">
-                <div class="text-xl md:text-3xl font-black text-white tracking-tight truncate">${card.formattedActual}</div>
-                <div class="text-xs md:text-sm font-semibold text-slate-400 truncate mt-1">${formattedTarget}</div>
+            <div class="flex items-center justify-between mt-1">
+              <div class="min-w-0 flex-1 pr-1 xl:pr-2">
+                <div id="card_actual_${card.id}" class="text-base xl:text-xl 2xl:text-2xl font-black text-white tracking-tighter truncate">${actualText}</div>
+                <div id="card_target_${card.id}" class="text-[10px] 2xl:text-xs font-semibold text-slate-400 truncate mt-0.5">${targetText}</div>
               </div>
-              <div id="gauge_${card.id}" class="w-16 h-16 flex-shrink-0"></div>
+              <div id="gauge_${card.id}" class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 flex-shrink-0"></div>
             </div>
           </div>
         `;
       }).join('');
 
-      // Initialize ECharts gauge rings after DOM insertion
+      // Initialize ECharts gauge rings after initial DOM insertion
       setTimeout(() => {
         cards.forEach(card => {
           const chartDom = document.getElementById(`gauge_${card.id}`);
@@ -581,7 +749,7 @@
 
           let myChart = chartInstances[`gauge_${card.id}`];
           if (myChart) {
-            myChart.dispose(); // Destroy old instance bound to dead DOM element
+            myChart.dispose();
           }
           myChart = echarts.init(chartDom);
           chartInstances[`gauge_${card.id}`] = myChart;
@@ -600,10 +768,17 @@
                 overlap: false,
                 roundCap: true,
                 clip: false,
-                itemStyle: { color: ringColor }
+                itemStyle: {
+                  color: ringColor,
+                  shadowColor: ringColor,
+                  shadowBlur: 8
+                }
               },
               axisLine: {
-                lineStyle: { width: 4.5, color: [[1, 'rgba(51, 65, 85, 0.4)']] }
+                lineStyle: {
+                  width: 6,
+                  color: [[1, theme.border || 'rgba(255, 255, 255, 0.08)']]
+                }
               },
               splitLine: { show: false },
               axisTick: { show: false },
@@ -617,17 +792,75 @@
       }, 50);
     }
 
+    // Targeted in-place update of top KPI card texts and gauge values
+    function updateTopCardValues(cards) {
+      if (!cards) return;
+      const theme = appThemes[state.currentTheme] || appThemes.ocean;
+
+      cards.forEach(card => {
+        const isCurrency = card.id === 'kpi1';
+        let statusColor = theme.success;
+        if (card.achievementPct < 90) statusColor = theme.warning;
+        if (card.achievementPct < 70) statusColor = theme.danger;
+
+        const titleEl = document.getElementById(`card_title_${card.id}`);
+        const badgeEl = document.getElementById(`card_badge_${card.id}`);
+        const actualEl = document.getElementById(`card_actual_${card.id}`);
+        const targetEl = document.getElementById(`card_target_${card.id}`);
+        const boxEl = document.getElementById(`card_box_${card.id}`);
+
+        if (titleEl) {
+          const titleText = state.currentLang === 'am' ? card.titleAmharic : card.titleEnglish;
+          titleEl.innerText = titleText;
+          titleEl.title = titleText;
+        }
+
+        if (badgeEl) {
+          badgeEl.innerText = `${card.achievementPct}%`;
+          badgeEl.style.backgroundColor = `${statusColor}1A`;
+          badgeEl.style.color = statusColor;
+          badgeEl.style.borderColor = `${statusColor}80`;
+        }
+
+        if (boxEl) {
+          boxEl.style.borderColor = `${statusColor}80`;
+          boxEl.style.boxShadow = `0 0 18px ${statusColor}38`;
+        }
+
+        if (actualEl) {
+          actualEl.innerText = isCurrency ? `${card.achievementPct}%` : formatHumanValue(card.actual, false, state.currentLang);
+        }
+
+        if (targetEl) {
+          targetEl.innerText = isCurrency
+            ? `${formatHumanValue(card.actual, true, state.currentLang)} (${formatHumanValue(card.target, true, state.currentLang)})`
+            : formatHumanValue(card.target, false, state.currentLang);
+        }
+
+        const myChart = chartInstances[`gauge_${card.id}`];
+        if (myChart) {
+          myChart.setOption({
+            series: [{
+              progress: {
+                itemStyle: {
+                  color: statusColor,
+                  shadowColor: statusColor
+                }
+              },
+              data: [{ value: Math.min(card.achievementPct, 100) }]
+            }]
+          });
+        }
+      });
+    }
+
     // Apply Filter Changes
     async function applyFilters() {
       state.filters.fiscalYear = document.getElementById('filterFiscalYear').value;
       state.filters.parent = document.getElementById('filterParent').value;
       state.filters.planItem = document.getElementById('filterPlanItem').value;
 
-      const filterSummaryText = document.getElementById('filterSummaryText');
-      if (filterSummaryText) {
-        const parentLabel = state.filters.parent === 'ALL' ? t_ui('All Branches') : document.getElementById('filterParent').options[document.getElementById('filterParent').selectedIndex].text;
-        filterSummaryText.innerText = `${t_ui("Fiscal Year")}: ${state.filters.fiscalYear} | ${parentLabel}`;
-      }
+      updateDropdownLabels();
 
       await Promise.all([
         loadTopCards(),
@@ -663,45 +896,10 @@
         }).toString();
 
         const resData = await fetch(`${slide.apiEndpoint}?${query}`).then(r => r.json());
+        if (!state.activeSlideData) state.activeSlideData = {};
+        state.activeSlideData[index] = resData;
 
-        if (slide.id === 'slide-0') {
-          const taxDom = document.getElementById('chartTaxType');
-          if (taxDom) {
-            if (!chartInstances.taxType) {
-              chartInstances.taxType = echarts.init(taxDom, 'dark');
-            }
-            chartInstances.taxType.resize();
-            renderTaxTypeChart(resData, slide);
-          }
-        } else if (slide.id === 'slide-1') {
-          const trendDom = document.getElementById('chartMonthlyTrend');
-          if (trendDom) {
-            if (!chartInstances.monthlyTrend) {
-              chartInstances.monthlyTrend = echarts.init(trendDom, 'dark');
-            }
-            chartInstances.monthlyTrend.resize();
-            renderMonthlyTrendChart(resData, slide);
-          }
-        } else if (slide.id === 'slide-2') {
-          const branchDom = document.getElementById('chartBranchVolume');
-          if (branchDom) {
-            if (!chartInstances.branchVolume) {
-              chartInstances.branchVolume = echarts.init(branchDom, 'dark');
-            }
-            chartInstances.branchVolume.resize();
-            renderBranchVolumeChart(resData, slide);
-          }
-        } else if (slide.id === 'slide-3') {
-          if (!chartInstances.topPerformers && document.getElementById('chartTopPerformers')) {
-            chartInstances.topPerformers = echarts.init(document.getElementById('chartTopPerformers'), 'dark');
-          }
-          if (!chartInstances.bottomPerformers && document.getElementById('chartBottomPerformers')) {
-            chartInstances.bottomPerformers = echarts.init(document.getElementById('chartBottomPerformers'), 'dark');
-          }
-          if (chartInstances.topPerformers) chartInstances.topPerformers.resize();
-          if (chartInstances.bottomPerformers) chartInstances.bottomPerformers.resize();
-          renderBranchRankingOption3(resData, slide);
-        }
+        renderActiveSlideChart(index, resData);
 
         // Update fiscal year text indicator
         const trendFiscalYearLabel = document.getElementById('trendFiscalYearLabel');
@@ -711,6 +909,58 @@
         }
       } catch (err) {
         console.error("Failed to fetch active slide metrics:", err);
+      }
+    }
+
+    function renderActiveSlideChart(index, resData) {
+      const slide = state.activeSlides[index];
+      if (!slide || !resData) return;
+
+      if (slide.id === 'slide-0') {
+        const taxDom = document.getElementById('chartTaxType');
+        if (taxDom) {
+          if (!chartInstances.taxType) {
+            chartInstances.taxType = echarts.init(taxDom, 'dark');
+          }
+          chartInstances.taxType.resize();
+          renderTaxTypeChart(resData, slide);
+        }
+      } else if (slide.id === 'slide-1') {
+        const trendDom = document.getElementById('chartMonthlyTrend');
+        if (trendDom) {
+          if (!chartInstances.monthlyTrend) {
+            chartInstances.monthlyTrend = echarts.init(trendDom, 'dark');
+          }
+          chartInstances.monthlyTrend.resize();
+          renderMonthlyTrendChart(resData, slide);
+        }
+      } else if (slide.id === 'slide-2') {
+        const branchDom = document.getElementById('chartBranchVolume');
+        if (branchDom) {
+          if (!chartInstances.branchVolume) {
+            chartInstances.branchVolume = echarts.init(branchDom, 'dark');
+          }
+          chartInstances.branchVolume.resize();
+          renderBranchVolumeChart(resData, slide);
+        }
+      } else if (slide.id === 'slide-3') {
+        if (!chartInstances.yoyTrend && document.getElementById('chartYoYMonthlyTrend')) {
+          chartInstances.yoyTrend = echarts.init(document.getElementById('chartYoYMonthlyTrend'), 'dark');
+        }
+        if (chartInstances.yoyTrend) {
+          chartInstances.yoyTrend.resize();
+          renderYoYMonthlyTrendChart(resData, slide);
+        }
+      } else if (slide.id === 'slide-4') {
+        if (!chartInstances.topPerformers && document.getElementById('chartTopPerformers')) {
+          chartInstances.topPerformers = echarts.init(document.getElementById('chartTopPerformers'), 'dark');
+        }
+        if (!chartInstances.bottomPerformers && document.getElementById('chartBottomPerformers')) {
+          chartInstances.bottomPerformers = echarts.init(document.getElementById('chartBottomPerformers'), 'dark');
+        }
+        if (chartInstances.topPerformers) chartInstances.topPerformers.resize();
+        if (chartInstances.bottomPerformers) chartInstances.bottomPerformers.resize();
+        renderBranchRankingOption3(resData, slide);
       }
     }
 
@@ -763,6 +1013,8 @@
         : [0, 0, 0, 0, 0, 0];
 
       const theme = appThemes[state.currentTheme] || appThemes.ocean;
+      const curPrefix = state.currentLang === 'am' ? 'ብር ' : 'ETB ';
+      const magSuffix = state.currentLang === 'am' ? 'ቢ' : 'B';
 
       const option = {
         backgroundColor: 'transparent',
@@ -787,7 +1039,17 @@
           textStyle: { color: '#cbd5e1', fontSize: 12 },
           data: [t_ui('Plan'), t_ui('Actual')]
         },
-        tooltip: { trigger: 'axis', formatter: '{b}<br/>{a0}: {c0}<br/>{a1}: {c1}' },
+        tooltip: { 
+          trigger: 'axis', 
+          formatter: (params) => {
+            if (!params || params.length === 0) return '';
+            let res = `<b>${params[0].name}</b><br/>`;
+            params.forEach(p => {
+              res += `${p.marker}${p.seriesName}: <b>${curPrefix}${p.value}${magSuffix}</b><br/>`;
+            });
+            return res;
+          }
+        },
         grid: { left: '3%', right: '4%', bottom: '50px', top: '75px', containLabel: true },
         xAxis: {
           type: 'category',
@@ -797,7 +1059,10 @@
         yAxis: {
           type: 'value',
           name: '',
-          axisLabel: { color: '#94a3b8', formatter: '{value}' },
+          axisLabel: { 
+            color: '#94a3b8', 
+            formatter: (val) => `${curPrefix}${val}${magSuffix}` 
+          },
           splitLine: { lineStyle: { color: theme.border } }
         },
         series: [
@@ -806,14 +1071,32 @@
             type: 'bar',
             data: targetData,
             itemStyle: { color: theme.primary, borderRadius: [4, 4, 0, 0] },
-            label: { show: true, position: 'top', formatter: '{c}', color: theme.primary, fontSize: 15, fontWeight: '900', textShadowColor: theme.bg, textShadowBlur: 4 }
+            label: { 
+              show: true, 
+              position: 'top', 
+              formatter: (params) => (params.value != null && params.value !== '') ? `${curPrefix}${params.value}${magSuffix}` : '', 
+              color: theme.primary, 
+              fontSize: 15, 
+              fontWeight: '900', 
+              textShadowColor: theme.bg, 
+              textShadowBlur: 4 
+            }
           },
           {
             name: t_ui('Actual'),
             type: 'bar',
             data: actualData,
             itemStyle: { color: theme.secondary, borderRadius: [4, 4, 0, 0] },
-            label: { show: true, position: 'top', formatter: '{c}', color: theme.secondary, fontSize: 15, fontWeight: '900', textShadowColor: theme.bg, textShadowBlur: 4 }
+            label: { 
+              show: true, 
+              position: 'top', 
+              formatter: (params) => (params.value != null && params.value !== '') ? `${curPrefix}${params.value}${magSuffix}` : '', 
+              color: theme.secondary, 
+              fontSize: 15, 
+              fontWeight: '900', 
+              textShadowColor: theme.bg, 
+              textShadowBlur: 4 
+            }
           }
         ]
       };
@@ -919,6 +1202,146 @@
       };
 
       chartInstances.monthlyTrend.setOption(option, { notMerge: true });
+    }
+
+    // 2.5 YoY Monthly Trend Comparison Chart
+    function renderYoYMonthlyTrendChart(yoyRes, slideConfig) {
+      if (!chartInstances.yoyTrend) {
+        chartInstances.yoyTrend = echarts.init(document.getElementById('chartYoYMonthlyTrend'), 'dark');
+      }
+
+      const months = yoyRes && yoyRes.months ? yoyRes.months.map(m => t_db(m)) : [];
+      const currentAchievements = yoyRes && yoyRes.currentYearAchievements ? yoyRes.currentYearAchievements : [];
+      const prevAchievements = yoyRes && yoyRes.previousYearAchievements ? yoyRes.previousYearAchievements : [];
+      const currentLabel = yoyRes && yoyRes.currentYearLabel ? yoyRes.currentYearLabel : 'Current Year';
+      const prevLabel = yoyRes && yoyRes.previousYearLabel ? yoyRes.previousYearLabel : 'Previous Year';
+
+      const theme = appThemes[state.currentTheme] || appThemes.ocean;
+
+      const option = {
+        backgroundColor: 'transparent',
+        animation: true,
+        animationDuration: 1200,
+        animationDurationUpdate: 1200,
+        animationEasing: 'cubicOut',
+        animationEasingUpdate: 'cubicOut',
+        title: {
+          text: state.currentLang === 'am' && slideConfig && slideConfig.titleAm ? slideConfig.titleAm : (slideConfig && slideConfig.title ? slideConfig.title : t_ui('YoY Monthly Trend Comparison')),
+          subtext: state.currentLang === 'am' && slideConfig && slideConfig.subtitleAm ? slideConfig.subtitleAm : (slideConfig && slideConfig.subtitle ? slideConfig.subtitle : t_ui('Monthly Achievement Trend Comparison with Previous Year')),
+          left: 'center',
+          top: 10,
+          textStyle: { color: '#f8fafc', fontSize: 18, fontWeight: 'bold' },
+          subtextStyle: { color: '#94a3b8', fontSize: 12 }
+        },
+        legend: {
+          show: true,
+          bottom: 5,
+          left: 'center',
+          icon: 'circle',
+          textStyle: { color: '#cbd5e1', fontSize: 12 },
+          data: [prevLabel, currentLabel]
+        },
+        tooltip: { 
+          trigger: 'axis', 
+          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+          borderColor: theme.border,
+          textStyle: { color: '#f8fafc' },
+          formatter: '{b}<br/>{a0}: {c0}%<br/>{a1}: {c1}%' 
+        },
+        grid: { left: '3%', right: '4%', bottom: '50px', top: '110px', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: months,
+          axisLabel: { color: '#f8fafc', fontSize: 12, fontWeight: 'bold' }
+        },
+        yAxis: {
+          type: 'value',
+          min: 0,
+          max: 140,
+          axisLabel: { color: '#94a3b8', formatter: '{value}%' },
+          splitLine: { lineStyle: { color: theme.border } }
+        },
+        series: [
+          {
+            name: prevLabel,
+            type: 'line',
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 8,
+            data: prevAchievements,
+            itemStyle: { color: theme.secondary || '#8b5cf6' },
+            lineStyle: { 
+              width: 3, 
+              color: theme.secondary || '#8b5cf6',
+              shadowColor: 'rgba(139, 92, 246, 0.3)',
+              shadowBlur: 10,
+              shadowOffsetY: 4
+            },
+            label: {
+              show: true,
+              position: 'bottom',
+              formatter: '{c}%',
+              color: '#f8fafc',
+              fontSize: 12,
+              fontWeight: 'bold',
+              backgroundColor: 'rgba(15, 23, 42, 0.7)',
+              borderColor: theme.secondary || '#8b5cf6',
+              borderWidth: 1,
+              borderRadius: 4,
+              padding: [2, 4]
+            }
+          },
+          {
+            name: currentLabel,
+            type: 'line',
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 10,
+            data: currentAchievements,
+            itemStyle: { color: theme.primary },
+            lineStyle: { 
+              width: 4, 
+              color: theme.primary,
+              shadowColor: theme.primary,
+              shadowBlur: 15,
+              shadowOffsetY: 5
+            },
+            areaStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: theme.primary + '80' }, // 50% opacity
+                { offset: 1, color: theme.primary + '00' }  // 0% opacity
+              ])
+            },
+            label: {
+              show: true,
+              position: 'top',
+              formatter: '{c}%',
+              color: '#ffffff',
+              fontSize: 13,
+              fontWeight: 'bold',
+              backgroundColor: theme.primary,
+              borderRadius: 4,
+              padding: [2, 6],
+              shadowColor: 'rgba(0,0,0,0.5)',
+              shadowBlur: 4
+            },
+            markLine: {
+              symbol: ['none', 'none'],
+              label: {
+                show: false
+              },
+              lineStyle: {
+                type: 'dashed',
+                color: theme.warning,
+                width: 2
+              },
+              data: [{ yAxis: 100 }]
+            }
+          }
+        ]
+      };
+
+      chartInstances.yoyTrend.setOption(option, { notMerge: true });
     }
 
     // 3. Slide 2: Branch Achievement % Horizontal Bar Chart
@@ -1263,8 +1686,8 @@
 
     // Initialize Everything on Load
     document.addEventListener("DOMContentLoaded", async () => {
-      // Apply initial default theme
-      changeTheme(state.currentTheme);
+      // Apply initial default theme without premature data reload
+      changeTheme(state.currentTheme, true);
 
       try {
         await initializeDashboardConfig(); // 1. Load Server Config & Layout
@@ -1290,6 +1713,38 @@
         Object.values(chartInstances).forEach(chart => chart && chart.resize());
       });
       document.querySelectorAll('.slide-container').forEach(el => observer.observe(el));
+
+      // User Mouse Activity & Idle State Management (Auto-hide controls on inactivity)
+      let idleTimer = null;
+      function resetIdleTimer() {
+        document.body.classList.remove('user-idle');
+        clearTimeout(idleTimer);
+        // Fade out controls after 5 seconds of inactivity
+        idleTimer = setTimeout(() => {
+          const modal = document.getElementById('filterModal');
+          if (!modal || modal.classList.contains('hidden')) {
+            document.body.classList.add('user-idle');
+          }
+        }, 5000);
+      }
+
+      ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+        window.addEventListener(evt, resetIdleTimer, { passive: true });
+      });
+      resetIdleTimer();
+
+      // Keyboard arrow slide navigation
+      window.addEventListener('keydown', (e) => {
+        if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+        if (e.key === 'ArrowRight') {
+          nextSlide();
+        } else if (e.key === 'ArrowLeft') {
+          prevSlide();
+        } else if (e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          toggleCarousel();
+        }
+      });
     });
   </script>
 </body>

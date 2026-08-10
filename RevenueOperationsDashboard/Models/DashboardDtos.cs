@@ -5,6 +5,7 @@ namespace RevenueOperationsDashboard.Models
         public string? FiscalYearId { get; set; }  
         public string? ParentId { get; set; }  
         public string? PlanItemId { get; set; }  
+        public string? Lang { get; set; }  
     }
 
     public class TaxTypePerformanceDto  
@@ -18,6 +19,15 @@ namespace RevenueOperationsDashboard.Models
     {  
         public List<string> Months { get; set; } = new();  
         public List<decimal> Achievements { get; set; } = new();  
+    }
+
+    public class YoYMonthlyTrendDto
+    {
+        public List<string> Months { get; set; } = new();
+        public List<decimal> CurrentYearAchievements { get; set; } = new();
+        public List<decimal> PreviousYearAchievements { get; set; } = new();
+        public string CurrentYearLabel { get; set; } = string.Empty;
+        public string PreviousYearLabel { get; set; } = string.Empty;
     }
 
     public class BranchRankingDto  
