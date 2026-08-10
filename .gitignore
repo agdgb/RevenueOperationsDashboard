@@ -1,4 +1,8 @@
 publish/
 **/publish/
 bin/
+**/bin/
 obj/
+**/obj/
+.vs/
+**/.vs/

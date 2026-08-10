@@ -1,6 +1,7 @@
 using Dapper;
 using Microsoft.Data.SqlClient;
 using RevenueOperationsDashboard.Models;
+using HumanNumbers;
 
 namespace RevenueOperationsDashboard.Services
 {
@@ -90,7 +91,7 @@ namespace RevenueOperationsDashboard.Services
                         END)) * 100, 2)
                         ELSE 0 
                     END AS AchievementPct  
-                FROM [dbo].[vw_RevenuePerformance_Detail]  
+                FROM [dbo].[vw_RevenuePerformance_Clean]  
                 WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)  
                   AND (@ParentId IS NULL OR ParentId = @ParentId)  
                   AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
@@ -111,6 +112,70 @@ namespace RevenueOperationsDashboard.Services
                 Months = rows.Select(r => (string)r.MonthName).ToList(),
                 Achievements = rows.Select(r => (decimal)(r.AchievementPct ?? 0m)).ToList()
             };
+        }
+
+        public async Task<YoYMonthlyTrendDto> GetYoYMonthlyTrendAsync(DashboardFilterDto filters)
+        {
+            var currentYearId = NormalizeFilter(filters.FiscalYearId);
+
+            const string sqlPre = @"
+                DECLARE @CurrentYearId VARCHAR(100) = @FiscalYearId;
+                SELECT TOP 1 
+                    CAST(FiscalYearId AS VARCHAR(100)) AS PrevYearId,
+                    (SELECT FiscalYearName + N' (በጀት ዓመት)' FROM [dbo].[FiscalYears] WHERE CAST(FiscalYearId AS VARCHAR(100)) = @CurrentYearId) AS CurrentYearLabel,
+                    FiscalYearName + N' (በጀት ዓመት)' AS PrevYearLabel
+                FROM [dbo].[FiscalYears] 
+                WHERE FiscalYearName < (SELECT FiscalYearName FROM [dbo].[FiscalYears] WHERE CAST(FiscalYearId AS VARCHAR(100)) = @CurrentYearId)
+                ORDER BY FiscalYearName DESC;";
+
+            using var conn = await GetConnectionAsync();
+            var preResult = await conn.QueryFirstOrDefaultAsync<dynamic>(sqlPre, new { FiscalYearId = currentYearId });
+
+            var prevYearId = preResult?.PrevYearId as string;
+            var currentYearLabel = preResult?.CurrentYearLabel as string ?? "Current Year";
+            var prevYearLabel = preResult?.PrevYearLabel as string ?? "Previous Year";
+
+            // Reuse the highly optimized GetMonthlyTrendAsync query concurrently
+            var currentYearTrendTask = GetMonthlyTrendAsync(filters);
+
+            var prevFilters = new DashboardFilterDto
+            {
+                FiscalYearId = prevYearId,
+                ParentId = filters.ParentId,
+                PlanItemId = filters.PlanItemId
+            };
+            var prevYearTrendTask = GetMonthlyTrendAsync(prevFilters);
+
+            await Task.WhenAll(currentYearTrendTask, prevYearTrendTask);
+
+            var currentYearTrend = currentYearTrendTask.Result;
+            var prevYearTrend = prevYearTrendTask.Result;
+
+            var result = new YoYMonthlyTrendDto
+            {
+                Months = currentYearTrend.Months,
+                CurrentYearLabel = currentYearLabel,
+                PreviousYearLabel = prevYearLabel
+            };
+
+            for (int i = 0; i < currentYearTrend.Months.Count; i++)
+            {
+                result.CurrentYearAchievements.Add(currentYearTrend.Achievements[i]);
+
+                // For previous year, we need to match by month name since arrays might differ (though they shouldn't)
+                var monthName = currentYearTrend.Months[i];
+                var prevIndex = prevYearTrend.Months.IndexOf(monthName);
+                if (prevIndex >= 0)
+                {
+                    result.PreviousYearAchievements.Add(prevYearTrend.Achievements[prevIndex]);
+                }
+                else
+                {
+                    result.PreviousYearAchievements.Add(0m);
+                }
+            }
+
+            return result;
         }
 
         // 3. Branch Performance Ranking (%)  
@@ -194,7 +259,7 @@ namespace RevenueOperationsDashboard.Services
                         WHEN @PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId THEN TotalActual
                         ELSE 0 
                     END) / 1000000000.0, 2) AS ActualBillions  
-                FROM [dbo].[vw_RevenuePerformance_Detail]  
+                FROM [dbo].[vw_RevenuePerformance_Clean]  
                 WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)  
                   AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
                 GROUP BY ParentId, ParentName  
@@ -234,14 +299,14 @@ namespace RevenueOperationsDashboard.Services
                     WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
                       AND (@ParentId IS NULL OR ParentId = @ParentId)
                       AND MonthId IN (1,2,3,4,5,6,7,8,9,10,11,12)
-                      AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16);";
+                      AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68);";
                 return await conn.QueryFirstOrDefaultAsync<dynamic>(new CommandDefinition(sqlCard1, new { FiscalYearId = fy, ParentId = parentId }, commandTimeout: 120));
             });
 
             var task2 = Task.Run(async () =>
             {
                 using var conn = await GetConnectionAsync();
-                const string sqlCard2 = @"SELECT SUM(Declared_Total) AS Actual, SUM(Expected_Total) AS Target FROM [dbo].[vw_AnnualFiler_Short] WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId) AND (@ParentId IS NULL OR ParentId = @ParentId);";
+                const string sqlCard2 = @"SELECT SUM(Declared_Total/2) AS Actual, SUM(Expected_Total/2) AS Target FROM [dbo].[vw_AnnualFiler_Short] WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId) AND (@ParentId IS NULL OR ParentId = @ParentId);";
                 return await conn.QueryFirstOrDefaultAsync<dynamic>(new CommandDefinition(sqlCard2, new { FiscalYearId = fy, ParentId = parentId }, commandTimeout: 120));
             });
 
@@ -280,7 +345,26 @@ namespace RevenueOperationsDashboard.Services
                 return await conn.QueryFirstOrDefaultAsync<dynamic>(new CommandDefinition(sqlCard7, new { FiscalYearId = fy, ParentId = parentId }, commandTimeout: 120));
             });
 
-            await Task.WhenAll(task1, task2, task3, task4, task5, task6, task7);
+            var taskExecTarget = Task.Run(async () =>
+            {
+                try
+                {
+                    using var conn = await GetConnectionAsync();
+                    const string sqlExec = @"
+                        SELECT TOP 1 Target 
+                        FROM [dbo].[ExecutiveRevenuePlans] 
+                        WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                          AND IsDeleted = 0
+                        ORDER BY UpdatedDate DESC, CreatedDate DESC;";
+                    return await conn.QueryFirstOrDefaultAsync<decimal?>(new CommandDefinition(sqlExec, new { FiscalYearId = fy }, commandTimeout: 30));
+                }
+                catch
+                {
+                    return (decimal?)null;
+                }
+            });
+
+            await Task.WhenAll(task1, task2, task3, task4, task5, task6, task7, taskExecTarget);
 
             var card1Row = await task1;
             var card2Row = await task2;
@@ -289,10 +373,17 @@ namespace RevenueOperationsDashboard.Services
             var card5Row = await task5;
             var card6Row = await task6;
             var card7Row = await task7;
+            var execTargetVal = await taskExecTarget;
 
-            decimal c1Act = (decimal)(card1Row?.Actual ?? 235323887433.44m);
-            decimal c1Tgt = (decimal)(card1Row?.Target ?? 256700000000.00m);
-            decimal c1Pct = c1Tgt > 0 ? Math.Round((c1Act / c1Tgt) * 100m, 2) : 91.67m;
+            decimal c1Act = (decimal)(card1Row?.Actual ?? 0m);
+            
+            // 1. Executive Target from ExecutiveRevenuePlans table (First Priority)
+            // 2. Fallback: Target from vw_RevenuePerformance view (Current Target)
+            decimal c1Tgt = execTargetVal.HasValue && execTargetVal.Value > 0
+                ? execTargetVal.Value
+                : (decimal)(card1Row?.Target ?? 0m);
+
+            decimal c1Pct = c1Tgt > 0 ? Math.Round((c1Act / c1Tgt) * 100m, 2) : 0m;
 
             decimal c2Act = (decimal)(card2Row?.Actual ?? 884646m);
             decimal c2Tgt = (decimal)(card2Row?.Target ?? 650459m);
@@ -320,13 +411,16 @@ namespace RevenueOperationsDashboard.Services
             decimal c7Tgt = (decimal)(card7Row?.Target ?? 37799m);
             decimal c7Pct = c7Tgt > 0 ? Math.Round((c7Act / c7Tgt) * 100m, 1) : 30.4m;
 
+            var isEnglish = string.Equals(filters.Lang, "en", StringComparison.OrdinalIgnoreCase);
+            var currencyPolicy = isEnglish ? "EnglishCurrency" : "AmharicCurrency";
+            var countPolicy = isEnglish ? "EnglishCount" : "AmharicCount";
+
+            var currencyOptions = HumanNumbersConfig.Instance.GetPolicies().TryGetValue(currencyPolicy, out var cp) ? cp : HumanNumbersConfig.Instance.GlobalOptions;
+            var countOptions = HumanNumbersConfig.Instance.GetPolicies().TryGetValue(countPolicy, out var ctp) ? ctp : HumanNumbersConfig.Instance.GlobalOptions;
+
             string FormatAmount(decimal val, bool isCurrency = true)
             {
-                if (!isCurrency) return $"{val:N0}";
-                if (val >= 1000000000m) return $"{val / 1000000000m:0.##} B ETB";
-                if (val >= 1000000m) return $"{val / 1000000m:0.##} M ETB";
-                if (val >= 1000m) return $"{val / 1000m:0.#} K ETB";
-                return $"{val:N0} ETB";
+                return isCurrency ? val.ToHumanCurrency(currencyOptions) : val.ToHuman(countOptions);
             }
 
             return new TopCardsResponseDto
@@ -343,7 +437,7 @@ namespace RevenueOperationsDashboard.Services
                         AchievementPct = c1Pct,
                         Unit = "%",
                         FormattedActual = $"{c1Pct}%",
-                        FormattedTarget = $"Act: {FormatAmount(c1Act)} (Target: {FormatAmount(c1Tgt)})"
+                        FormattedTarget = $"{FormatAmount(c1Act, true)} ({FormatAmount(c1Tgt, true)})"
                     },
                     new TopKpiCardItemDto
                     {
@@ -355,7 +449,7 @@ namespace RevenueOperationsDashboard.Services
                         AchievementPct = c2Pct,
                         Unit = "Count",
                         FormattedActual = FormatAmount(c2Act, false),
-                        FormattedTarget = $"Target: {FormatAmount(c2Tgt, false)}"
+                        FormattedTarget = $"{FormatAmount(c2Tgt, false)}"
                     },
                     new TopKpiCardItemDto
                     {
@@ -367,7 +461,7 @@ namespace RevenueOperationsDashboard.Services
                         AchievementPct = c3Pct,
                         Unit = "Count",
                         FormattedActual = FormatAmount(c3Act, false),
-                        FormattedTarget = $"Target: {FormatAmount(c3Tgt, false)}"
+                        FormattedTarget = $"{FormatAmount(c3Tgt, false)}"
                     },
                     new TopKpiCardItemDto
                     {
@@ -379,7 +473,7 @@ namespace RevenueOperationsDashboard.Services
                         AchievementPct = c4Pct,
                         Unit = "Count",
                         FormattedActual = FormatAmount(c4Act, false),
-                        FormattedTarget = $"Target: {FormatAmount(c4Tgt, false)}"
+                        FormattedTarget = $"{FormatAmount(c4Tgt, false)}"
                     },
                     new TopKpiCardItemDto
                     {
@@ -391,7 +485,7 @@ namespace RevenueOperationsDashboard.Services
                         AchievementPct = c5Pct,
                         Unit = "Count",
                         FormattedActual = FormatAmount(c5Act, false),
-                        FormattedTarget = $"Target: {FormatAmount(c5Tgt, false)}"
+                        FormattedTarget = $"{FormatAmount(c5Tgt, false)}"
                     },
                     new TopKpiCardItemDto
                     {
@@ -403,7 +497,7 @@ namespace RevenueOperationsDashboard.Services
                         AchievementPct = c7Pct,
                         Unit = "Count",
                         FormattedActual = FormatAmount(c7Act, false),
-                        FormattedTarget = $"Target: {FormatAmount(c7Tgt, false)}"
+                        FormattedTarget = $"{FormatAmount(c7Tgt, false)}"
                     }
                 }
             };
