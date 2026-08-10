@@ -8,10 +8,9 @@ An enterprise-grade, high-performance revenue operations dashboard built on **AS
 
 - **Executive Revenue Targets & Quota Governance**:
   - Dynamically computes revenue execution percentages against official government revenue quotas defined in `[dbo].[ExecutiveRevenuePlans]`.
-  - Robust **3-tier fallback hierarchy**:
-    1. *Tier 1*: Active executive target for the fiscal year (`ExecutiveRevenuePlans`).
-    2. *Tier 2*: Aggregated target from revenue views (`vw_RevenuePerformance`).
-    3. *Tier 3*: Safe baseline fallback handling to avoid empty or invalid calculations.
+  - Robust **dynamic target resolution**:
+    1. *Primary*: Active executive target for the fiscal year (`[dbo].[ExecutiveRevenuePlans]`).
+    2. *Fallback*: Current aggregated target from the revenue performance view (`[dbo].[vw_RevenuePerformance]`).
 - **Governed HumanNumbers Localization (Bilingual)**:
   - Powered by the **HumanNumbers** formatting engine with custom magnitude suffix tables.
   - Formats monetary values and counts seamlessly for both **English** (`ETB 371.00B`, `884.65K`) and **Amharic** (`ብር 371.00ቢ`, `884.65ሺ`).
