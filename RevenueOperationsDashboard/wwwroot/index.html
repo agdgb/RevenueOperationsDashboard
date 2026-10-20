@@ -207,6 +207,64 @@
       pointer-events: none !important;
       cursor: none;
     }
+
+    /* Print & Executive PDF Generation Styles */
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #weeklyReportModal,
+      #weeklyReportContainer,
+      #weeklyReportContainer * {
+        visibility: visible !important;
+      }
+      #weeklyReportModal {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+      }
+      #weeklyReportContainer {
+        border: none !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+        max-height: none !important;
+        background: white !important;
+        color: #0f172a !important;
+      }
+      #weeklyReportContainer h2,
+      #weeklyReportContainer h3,
+      #weeklyReportContainer h4,
+      #weeklyReportContainer div,
+      #weeklyReportContainer span,
+      #weeklyReportContainer th,
+      #weeklyReportContainer td {
+        color: #0f172a !important;
+      }
+      #weeklyReportContainer .bg-slate-800,
+      #weeklyReportContainer .bg-slate-800\/60,
+      #weeklyReportContainer .bg-slate-800\/40,
+      #weeklyReportContainer .bg-slate-900,
+      #weeklyReportContainer .bg-slate-950\/60,
+      #weeklyReportContainer .bg-slate-950\/40 {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+      }
+      #weeklyReportContainer .border-slate-800,
+      #weeklyReportContainer .border-slate-700,
+      #weeklyReportContainer .border-slate-700\/60 {
+        border-color: #cbd5e1 !important;
+      }
+      .print-hidden,
+      .print\:hidden {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 
@@ -272,8 +330,12 @@
         <!-- Time Period Flexibility Controls -->
         <div>
           <label id="lblTimePeriod" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የጊዜ ክልል</label>
-          <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5 mb-3">
+          <div class="grid grid-cols-4 sm:grid-cols-7 gap-1.5 mb-3">
             <button type="button" onclick="setTimePreset('ALL')" id="preset_ALL" class="time-preset-btn active-preset px-2 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white border border-blue-500">ሙሉ ዓመት</button>
+            <button type="button" onclick="setTimePreset('WEEKLY_REPORT')" id="preset_WEEKLY_REPORT" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700 flex items-center justify-center gap-1">
+              <i class="fa-solid fa-calendar-week text-[10px] text-indigo-400"></i>
+              <span id="lblPresetWeekly">ሳምንታዊ</span>
+            </button>
             <button type="button" onclick="setTimePreset('Q1')" id="preset_Q1" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">1ኛ ሩብ</button>
             <button type="button" onclick="setTimePreset('Q2')" id="preset_Q2" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">2ኛ ሩብ</button>
             <button type="button" onclick="setTimePreset('Q3')" id="preset_Q3" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">3ኛ ሩብ</button>
@@ -328,6 +390,138 @@
           class="bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm px-5 py-2 rounded-lg transition">
           ተግብርና ዝጋ
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXECUTIVE WEEKLY REPORT BRIEFING MODAL -->
+  <div id="weeklyReportModal"
+    class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center hidden transition-opacity overflow-y-auto p-3 sm:p-6 print:p-0 print:static print:bg-white print:overflow-visible">
+    <div id="weeklyReportContainer"
+      class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-5xl p-5 sm:p-8 shadow-2xl space-y-6 text-slate-100 relative my-auto max-h-[92vh] overflow-y-auto print:max-h-none print:shadow-none print:border-none print:p-4 print:text-black print:bg-white">
+      
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between border-b border-slate-800 pb-4 print:border-slate-300">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 flex-shrink-0 print:border print:border-indigo-600">
+            <i class="fa-solid fa-file-invoice text-white text-xl"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 id="weeklyReportTitle" class="text-lg sm:text-xl font-black text-white tracking-tight print:text-slate-900">የስራ ክንውን ሳምንታዊ መግለጫ</h2>
+              <span id="weeklyCutoffBadge" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 print:text-slate-700 print:border-slate-300">እሮብ ምሽት የተዘጋጀ</span>
+            </div>
+            <p id="weeklyReportSubtitle" class="text-xs text-slate-400 mt-0.5 print:text-slate-600">የ 7 ቀናት ተከታታይ የስራ አፈፃፀም፣ የታክስ አይነቶች እና የቅርንጫፎች ደረጃ</p>
+            <div id="weeklyReportPeriod" class="text-xs font-semibold text-cyan-400 mt-1 print:text-indigo-800">
+              <i class="fa-regular fa-calendar-check mr-1"></i>
+              <span id="weeklyReportPeriodText">የካቲት 26, 2018 - መጋቢት 02, 2018</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls: Print & Close -->
+        <div class="flex items-center gap-2 print:hidden flex-shrink-0">
+          <button onclick="printWeeklyReport()" id="btnWeeklyPrint"
+            class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-lg shadow-indigo-600/30 cursor-pointer">
+            <i class="fa-solid fa-print"></i>
+            <span id="lblPrintBtn">አትም / PDF</span>
+          </button>
+          <button onclick="closeWeeklyReportModal()"
+            class="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition cursor-pointer text-lg">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards Row (4 Metric Cards) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 print:grid-cols-4">
+        <!-- Target -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
+          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyTarget">ሳምንታዊ ዕቅድ</div>
+          <div id="weeklyTargetVal" class="text-xl sm:text-2xl font-black text-white mt-1 print:text-slate-900">-</div>
+          <div class="text-[10px] text-slate-400 mt-0.5" id="lblWeeklyTargetSub">የ 7 ቀናት ድምር ግብ</div>
+        </div>
+        <!-- Actual -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
+          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyActual">የተሰበሰበ ገቢ</div>
+          <div id="weeklyActualVal" class="text-xl sm:text-2xl font-black text-emerald-400 mt-1 print:text-emerald-700">-</div>
+          <div class="text-[10px] text-slate-400 mt-0.5" id="lblWeeklyActualSub">በሳምንቱ የገባ ጥሬ ገንዘብ</div>
+        </div>
+        <!-- Achievement Pct -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
+          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyAchievement">የአፈጻጸም ምጣኔ</div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span id="weeklyAchieveVal" class="text-xl sm:text-2xl font-black text-white print:text-slate-900">-</span>
+            <span id="weeklyAchieveStatus" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 print:border-slate-400">መደበኛ</span>
+          </div>
+          <div class="text-[10px] text-slate-400 mt-0.5" id="lblWeeklyAchieveSub">ከዕቅድ አንጻር</div>
+        </div>
+        <!-- Variance & RDR -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
+          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyVariance">ልዩነት / የቀን ሩጫ</div>
+          <div id="weeklyVarianceVal" class="text-xl sm:text-2xl font-black text-rose-400 mt-1 print:text-rose-700">-</div>
+          <div id="weeklyRdrVal" class="text-[10px] font-semibold text-cyan-400 mt-0.5 print:text-indigo-700">RDR: -</div>
+        </div>
+      </div>
+
+      <!-- Main Section: Tax Streams & Branch League Table -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- Tax Streams Breakdown (7 Cols) -->
+        <div class="lg:col-span-7 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-3 print:bg-white print:border-slate-300">
+          <div class="flex items-center justify-between border-b border-slate-700/50 pb-2 print:border-slate-300">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2 print:text-slate-800" id="lblWeeklyTaxStreamsTitle">
+              <i class="fa-solid fa-layer-group text-indigo-400"></i>
+              ዋና ዋና የታክስ አይነቶች ክንውን
+            </h3>
+            <span class="text-[10px] text-slate-400 print:text-slate-600" id="lblWeeklyTaxStreamUnit">ብር (በቢሊዮን)</span>
+          </div>
+          <div id="weeklyTaxStreamsList" class="space-y-2.5">
+            <!-- Dynamic stream rows -->
+          </div>
+        </div>
+
+        <!-- Branch League Table (5 Cols) -->
+        <div class="lg:col-span-5 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-4 print:bg-white print:border-slate-300">
+          <!-- Top 3 -->
+          <div>
+            <div class="flex items-center gap-1.5 border-b border-slate-700/50 pb-1.5 mb-2.5 print:border-slate-300">
+              <i class="fa-solid fa-trophy text-amber-400 text-xs"></i>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300 print:text-amber-800" id="lblWeeklyTopBranches">ቀዳሚ 3 ቅርንጫፎች</h3>
+            </div>
+            <div id="weeklyTopBranchesList" class="space-y-2">
+              <!-- Dynamic top branches -->
+            </div>
+          </div>
+
+          <!-- Bottom 3 -->
+          <div>
+            <div class="flex items-center gap-1.5 border-b border-slate-700/50 pb-1.5 mb-2.5 print:border-slate-300">
+              <i class="fa-solid fa-triangle-exclamation text-rose-400 text-xs"></i>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-rose-300 print:text-rose-800" id="lblWeeklyLaggingBranches">ትኩረት የሚሹ ቅርንጫፎች</h3>
+            </div>
+            <div id="weeklyLaggingBranchesList" class="space-y-2">
+              <!-- Dynamic lagging branches -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7-Day Velocity Curve Chart Container -->
+      <div class="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-3 print:bg-white print:border-slate-300">
+        <div class="flex items-center justify-between border-b border-slate-700/50 pb-2 print:border-slate-300">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2 print:text-slate-800" id="lblWeeklyVelocityTitle">
+            <i class="fa-solid fa-chart-simple text-cyan-400"></i>
+            የ 7 ቀናት የቀን ገቢ ፍጥነት (Daily Velocity Curve)
+          </h3>
+          <span class="text-[10px] text-slate-400 print:text-slate-600" id="lblWeeklyVelocitySub">እለታዊ ክንውን ከዕለቱ ግብ አንጻር (በቢሊዮን)</span>
+        </div>
+        <div id="chartWeeklyVelocity" class="w-full h-48 print:h-40"></div>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="flex items-center justify-between border-t border-slate-800 pt-3 text-[11px] text-slate-400 print:border-slate-300 print:text-slate-600">
+        <div id="weeklyReportFooterMeta">የገቢዎች ቢሮ ኦፕሬሽንስ ዳሽቦርድ - ሳምንታዊ የስራ ኃላፊዎች ማጠቃለያ</div>
+        <div id="weeklyReportTimestamp">-</div>
       </div>
     </div>
   </div>
@@ -423,6 +617,18 @@
         <option value="sunset">Sunset</option>
         <option value="grayscale">Grayscale</option>
       </select>
+
+      <!-- Weekly Briefing Button -->
+      <button onclick="openWeeklyReportModal()" id="btnWeeklyReport"
+        class="relative flex items-center gap-1.5 bg-indigo-600/80 hover:bg-indigo-600 text-white font-semibold text-xs px-3 py-2 rounded-lg border border-indigo-500/40 transition shadow-lg cursor-pointer"
+        title="ሳምንታዊ የአፈጻጸም ሪፖርት (Weekly Briefing)">
+        <i class="fa-solid fa-file-lines"></i>
+        <span id="lblWeeklyReportBtn">ሳምንታዊ ሪፖርት</span>
+        <span id="weeklyCutoffPulse" class="hidden absolute -top-1 -right-1 flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+        </span>
+      </button>
 
       <button onclick="toggleLanguage()" id="langToggleBtn"
         class="flex items-center justify-center bg-slate-800/80 hover:bg-slate-700 text-white font-bold text-xs w-9 h-9 rounded-lg border border-slate-700/50 transition shadow-lg">
@@ -570,7 +776,20 @@
       "Target": "እቅድ",
       "Performance": "አፈፃፀም",
       "Pause": "አቁም",
-      "Resume": "ቀጥል"
+      "Resume": "ቀጥል",
+      "Weekly Report": "ሳምንታዊ ሪፖርት",
+      "Weekly": "ሳምንታዊ",
+      "Print / PDF": "አትም / PDF",
+      "Weekly Operations Briefing": "የስራ ክንውን ሳምንታዊ መግለጫ",
+      "Weekly Target": "ሳምንታዊ ዕቅድ",
+      "Collected Revenue": "የተሰበሰበ ገቢ",
+      "Achievement Rate": "የአፈጻጸም ምጣኔ",
+      "Variance / Daily Run-Rate": "ልዩነት / የቀን ሩጫ",
+      "Key Tax Streams Performance": "ዋና ዋና የታክስ አይነቶች ክንውን",
+      "Top 3 Branches": "ቀዳሚ 3 ቅርንጫፎች",
+      "Lagging Branches Needing Focus": "ትኩረት የሚሹ ቅርንጫፎች",
+      "7-Day Revenue Velocity Curve": "የ 7 ቀናት የቀን ገቢ ፍጥነት",
+      "Prepared Wednesday Evening": "እሮብ ምሽት የተዘጋጀ"
     };
 
     function t_db(text) {
@@ -711,6 +930,18 @@
       if(document.getElementById('lblCalcMode')) document.getElementById('lblCalcMode').innerText = t_ui("Calculation Mode");
       if(document.getElementById('lblModeRunRate')) document.getElementById('lblModeRunRate').innerText = t_ui("Monthly Run-Rate (Run-Rate)");
       if(document.getElementById('lblModeYtd')) document.getElementById('lblModeYtd').innerText = t_ui("Cumulative YTD (YTD)");
+      if(document.getElementById('lblWeeklyReportBtn')) document.getElementById('lblWeeklyReportBtn').innerText = t_ui("Weekly Report");
+      if(document.getElementById('lblPresetWeekly')) document.getElementById('lblPresetWeekly').innerText = t_ui("Weekly");
+      if(document.getElementById('lblPrintBtn')) document.getElementById('lblPrintBtn').innerText = t_ui("Print / PDF");
+      if(document.getElementById('weeklyReportTitle')) document.getElementById('weeklyReportTitle').innerText = t_ui("Weekly Operations Briefing");
+      if(document.getElementById('lblWeeklyTarget')) document.getElementById('lblWeeklyTarget').innerText = t_ui("Weekly Target");
+      if(document.getElementById('lblWeeklyActual')) document.getElementById('lblWeeklyActual').innerText = t_ui("Collected Revenue");
+      if(document.getElementById('lblWeeklyAchievement')) document.getElementById('lblWeeklyAchievement').innerText = t_ui("Achievement Rate");
+      if(document.getElementById('lblWeeklyVariance')) document.getElementById('lblWeeklyVariance').innerText = t_ui("Variance / Daily Run-Rate");
+      if(document.getElementById('lblWeeklyTaxStreamsTitle')) document.getElementById('lblWeeklyTaxStreamsTitle').innerHTML = `<i class="fa-solid fa-layer-group text-indigo-400"></i> ${t_ui("Key Tax Streams Performance")}`;
+      if(document.getElementById('lblWeeklyTopBranches')) document.getElementById('lblWeeklyTopBranches').innerText = t_ui("Top 3 Branches");
+      if(document.getElementById('lblWeeklyLaggingBranches')) document.getElementById('lblWeeklyLaggingBranches').innerText = t_ui("Lagging Branches Needing Focus");
+      if(document.getElementById('lblWeeklyVelocityTitle')) document.getElementById('lblWeeklyVelocityTitle').innerHTML = `<i class="fa-solid fa-chart-simple text-cyan-400"></i> ${t_ui("7-Day Revenue Velocity Curve")}`;
       updateCalculationModeButtons(state.filters.calculationMode || 'MonthlyRunRate');
       updatePlayPauseButtonState();
       
@@ -754,6 +985,20 @@
           state.filters.calculationMode = config.defaultFilters.calculationMode;
         }
         updateCalculationModeButtons(state.filters.calculationMode || 'MonthlyRunRate');
+
+        // Check Weekly Report cutoff pulse
+        if (config.weeklyReport && config.weeklyReport.enabled) {
+          const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+          const todayName = days[new Date().getDay()];
+          const pulseEl = document.getElementById('weeklyCutoffPulse');
+          if (pulseEl) {
+            if (config.weeklyReport.cutoffDayOfWeek && todayName.toLowerCase() === config.weeklyReport.cutoffDayOfWeek.toLowerCase()) {
+              pulseEl.classList.remove('hidden');
+            } else {
+              pulseEl.classList.add('hidden');
+            }
+          }
+        }
 
         state.autoRotate = config.carousel.autoPlay;
         state.carouselDefaultDuration = config.carousel.intervalMs || 12000;
@@ -2172,6 +2417,268 @@
           document.exitFullscreen();
         }
       }
+    }
+
+    // --- EXECUTIVE WEEKLY REPORT BRIEFING LOGIC ---
+    async function openWeeklyReportModal() {
+      const modal = document.getElementById('weeklyReportModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      
+      // Pause carousel while executive briefing is open
+      state.autoRotate = false;
+      updatePlayPauseButtonState();
+
+      await loadWeeklyReportData();
+    }
+
+    function closeWeeklyReportModal() {
+      const modal = document.getElementById('weeklyReportModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function printWeeklyReport() {
+      window.print();
+    }
+
+    async function loadWeeklyReportData() {
+      try {
+        const params = new URLSearchParams({
+          fiscalYearId: state.filters.fiscalYear || 'ALL',
+          lang: state.currentLang || 'am'
+        });
+        const res = await fetch(`/api/dashboard/weekly-report?${params}`);
+        if (!res.ok) throw new Error("HTTP error " + res.status);
+        const data = await res.json();
+        renderWeeklyReport(data);
+      } catch (err) {
+        console.error("Failed to load weekly report:", err);
+      }
+    }
+
+    function renderWeeklyReport(data) {
+      if (!data) return;
+      const isAm = state.currentLang === 'am';
+      const curPrefix = isAm ? 'ብር ' : 'ETB ';
+      const bSuffix = isAm ? 'ቢ' : 'B';
+
+      // Header info
+      const periodEl = document.getElementById('weeklyReportPeriodText');
+      if (periodEl) {
+        periodEl.innerText = isAm ? (data.formattedPeriodAmharic || '') : (data.formattedPeriodEnglish || '');
+      }
+      const cutoffBadge = document.getElementById('weeklyCutoffBadge');
+      if (cutoffBadge) {
+        cutoffBadge.innerText = isAm ? 'እሮብ ምሽት የተዘጋጀ' : 'Wednesday Cutoff';
+      }
+
+      // 4 KPI Cards
+      const targetEl = document.getElementById('weeklyTargetVal');
+      const actualEl = document.getElementById('weeklyActualVal');
+      const achieveEl = document.getElementById('weeklyAchieveVal');
+      const achieveStatus = document.getElementById('weeklyAchieveStatus');
+      const varianceEl = document.getElementById('weeklyVarianceVal');
+      const rdrEl = document.getElementById('weeklyRdrVal');
+
+      if (targetEl) targetEl.innerText = `${curPrefix}${(data.weeklyTarget / 1e9).toFixed(2)}${bSuffix}`;
+      if (actualEl) actualEl.innerText = `${curPrefix}${(data.weeklyActual / 1e9).toFixed(2)}${bSuffix}`;
+      if (achieveEl) achieveEl.innerText = `${data.achievementPct}%`;
+
+      if (achieveStatus) {
+        if (data.achievementPct >= 90) {
+          achieveStatus.innerText = isAm ? 'ከፍተኛ' : 'Optimal';
+          achieveStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        } else if (data.achievementPct >= 70) {
+          achieveStatus.innerText = isAm ? 'መካከለኛ' : 'Moderate';
+          achieveStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30';
+        } else {
+          achieveStatus.innerText = isAm ? 'ዝቅተኛ' : 'Lagging';
+          achieveStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30';
+        }
+      }
+
+      if (varianceEl) {
+        const varSign = data.variance >= 0 ? '+' : '';
+        varianceEl.innerText = `${varSign}${curPrefix}${(data.variance / 1e9).toFixed(2)}${bSuffix}`;
+        varianceEl.className = data.variance >= 0 ? 'text-xl sm:text-2xl font-black text-emerald-400 mt-1 print:text-emerald-700' : 'text-xl sm:text-2xl font-black text-rose-400 mt-1 print:text-rose-700';
+      }
+
+      if (rdrEl) {
+        rdrEl.innerText = isAm 
+          ? `የቀን ሩጫ (RDR): ${curPrefix}${(data.requiredDailyRunRate / 1e9).toFixed(2)}${bSuffix}/ቀን (${data.remainingDaysInMonth} ቀናት ቀሪ)`
+          : `Required Daily: ${curPrefix}${(data.requiredDailyRunRate / 1e9).toFixed(2)}${bSuffix}/day (${data.remainingDaysInMonth}d left)`;
+      }
+
+      // Tax Streams Breakdown
+      const streamsContainer = document.getElementById('weeklyTaxStreamsList');
+      if (streamsContainer && data.taxStreams) {
+        streamsContainer.innerHTML = data.taxStreams.map(s => {
+          const name = isAm ? (s.categoryNameAmharic || s.categoryName) : s.categoryName;
+          let barBg = 'bg-blue-500';
+          if (s.achievementPct >= 90) barBg = 'bg-emerald-500';
+          else if (s.achievementPct < 70) barBg = 'bg-rose-500';
+
+          return `
+            <div class="bg-slate-900/60 border border-slate-700/40 rounded-xl p-2.5 print:border-slate-300 print:bg-slate-50">
+              <div class="flex items-center justify-between text-xs mb-1">
+                <span class="font-bold text-white print:text-slate-900 truncate max-w-[220px]" title="${name}">${name}</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-slate-300 font-semibold print:text-slate-700">${curPrefix}${s.actualBillions.toFixed(2)}${bSuffix} <span class="text-[10px] text-slate-400 font-normal">/ ${s.targetBillions.toFixed(2)}${bSuffix}</span></span>
+                  <span class="text-xs font-black min-w-[45px] text-right ${s.achievementPct >= 90 ? 'text-emerald-400' : (s.achievementPct < 70 ? 'text-rose-400' : 'text-amber-400')}">${s.achievementPct}%</span>
+                </div>
+              </div>
+              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden print:bg-slate-200">
+                <div class="${barBg} h-full rounded-full transition-all duration-700" style="width: ${Math.min(s.achievementPct, 100)}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Top 3 Branches
+      const topContainer = document.getElementById('weeklyTopBranchesList');
+      if (topContainer && data.topBranches) {
+        topContainer.innerHTML = data.topBranches.map((b, i) => {
+          const medalColor = i === 0 ? 'text-amber-400' : (i === 1 ? 'text-slate-300' : 'text-amber-600');
+          return `
+            <div class="flex items-center justify-between bg-slate-900/60 border border-slate-700/40 rounded-xl px-3 py-2 text-xs print:bg-slate-50 print:border-slate-300">
+              <div class="flex items-center gap-2 truncate">
+                <span class="font-black ${medalColor} text-xs">#${i + 1}</span>
+                <span class="font-semibold text-white print:text-slate-900 truncate" title="${b.branchName}">${b.branchName}</span>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="text-slate-300 print:text-slate-700">${curPrefix}${b.actualBillions.toFixed(2)}${bSuffix}</span>
+                <span class="font-black text-emerald-400 text-xs px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">${b.achievementPct}%</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Lagging 3 Branches
+      const lagContainer = document.getElementById('weeklyLaggingBranchesList');
+      if (lagContainer && data.laggingBranches) {
+        lagContainer.innerHTML = data.laggingBranches.map((b, i) => {
+          return `
+            <div class="flex items-center justify-between bg-slate-900/60 border border-slate-700/40 rounded-xl px-3 py-2 text-xs print:bg-slate-50 print:border-slate-300">
+              <div class="flex items-center gap-2 truncate">
+                <span class="font-bold text-rose-400 text-xs">⚠️</span>
+                <span class="font-semibold text-white print:text-slate-900 truncate" title="${b.branchName}">${b.branchName}</span>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="text-slate-300 print:text-slate-700">${curPrefix}${b.actualBillions.toFixed(2)}${bSuffix}</span>
+                <span class="font-black text-rose-400 text-xs px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20">${b.achievementPct}%</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 7-Day Velocity Curve Chart (ECharts)
+      renderWeeklyVelocityChart(data.dailyTrend);
+
+      // Footer timestamp
+      const tsEl = document.getElementById('weeklyReportTimestamp');
+      if (tsEl) {
+        const now = new Date();
+        tsEl.innerText = `${isAm ? 'የተዘጋጀበት ሰዓት' : 'Generated'}: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+      }
+    }
+
+    function renderWeeklyVelocityChart(dailyTrend) {
+      const chartDom = document.getElementById('chartWeeklyVelocity');
+      if (!chartDom || !dailyTrend) return;
+
+      if (!chartInstances.weeklyVelocity) {
+        chartInstances.weeklyVelocity = echarts.init(chartDom, 'dark');
+      }
+      chartInstances.weeklyVelocity.resize();
+
+      const isAm = state.currentLang === 'am';
+      const curPrefix = isAm ? 'ብር ' : 'ETB ';
+      const bSuffix = isAm ? 'ቢ' : 'B';
+      const theme = appThemes[state.currentTheme] || appThemes.ocean;
+
+      const days = dailyTrend.map(d => isAm ? (d.dayNameAmharic || d.dayName) : d.dayName);
+      const actuals = dailyTrend.map(d => d.actualBillions);
+      const targets = dailyTrend.map(d => d.targetBillions);
+
+      const option = {
+        backgroundColor: 'transparent',
+        animation: true,
+        animationDuration: 1000,
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          borderColor: theme.border,
+          textStyle: { color: '#f8fafc' },
+          formatter: (params) => {
+            let res = `<div class="font-bold mb-1">${params[0].name}</div>`;
+            params.forEach(p => {
+              res += `<div class="flex items-center justify-between gap-4 text-xs">
+                <span>${p.marker} ${p.seriesName}:</span>
+                <span class="font-bold">${curPrefix}${p.value.toFixed(2)}${bSuffix}</span>
+              </div>`;
+            });
+            return res;
+          }
+        },
+        legend: {
+          show: true,
+          top: 0,
+          right: 10,
+          icon: 'circle',
+          textStyle: { color: '#94a3b8', fontSize: 11 },
+          data: [isAm ? 'ዕለታዊ ክንውን' : 'Daily Actual', isAm ? 'ዕለታዊ ግብ' : 'Daily Target']
+        },
+        grid: { left: '3%', right: '3%', bottom: '10%', top: '22%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: days,
+          axisLine: { lineStyle: { color: theme.border } },
+          axisLabel: { color: '#cbd5e1', fontSize: 11, fontWeight: 'bold' }
+        },
+        yAxis: {
+          type: 'value',
+          splitLine: { lineStyle: { color: theme.border, type: 'dashed' } },
+          axisLabel: { color: '#94a3b8', formatter: (val) => `${curPrefix}${val}${bSuffix}` }
+        },
+        series: [
+          {
+            name: isAm ? 'ዕለታዊ ክንውን' : 'Daily Actual',
+            type: 'bar',
+            barWidth: '40%',
+            data: actuals,
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: theme.primary },
+                { offset: 1, color: theme.secondary }
+              ]),
+              borderRadius: [6, 6, 0, 0]
+            },
+            label: {
+              show: true,
+              position: 'top',
+              formatter: (p) => p.value > 0 ? `${p.value.toFixed(2)}${bSuffix}` : '',
+              color: '#ffffff',
+              fontSize: 10,
+              fontWeight: 'bold'
+            }
+          },
+          {
+            name: isAm ? 'ዕለታዊ ግብ' : 'Daily Target',
+            type: 'line',
+            smooth: true,
+            data: targets,
+            itemStyle: { color: '#f59e0b' },
+            lineStyle: { width: 2, type: 'dashed', color: '#f59e0b' },
+            symbol: 'circle',
+            symbolSize: 6
+          }
+        ]
+      };
+
+      chartInstances.weeklyVelocity.setOption(option, { notMerge: true });
     }
 
     // Initialize Everything on Load

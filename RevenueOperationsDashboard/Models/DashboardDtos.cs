@@ -67,11 +67,24 @@ namespace RevenueOperationsDashboard.Models
         public string Name { get; set; } = string.Empty;  
     }  
 
+    public class WeeklyReportSettingsDto
+    {
+        public bool Enabled { get; set; } = true;
+        public string CutoffDayOfWeek { get; set; } = "Wednesday";
+        public int PeriodDays { get; set; } = 7;
+        public bool AutoShowOnCutoffDay { get; set; } = false;
+        public string TitleAm { get; set; } = "ሳምንታዊ የገቢ አፈፃፀም ሪፖርት";
+        public string TitleEn { get; set; } = "Executive Weekly Performance Report";
+        public string SubtitleAm { get; set; } = "ከቀዳሚው ሐሙስ እስከ እሮብ የተሰበሰበ ገቢ እና የእቅድ አፈፃፀም";
+        public string SubtitleEn { get; set; } = "Weekly collection trajectory and operational plan achievement (Thursday to Wednesday)";
+    }
+
     public class DashboardConfigDto
     {
         public string DefaultLanguage { get; set; } = "en";
         public string KpiCalculationMode { get; set; } = "MonthlyRunRate";
         public DefaultFiltersDto DefaultFilters { get; set; } = new();
+        public WeeklyReportSettingsDto WeeklyReport { get; set; } = new();
         public CarouselConfigDto Carousel { get; set; } = new();
     }
 
@@ -127,5 +140,71 @@ namespace RevenueOperationsDashboard.Models
     {
         public string ActiveCalculationMode { get; set; } = "MonthlyRunRate";
         public List<TopKpiCardItemDto> Cards { get; set; } = new();
+    }
+
+    public class WeeklyReportDto
+    {
+        public string ReportingDay { get; set; } = "Wednesday";
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string FormattedPeriodAmharic { get; set; } = string.Empty;
+        public string FormattedPeriodEnglish { get; set; } = string.Empty;
+
+        // Core Revenue Totals
+        public decimal WeeklyTarget { get; set; }
+        public decimal WeeklyActual { get; set; }
+        public decimal AchievementPct { get; set; }
+        public decimal Variance { get; set; }
+        public string FormattedWeeklyTarget { get; set; } = string.Empty;
+        public string FormattedWeeklyActual { get; set; } = string.Empty;
+        public string FormattedVariance { get; set; } = string.Empty;
+
+        // Run-Rate Trajectory
+        public decimal RequiredDailyRunRate { get; set; }
+        public string FormattedRequiredDailyRunRate { get; set; } = string.Empty;
+        public int RemainingDaysInMonth { get; set; }
+
+        // Core Tax Streams Performance (6 Categories)
+        public List<WeeklyTaxStreamItemDto> TaxStreams { get; set; } = new();
+
+        // Branch Office League (Top 3 Overperforming & Bottom 3 Lagging)
+        public List<WeeklyBranchRankItemDto> TopBranches { get; set; } = new();
+        public List<WeeklyBranchRankItemDto> LaggingBranches { get; set; } = new();
+
+        // Daily 7-Day Velocity Curve
+        public List<WeeklyDailyPointDto> DailyTrend { get; set; } = new();
+
+        // Demographic Activity Summary
+        public int ActiveFilingTaxpayersCount { get; set; }
+        public int TotalDailySubmissionBatches { get; set; }
+    }
+
+    public class WeeklyTaxStreamItemDto
+    {
+        public string CategoryName { get; set; } = string.Empty;
+        public string CategoryNameAmharic { get; set; } = string.Empty;
+        public decimal TargetBillions { get; set; }
+        public decimal ActualBillions { get; set; }
+        public decimal AchievementPct { get; set; }
+        public decimal SharePct { get; set; }
+    }
+
+    public class WeeklyBranchRankItemDto
+    {
+        public string BranchId { get; set; } = string.Empty;
+        public string BranchName { get; set; } = string.Empty;
+        public decimal TargetBillions { get; set; }
+        public decimal ActualBillions { get; set; }
+        public decimal AchievementPct { get; set; }
+        public decimal VarianceBillions { get; set; }
+    }
+
+    public class WeeklyDailyPointDto
+    {
+        public string DateString { get; set; } = string.Empty;
+        public string DayName { get; set; } = string.Empty;
+        public string DayNameAmharic { get; set; } = string.Empty;
+        public decimal ActualBillions { get; set; }
+        public decimal TargetBillions { get; set; }
     }
 }

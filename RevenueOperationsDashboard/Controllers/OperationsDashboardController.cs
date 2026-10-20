@@ -77,6 +77,18 @@ namespace RevenueOperationsDashboard.Controllers
             return Ok(data);
         }
 
+        [HttpGet("weekly-report")]
+        public async Task<IActionResult> GetWeeklyReport([FromQuery] DashboardFilterDto filters)
+        {
+            string cacheKey = $"weekly_report_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}_{filters.Lang ?? "am"}";
+            var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
+                return await _repo.GetWeeklyReportAsync(filters);
+            });
+            return Ok(data);
+        }
+
         [HttpGet("branch-ranking")]  
         public async Task<IActionResult> GetBranchRanking([FromQuery] DashboardFilterDto filters)  
         {
