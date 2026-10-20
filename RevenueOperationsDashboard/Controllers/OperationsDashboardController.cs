@@ -31,7 +31,7 @@ namespace RevenueOperationsDashboard.Controllers
         [HttpGet("tax-type-performance")]  
         public async Task<IActionResult> GetTaxTypePerformance([FromQuery] DashboardFilterDto filters)  
         {
-            string cacheKey = $"tax_type_perf_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}";
+            string cacheKey = $"tax_type_perf_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}";
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
@@ -43,7 +43,7 @@ namespace RevenueOperationsDashboard.Controllers
         [HttpGet("monthly-trend")]  
         public async Task<IActionResult> GetMonthlyTrend([FromQuery] DashboardFilterDto filters)  
         {
-            string cacheKey = $"monthly_trend_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}";
+            string cacheKey = $"monthly_trend_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}";
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
@@ -59,16 +59,28 @@ namespace RevenueOperationsDashboard.Controllers
             {
                 return await _repo.GetYoYMonthlyTrendAsync(filters);
             }
-            catch (Exception ex)
+            catch
             {
                 return StatusCode(500, "Internal server error");
             }
         }
 
+        [HttpGet("daily-trend")]
+        public async Task<IActionResult> GetDailyTrend([FromQuery] DashboardFilterDto filters)
+        {
+            string cacheKey = $"daily_trend_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}";
+            var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
+                return await _repo.GetDailyTrendAsync(filters);
+            });
+            return Ok(data);
+        }
+
         [HttpGet("branch-ranking")]  
         public async Task<IActionResult> GetBranchRanking([FromQuery] DashboardFilterDto filters)  
         {
-            string cacheKey = $"branch_ranking_{filters.FiscalYearId}";
+            string cacheKey = $"branch_ranking_{filters.FiscalYearId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}";
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
@@ -80,7 +92,7 @@ namespace RevenueOperationsDashboard.Controllers
         [HttpGet("branch-volumes")]  
         public async Task<IActionResult> GetBranchVolumes([FromQuery] DashboardFilterDto filters)  
         {
-            string cacheKey = $"branch_volumes_{filters.FiscalYearId}_{filters.PlanItemId}";
+            string cacheKey = $"branch_volumes_{filters.FiscalYearId}_{filters.PlanItemId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}";
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
@@ -104,7 +116,7 @@ namespace RevenueOperationsDashboard.Controllers
         [HttpGet("top-cards")]
         public async Task<IActionResult> GetTopCards([FromQuery] DashboardFilterDto filters)
         {
-            string cacheKey = $"top_cards_{filters.FiscalYearId}_{filters.ParentId}_{filters.Lang ?? "am"}";
+            string cacheKey = $"top_cards_{filters.FiscalYearId}_{filters.ParentId}_{filters.Lang ?? "am"}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}_{filters.CalculationMode}";
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);

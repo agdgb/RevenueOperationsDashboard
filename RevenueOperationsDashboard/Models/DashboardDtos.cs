@@ -6,6 +6,17 @@ namespace RevenueOperationsDashboard.Models
         public string? ParentId { get; set; }  
         public string? PlanItemId { get; set; }  
         public string? Lang { get; set; }  
+        public string? StartDate { get; set; } // Ethiopian date: yyyy-MM-dd
+        public string? EndDate { get; set; }   // Ethiopian date: yyyy-MM-dd
+        public string? DatePreset { get; set; } // ALL, Q1, Q2, Q3, Q4, TODAY, THIS_WEEK, THIS_MONTH, CUSTOM
+        public string? CalculationMode { get; set; } // MonthlyRunRate, CumulativeYtd
+    }
+
+    public class DailyTrendDto
+    {
+        public List<string> Dates { get; set; } = new();
+        public List<decimal> ActualBillions { get; set; } = new();
+        public List<decimal> TargetBillions { get; set; } = new();
     }
 
     public class TaxTypePerformanceDto  
@@ -59,6 +70,7 @@ namespace RevenueOperationsDashboard.Models
     public class DashboardConfigDto
     {
         public string DefaultLanguage { get; set; } = "en";
+        public string KpiCalculationMode { get; set; } = "MonthlyRunRate";
         public DefaultFiltersDto DefaultFilters { get; set; } = new();
         public CarouselConfigDto Carousel { get; set; } = new();
     }
@@ -68,6 +80,10 @@ namespace RevenueOperationsDashboard.Models
         public string FiscalYearId { get; set; } = string.Empty;
         public string ParentId { get; set; } = string.Empty;
         public string PlanItemId { get; set; } = string.Empty;
+        public string StartDate { get; set; } = string.Empty;
+        public string EndDate { get; set; } = string.Empty;
+        public string DatePreset { get; set; } = "ALL";
+        public string CalculationMode { get; set; } = "MonthlyRunRate";
     }
 
     public class CarouselConfigDto
@@ -96,6 +112,9 @@ namespace RevenueOperationsDashboard.Models
         public string Id { get; set; } = string.Empty;
         public string TitleAmharic { get; set; } = string.Empty;
         public string TitleEnglish { get; set; } = string.Empty;
+        public string SubtitleAmharic { get; set; } = string.Empty;
+        public string SubtitleEnglish { get; set; } = string.Empty;
+        public string CalculationMode { get; set; } = "MonthlyRunRate";
         public decimal Actual { get; set; }
         public decimal Target { get; set; }
         public decimal AchievementPct { get; set; }
@@ -106,6 +125,7 @@ namespace RevenueOperationsDashboard.Models
 
     public class TopCardsResponseDto
     {
+        public string ActiveCalculationMode { get; set; } = "MonthlyRunRate";
         public List<TopKpiCardItemDto> Cards { get; set; } = new();
     }
 }
