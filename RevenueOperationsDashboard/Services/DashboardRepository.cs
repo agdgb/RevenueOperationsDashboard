@@ -1402,6 +1402,191 @@ namespace RevenueOperationsDashboard.Services
                 });
             }
 
+            // 5. Per-Branch Revenue Source Attribution (Granular leaves only, strictly zero rollups)
+            const string sqlBranchSources = @"
+                SELECT 
+                    ParentId,
+                    ParentName,
+                    ROUND(SUM(DailyActual), 2) AS TotalActual,
+                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1103%' OR PlanItemId = '34D4D2FF-8A63-4A94-BACA-A00B6487EF80' THEN DailyActual ELSE 0 END), 2) AS ProfitActual,
+                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1120%' OR PlanItemId = 'DF4D92F4-AC35-4388-BE64-7C0413BD7C32' THEN DailyActual ELSE 0 END), 2) AS VatActual,
+                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1101%' OR PlanItemId = '0D1BA173-8989-4529-A479-1F0175D459F8' THEN DailyActual ELSE 0 END), 2) AS WagesActual,
+                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1102%' OR PlanItemId = '5CD30032-DCED-4B87-825F-28830F0B8079' THEN DailyActual ELSE 0 END), 2) AS RentalActual,
+                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1701%' OR PlanItemId = 'A89173E0-F938-45DC-83E8-1B14ED44CAA2' THEN DailyActual ELSE 0 END), 2) AS PropertyActual,
+                    ROUND(SUM(CASE WHEN PlanItemName NOT LIKE N'%1103%' AND PlanItemId <> '34D4D2FF-8A63-4A94-BACA-A00B6487EF80'
+                                    AND PlanItemName NOT LIKE N'%1120%' AND PlanItemId <> 'DF4D92F4-AC35-4388-BE64-7C0413BD7C32'
+                                    AND PlanItemName NOT LIKE N'%1101%' AND PlanItemId <> '0D1BA173-8989-4529-A479-1F0175D459F8'
+                                    AND PlanItemName NOT LIKE N'%1102%' AND PlanItemId <> '5CD30032-DCED-4B87-825F-28830F0B8079'
+                                    AND PlanItemName NOT LIKE N'%1701%' AND PlanItemId <> 'A89173E0-F938-45DC-83E8-1B14ED44CAA2'
+                               THEN DailyActual ELSE 0 END), 2) AS OtherActual
+                FROM [dbo].[vw_RevenuePerformanceDaily]
+                WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                  AND EntryDate >= @StartDate AND EntryDate <= @EndDate
+                  AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
+                  AND ParentId <> '1'
+                  AND PlanItemId NOT IN (
+                      'F6D06033-5C3D-4647-A0F7-E8141C4B3AC0', -- የታክስ ድምር(1100-1299)
+                      '49352433-53B5-466A-88DA-71D146A60C89', -- ቀጥታ ታክስ(1100-1119)
+                      '98664116-7114-421A-82FD-B05865173EDF', -- ቀጥታ ያልሆነ ታክስ(1120-1299)
+                      'EB486830-7C2F-4C28-B2A4-195FDB6641C5', -- የማዘጋጃ ቤቶች ገቢ(1700-1799)
+                      '23FCD202-46FF-4C7D-ADF6-44C10D470003'  -- የታክስ ገቢዎች(1701-1719)
+                  )
+                GROUP BY ParentId, ParentName;";
+
+            var branchSourceRows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sqlBranchSources, new
+            {
+                FiscalYearId = fy,
+                StartDate = startDate,
+                EndDate = endDate
+            }, commandTimeout: 120))).ToList();
+
+            var branchSourcesLookup = branchSourceRows.ToDictionary(
+                r => (string)r.ParentId.ToString(),
+                r => r
+            );
+
+            var branchSources = new List<WeeklyBranchSourceDto>();
+            foreach (var b in allBranches)
+            {
+                branchSourcesLookup.TryGetValue(b.BranchId, out var sRow);
+
+                decimal actTot = sRow != null ? (decimal)(sRow.TotalActual ?? 0m) : 0m;
+                decimal pAct = sRow != null ? (decimal)(sRow.ProfitActual ?? 0m) : 0m;
+                decimal vAct = sRow != null ? (decimal)(sRow.VatActual ?? 0m) : 0m;
+                decimal wAct = sRow != null ? (decimal)(sRow.WagesActual ?? 0m) : 0m;
+                decimal rAct = sRow != null ? (decimal)(sRow.RentalActual ?? 0m) : 0m;
+                decimal prAct = sRow != null ? (decimal)(sRow.PropertyActual ?? 0m) : 0m;
+                decimal oAct = sRow != null ? (decimal)(sRow.OtherActual ?? 0m) : 0m;
+
+                decimal tgtAmount = Math.Round(b.TargetBillions * 1000000000m, 2);
+                decimal attainPct = tgtAmount > 0 ? Math.Round((actTot / tgtAmount) * 100m, 1) : 0m;
+
+                decimal pPct = actTot > 0 ? Math.Round((pAct / actTot) * 100m, 1) : 0m;
+                decimal vPct = actTot > 0 ? Math.Round((vAct / actTot) * 100m, 1) : 0m;
+                decimal wPct = actTot > 0 ? Math.Round((wAct / actTot) * 100m, 1) : 0m;
+                decimal rPct = actTot > 0 ? Math.Round((rAct / actTot) * 100m, 1) : 0m;
+                decimal prPct = actTot > 0 ? Math.Round((prAct / actTot) * 100m, 1) : 0m;
+                decimal oPct = actTot > 0 ? Math.Round(Math.Max(0m, 100m - (pPct + vPct + wPct + rPct + prPct)), 1) : 0m;
+
+                decimal hhi = (decimal)(
+                    Math.Pow((double)pPct / 100.0, 2) +
+                    Math.Pow((double)vPct / 100.0, 2) +
+                    Math.Pow((double)wPct / 100.0, 2) +
+                    Math.Pow((double)rPct / 100.0, 2) +
+                    Math.Pow((double)prPct / 100.0, 2) +
+                    Math.Pow((double)oPct / 100.0, 2)
+                );
+                decimal divScore = (actTot > 0 && hhi > 0) ? Math.Round(1m / hhi, 1) : 0m;
+
+                var streamList = new (string Key, string NameEn, string NameAm, decimal Share)[]
+                {
+                    ("profit", "Business Profit", "ንግድ ትረፍ", pPct),
+                    ("vat", "VAT", "ተጨማሪ እሴት ታክስ", vPct),
+                    ("wages", "Employment Tax", "ምንዳና ደመወዝ", wPct),
+                    ("rental", "Rental Income", "የኪራይ ገቢ", rPct),
+                    ("property", "Property Tax", "ቤት ግብር", prPct),
+                    ("other", "Other & Municipal", "ልዩ ልዩና ማዘጋጃ", oPct)
+                };
+                var top = streamList.OrderByDescending(s => s.Share).First();
+
+                bool flagged = false;
+                string flagAm = "";
+                string flagEn = "";
+                if (actTot > 0)
+                {
+                    if (top.Share >= 65m)
+                    {
+                        flagged = true;
+                        flagAm = $"{top.NameAm} {top.Share:F1}% ድርሻ (ከፍተኛ ጥገኝነት)";
+                        flagEn = $"{top.NameEn} is {top.Share:F1}% of collections";
+                    }
+                    else if (divScore > 0 && divScore < 2.0m)
+                    {
+                        flagged = true;
+                        flagAm = $"ደካማ የምንጭ ብዝሃነት ({divScore:F1} ከ 6)";
+                        flagEn = $"Low diversification ({divScore:F1} of 6)";
+                    }
+                    else if (oPct >= 15m)
+                    {
+                        flagged = true;
+                        flagAm = $"ያልተመደበ ልዩ ልዩ ገቢ {oPct:F1}%";
+                        flagEn = $"High unclassified share ({oPct:F1}%)";
+                    }
+                }
+
+                string rawName = b.BranchName;
+                string enBranchName = rawName switch
+                {
+                    var x when x.Contains("ከፍተኛ") => "Large Taxpayers Office",
+                    var x when x.Contains("ቁጥር 1") && x.Contains("መ/") => "Medium Taxpayers No. 1",
+                    var x when x.Contains("ቁጥር 2") && x.Contains("መ/") => "Medium Taxpayers No. 2",
+                    var x when x.Contains("ቁጥር 3") && x.Contains("መ/") => "Medium Taxpayers No. 3",
+                    var x when x.Contains("ቦሌ") => "Bole Sub-City",
+                    var x when x.Contains("ቂርቆስ") => "Kirkos Sub-City",
+                    var x when x.Contains("ልደታ") => "Lideta Sub-City",
+                    var x when x.Contains("አራዳ") => "Arada Sub-City",
+                    var x when x.Contains("አዲስ ከተማ") => "Addis Ketema Sub-City",
+                    var x when x.Contains("ኮልፌ") => "Kolfe Keranio Sub-City",
+                    var x when x.Contains("ጉለሌ") => "Gulele Sub-City",
+                    var x when x.Contains("ንፋስ ስልክ") => "Nifas Silk-Lafto Sub-City",
+                    var x when x.Contains("የካ") => "Yeka Sub-City",
+                    var x when x.Contains("ለሚ") => "Lemi Kura Sub-City",
+                    var x when x.Contains("አቃቂ") => "Akaki Kality Sub-City",
+                    _ => rawName
+                };
+
+                int tier = 2;
+                string tNameEn = "Sub-City Branches";
+                string tNameAm = "የክፍለ ከተማ ቅርንጫፎች";
+                if (rawName.Contains("ከፍተኛ") || rawName.Contains("Large"))
+                {
+                    tier = 0;
+                    tNameEn = "Large Taxpayers";
+                    tNameAm = "ትልልቅ ግብር ከፋዮች";
+                }
+                else if (rawName.Contains("መ/") || rawName.Contains("መካከለኛ") || rawName.Contains("Medium"))
+                {
+                    tier = 1;
+                    tNameEn = "Medium Taxpayers";
+                    tNameAm = "መካከለኛ ግብር ከፋዮች";
+                }
+
+                branchSources.Add(new WeeklyBranchSourceDto
+                {
+                    Tier = tier,
+                    TierName = tNameEn,
+                    TierNameAmharic = tNameAm,
+                    BranchId = b.BranchId,
+                    BranchName = isEnglish ? enBranchName : rawName,
+                    BranchNameAmharic = rawName,
+                    TotalActual = actTot,
+                    TargetAmount = tgtAmount,
+                    TargetAttainmentPct = attainPct,
+                    ProfitActual = pAct,
+                    VatActual = vAct,
+                    WagesActual = wAct,
+                    RentalActual = rAct,
+                    PropertyActual = prAct,
+                    OtherActual = oAct,
+                    ProfitSharePct = pPct,
+                    VatSharePct = vPct,
+                    WagesSharePct = wPct,
+                    RentalSharePct = rPct,
+                    PropertySharePct = prPct,
+                    OtherSharePct = oPct,
+                    DiversificationScore = divScore,
+                    TopStreamKey = top.Key,
+                    TopStreamName = top.NameEn,
+                    TopStreamNameAmharic = top.NameAm,
+                    TopStreamSharePct = top.Share,
+                    IsFlagged = flagged,
+                    FlagReason = isEnglish ? flagEn : flagAm,
+                    FlagReasonAmharic = flagAm
+                });
+            }
+
+            branchSources = branchSources.OrderBy(s => s.Tier).ThenByDescending(s => s.TotalActual).ToList();
+
             // Formatting
             string varSign = variance >= 0 ? "+" : "";
             string fmtWeeklyAct = weeklyAct.ToHumanCurrency(currencyOptions);
@@ -1431,7 +1616,8 @@ namespace RevenueOperationsDashboard.Services
                 LaggingBranches = laggingBranches,
                 DailyTrend = dailyTrend,
                 ActiveFilingTaxpayersCount = taxStreams.Count,
-                TotalDailySubmissionBatches = dailyRows.Count
+                TotalDailySubmissionBatches = dailyRows.Count,
+                BranchSources = branchSources
             };
         }
     }

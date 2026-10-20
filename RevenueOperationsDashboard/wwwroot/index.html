@@ -398,13 +398,13 @@
   <div id="weeklyReportModal"
     class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center hidden transition-opacity overflow-y-auto p-3 sm:p-6 print:p-0 print:static print:bg-white print:overflow-visible">
     <div id="weeklyReportContainer"
-      class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-5xl p-5 sm:p-8 shadow-2xl space-y-6 text-slate-100 relative my-auto max-h-[92vh] overflow-y-auto print:max-h-none print:shadow-none print:border-none print:p-4 print:text-black print:bg-white">
+      class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-6xl xl:max-w-7xl p-5 sm:p-7 shadow-2xl space-y-5 text-slate-100 relative my-auto max-h-[92vh] overflow-y-auto print:max-h-none print:shadow-none print:border-none print:p-4 print:text-black print:bg-white">
       
       <!-- Modal Header -->
-      <div class="flex items-start justify-between border-b border-slate-800 pb-4 print:border-slate-300">
+      <div class="flex items-start justify-between border-b border-slate-800 pb-3 print:border-slate-300">
         <div class="flex items-center gap-3.5">
-          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 flex-shrink-0 print:border print:border-indigo-600">
-            <i class="fa-solid fa-file-invoice text-white text-xl"></i>
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 flex-shrink-0 print:border print:border-indigo-600">
+            <i class="fa-solid fa-file-invoice text-white text-lg"></i>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -433,89 +433,222 @@
         </div>
       </div>
 
-      <!-- KPI Summary Cards Row (4 Metric Cards) -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 print:grid-cols-4">
-        <!-- Target -->
-        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
-          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyTarget">ሳምንታዊ ዕቅድ</div>
-          <div id="weeklyTargetVal" class="text-xl sm:text-2xl font-black text-white mt-1 print:text-slate-900">-</div>
-          <div class="text-[10px] text-slate-400 mt-0.5" id="lblWeeklyTargetSub">የ 7 ቀናት ድምር ግብ</div>
+      <!-- Navigation Tabs & View Toggles -->
+      <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-3 gap-3 print:hidden">
+        <div class="flex items-center gap-2">
+          <button id="tabWeeklyOverview" onclick="switchWeeklyReportTab('overview')"
+            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 cursor-pointer">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span id="lblTabOverview">አጠቃላይ ማጠቃለያ (Overview)</span>
+          </button>
+          <button id="tabWeeklySources" onclick="switchWeeklyReportTab('sources')"
+            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent cursor-pointer">
+            <i class="fa-solid fa-sitemap"></i>
+            <span id="lblTabSources">የቅርንጫፎች ገቢ ምንጭ ዝርዝር (Revenue Sources)</span>
+          </button>
         </div>
-        <!-- Actual -->
-        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
-          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyActual">የተሰበሰበ ገቢ</div>
-          <div id="weeklyActualVal" class="text-xl sm:text-2xl font-black text-emerald-400 mt-1 print:text-emerald-700">-</div>
-          <div class="text-[10px] text-slate-400 mt-0.5" id="lblWeeklyActualSub">በሳምንቱ የገባ ጥሬ ገንዘብ</div>
-        </div>
-        <!-- Achievement Pct -->
-        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
-          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyAchievement">የአፈጻጸም ምጣኔ</div>
-          <div class="flex items-baseline gap-2 mt-1">
-            <span id="weeklyAchieveVal" class="text-xl sm:text-2xl font-black text-white print:text-slate-900">-</span>
-            <span id="weeklyAchieveStatus" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 print:border-slate-400">መደበኛ</span>
-          </div>
-          <div class="text-[10px] text-slate-400 mt-0.5" id="lblWeeklyAchieveSub">ከዕቅድ አንጻር</div>
-        </div>
-        <!-- Variance & RDR -->
-        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
-          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyVariance">ልዩነት እና ዕለታዊ ግብ</div>
-          <div id="weeklyVarianceVal" class="text-xl sm:text-2xl font-black text-rose-400 mt-1 print:text-rose-700">-</div>
-          <div id="weeklyRdrVal" class="text-[10px] font-semibold text-cyan-400 mt-0.5 print:text-indigo-700">-</div>
+
+        <!-- Quick Info / Status indicator -->
+        <div id="sourcesTabQuickInfo" class="hidden text-xs text-slate-400 flex items-center gap-2">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="lblSourcesAuditClean">ቀጥተኛ የታክስ ቅጠሎች (Double-counting የሌለበት)</span>
         </div>
       </div>
 
-      <!-- Main Section: Tax Streams & Branch League Table -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <!-- Tax Streams Breakdown (7 Cols) -->
-        <div class="lg:col-span-7 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-3 print:bg-white print:border-slate-300">
+      <!-- TAB 1: OVERVIEW CONTENT -->
+      <div id="weeklyTabContentOverview" class="space-y-6">
+        <!-- KPI Summary Cards Row (4 Metric Cards) -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 print:grid-cols-4">
+          <!-- Target -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyTarget">ሳምንታዊ ዕቅድ</div>
+            <div id="weeklyTargetVal" class="text-xl sm:text-2xl font-black text-white mt-1 print:text-slate-900">-</div>
+            <div class="text-[10px] text-slate-400 mt-0.5" id="lblWeeklyTargetSub">የ 7 ቀናት ድምር ግብ</div>
+          </div>
+          <!-- Actual -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyActual">የተሰበሰበ ገቢ</div>
+            <div id="weeklyActualVal" class="text-xl sm:text-2xl font-black text-emerald-400 mt-1 print:text-emerald-700">-</div>
+            <div class="text-[10px] text-slate-400 mt-0.5" id="lblWeeklyActualSub">በሳምንቱ የገባ ጥሬ ገንዘብ</div>
+          </div>
+          <!-- Achievement Pct -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyAchievement">የአፈጻጸም ምጣኔ</div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span id="weeklyAchieveVal" class="text-xl sm:text-2xl font-black text-white print:text-slate-900">-</span>
+              <span id="weeklyAchieveStatus" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 print:border-slate-400">መደበኛ</span>
+            </div>
+            <div class="text-[10px] text-slate-400 mt-0.5" id="lblWeeklyAchieveSub">ከዕቅድ አንጻር</div>
+          </div>
+          <!-- Variance & RDR -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyVariance">ልዩነት እና ዕለታዊ ግብ</div>
+            <div id="weeklyVarianceVal" class="text-xl sm:text-2xl font-black text-rose-400 mt-1 print:text-rose-700">-</div>
+            <div id="weeklyRdrVal" class="text-[10px] font-semibold text-cyan-400 mt-0.5 print:text-indigo-700">-</div>
+          </div>
+        </div>
+
+        <!-- Main Section: Tax Streams & Branch League Table -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Tax Streams Breakdown (7 Cols) -->
+          <div class="lg:col-span-7 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-3 print:bg-white print:border-slate-300">
+            <div class="flex items-center justify-between border-b border-slate-700/50 pb-2 print:border-slate-300">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2 print:text-slate-800" id="lblWeeklyTaxStreamsTitle">
+                <i class="fa-solid fa-layer-group text-indigo-400"></i>
+                ዋና ዋና የታክስ አይነቶች ክንውን
+              </h3>
+              <span class="text-[10px] text-slate-400 print:text-slate-600" id="lblWeeklyTaxStreamUnit">ብር (በቢሊዮን)</span>
+            </div>
+            <div id="weeklyTaxStreamsList" class="space-y-2.5">
+              <!-- Dynamic stream rows -->
+            </div>
+          </div>
+
+          <!-- Branch League Table (5 Cols) -->
+          <div class="lg:col-span-5 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-4 print:bg-white print:border-slate-300">
+            <!-- Top 3 -->
+            <div>
+              <div class="flex items-center gap-1.5 border-b border-slate-700/50 pb-1.5 mb-2.5 print:border-slate-300">
+                <i class="fa-solid fa-trophy text-amber-400 text-xs"></i>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300 print:text-amber-800" id="lblWeeklyTopBranches">ቀዳሚ 3 ቅርንጫፎች</h3>
+              </div>
+              <div id="weeklyTopBranchesList" class="space-y-2">
+                <!-- Dynamic top branches -->
+              </div>
+            </div>
+
+            <!-- Bottom 3 -->
+            <div>
+              <div class="flex items-center gap-1.5 border-b border-slate-700/50 pb-1.5 mb-2.5 print:border-slate-300">
+                <i class="fa-solid fa-triangle-exclamation text-rose-400 text-xs"></i>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-rose-300 print:text-rose-800" id="lblWeeklyLaggingBranches">ትኩረት የሚሹ ቅርንጫፎች</h3>
+              </div>
+              <div id="weeklyLaggingBranchesList" class="space-y-2">
+                <!-- Dynamic lagging branches -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7-Day Velocity Curve Chart Container -->
+        <div class="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-3 print:bg-white print:border-slate-300">
           <div class="flex items-center justify-between border-b border-slate-700/50 pb-2 print:border-slate-300">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2 print:text-slate-800" id="lblWeeklyTaxStreamsTitle">
-              <i class="fa-solid fa-layer-group text-indigo-400"></i>
-              ዋና ዋና የታክስ አይነቶች ክንውን
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2 print:text-slate-800" id="lblWeeklyVelocityTitle">
+              <i class="fa-solid fa-chart-simple text-cyan-400"></i>
+              የ 7 ቀናት የቀን ገቢ ፍጥነት (Daily Velocity Curve)
             </h3>
-            <span class="text-[10px] text-slate-400 print:text-slate-600" id="lblWeeklyTaxStreamUnit">ብር (በቢሊዮን)</span>
+            <span class="text-[10px] text-slate-400 print:text-slate-600" id="lblWeeklyVelocitySub">እለታዊ ክንውን ከዕለቱ ግብ አንጻር (በቢሊዮን)</span>
           </div>
-          <div id="weeklyTaxStreamsList" class="space-y-2.5">
-            <!-- Dynamic stream rows -->
-          </div>
-        </div>
-
-        <!-- Branch League Table (5 Cols) -->
-        <div class="lg:col-span-5 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-4 print:bg-white print:border-slate-300">
-          <!-- Top 3 -->
-          <div>
-            <div class="flex items-center gap-1.5 border-b border-slate-700/50 pb-1.5 mb-2.5 print:border-slate-300">
-              <i class="fa-solid fa-trophy text-amber-400 text-xs"></i>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300 print:text-amber-800" id="lblWeeklyTopBranches">ቀዳሚ 3 ቅርንጫፎች</h3>
-            </div>
-            <div id="weeklyTopBranchesList" class="space-y-2">
-              <!-- Dynamic top branches -->
-            </div>
-          </div>
-
-          <!-- Bottom 3 -->
-          <div>
-            <div class="flex items-center gap-1.5 border-b border-slate-700/50 pb-1.5 mb-2.5 print:border-slate-300">
-              <i class="fa-solid fa-triangle-exclamation text-rose-400 text-xs"></i>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-rose-300 print:text-rose-800" id="lblWeeklyLaggingBranches">ትኩረት የሚሹ ቅርንጫፎች</h3>
-            </div>
-            <div id="weeklyLaggingBranchesList" class="space-y-2">
-              <!-- Dynamic lagging branches -->
-            </div>
-          </div>
+          <div id="chartWeeklyVelocity" class="w-full h-48 print:h-40"></div>
         </div>
       </div>
 
-      <!-- 7-Day Velocity Curve Chart Container -->
-      <div class="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-3 print:bg-white print:border-slate-300">
-        <div class="flex items-center justify-between border-b border-slate-700/50 pb-2 print:border-slate-300">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2 print:text-slate-800" id="lblWeeklyVelocityTitle">
-            <i class="fa-solid fa-chart-simple text-cyan-400"></i>
-            የ 7 ቀናት የቀን ገቢ ፍጥነት (Daily Velocity Curve)
-          </h3>
-          <span class="text-[10px] text-slate-400 print:text-slate-600" id="lblWeeklyVelocitySub">እለታዊ ክንውን ከዕለቱ ግብ አንጻር (በቢሊዮን)</span>
+      <!-- TAB 2: PER-BRANCH REVENUE SOURCE ATTRIBUTION CONTENT -->
+      <div id="weeklyTabContentSources" class="space-y-4 hidden">
+        
+        <!-- Controls Toolbar: Search, Sort, Metrics, Sliding Toggle -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-800/50 border border-slate-700/60 rounded-2xl p-3 print:bg-white print:border-slate-300">
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Search -->
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+              <input type="text" id="inputWeeklyBranchSearch" oninput="onWeeklyBranchSearch(this.value)"
+                placeholder="ቅርንጫፍ ፈልግ... (Search branch)"
+                class="bg-slate-900/90 border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 w-44 sm:w-60 transition">
+            </div>
+
+            <!-- Sort Dropdown -->
+            <div class="flex items-center gap-1.5 text-xs text-slate-400">
+              <i class="fa-solid fa-arrow-down-wide-short text-indigo-400"></i>
+              <label for="selectWeeklyBranchSort" class="hidden sm:inline font-semibold" id="lblSortWeekly">ደርድር:</label>
+              <select id="selectWeeklyBranchSort" onchange="onWeeklyBranchSort(this.value)"
+                class="bg-slate-900/90 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition cursor-pointer">
+                <option value="total">ጠቅላላ ገቢ (Total Collected)</option>
+                <option value="attain">የዕቅድ ክንውን % (Achievement %)</option>
+                <option value="profit">ንግድ ትረፍ % (Profit %)</option>
+                <option value="vat">ተጨማሪ እሴት ታክስ % (VAT %)</option>
+                <option value="wages">ምንዳና ደመወዝ % (Wages %)</option>
+                <option value="rental">የኪራይ ገቢ % (Rental %)</option>
+                <option value="property">ቤት ግብር % (Property %)</option>
+                <option value="div">የምንጭ ብዝሃነት (Diversification)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Currency / Percentage Sliding Toggle -->
+          <div class="flex items-center gap-2.5">
+            <span class="text-xs font-semibold text-slate-400 hidden sm:inline" id="lblDisplayMode">የዕይታ ሁኔታ:</span>
+            <div class="relative inline-flex bg-slate-950 p-1 rounded-xl border border-slate-800 shadow-inner">
+              <button id="btnSourcesModeEtb" onclick="setWeeklySourcesMode('etb')"
+                class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition text-slate-400 hover:text-white cursor-pointer">
+                <span id="lblModeEtbText">ብር / ETB</span>
+              </button>
+              <button id="btnSourcesModePct" onclick="setWeeklySourcesMode('pct')"
+                class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition bg-indigo-600 text-white shadow cursor-pointer">
+                <span id="lblModePctText">% ድርሻ (Share)</span>
+              </button>
+            </div>
+          </div>
         </div>
-        <div id="chartWeeklyVelocity" class="w-full h-48 print:h-40"></div>
+
+        <!-- Pinned Executive Risk & Focus Insight Chips -->
+        <div class="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-3.5 print:bg-white print:border-slate-300">
+          <div class="flex items-center justify-between mb-2.5">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-bell text-amber-400"></i>
+              <span id="lblInsightChipsTitle">ትኩረት የሚሹ ነጥቦች (የቅርንጫፉን ዝርዝር ለመክፈት ይጫኑ)</span>
+            </div>
+            <span id="badgeFlaggedCount" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">0 ምልክት ተደርጎባቸዋል</span>
+          </div>
+          <div id="weeklyInsightChipsContainer" class="flex flex-wrap gap-2">
+            <!-- Dynamic insight chips -->
+          </div>
+        </div>
+
+        <!-- Master-Detail 2-Column Grid -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+          <!-- Left Column: Multi-Grid Tiered Stacked Bar Chart (8 Cols) -->
+          <div class="xl:col-span-8 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 flex flex-col justify-between print:bg-white print:border-slate-300">
+            <div>
+              <div class="flex flex-wrap items-center justify-between border-b border-slate-700/50 pb-2.5 mb-2">
+                <div>
+                  <h3 class="text-sm font-bold text-white flex items-center gap-2" id="lblSourcesChartTitle">
+                    <i class="fa-solid fa-chart-column text-indigo-400"></i>
+                    የቅርንጫፎች የገቢ ምንጭ ስብጥር (3-Tier Revenue Attribution)
+                  </h3>
+                  <p class="text-[11px] text-slate-400 mt-0.5" id="lblSourcesChartSub">
+                    እያንዳንዱ ደረጃ (ትልልቅ፣ መካከለኛ፣ ንዑስ ከተማ) በራሱ የተመጣጠነ ስኬል ቀርቧል
+                  </p>
+                </div>
+                <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-1 sm:mt-0">
+                  <span class="flex items-center gap-1"><i class="fa-solid fa-hand-pointer text-cyan-400"></i> ለዝርዝር አሞሌውን ይጫኑ</span>
+                </div>
+              </div>
+
+              <!-- ECharts Canvas Container -->
+              <div id="chartBranchTaxSources" class="w-full min-h-[580px]"></div>
+            </div>
+
+            <!-- Custom Interactive Chart Legend -->
+            <div class="border-t border-slate-700/50 pt-3 mt-2">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2" id="lblTaxStreamLegend">
+                የታክስ አይነቶች (አይነቱን ብቻውን ለማየት ወይም ለማጉላት ይጫኑ)
+              </div>
+              <div id="sourcesCustomLegend" class="flex flex-wrap items-center gap-2 text-xs">
+                <!-- 6 custom interactive legend buttons -->
+              </div>
+              <div class="text-[10px] text-slate-500 mt-2 italic" id="lblSourcesHint">
+                * ጠቋሚ፡ አሞሌው ላይ በመጫን የቅርንጫፉን ዝርዝር የገቢ አፈጻጸም በስተቀኝ ማየት ይችላሉ።
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Interactive Branch Detail Inspector (4 Cols) -->
+          <div class="xl:col-span-4 bg-slate-800/50 border border-slate-700/60 rounded-2xl p-4 flex flex-col space-y-4 print:bg-white print:border-slate-300" id="weeklyBranchDetailCard">
+            <!-- Dynamic Inspector Content -->
+          </div>
+        </div>
+
       </div>
 
       <!-- Footer Info -->
@@ -668,7 +801,15 @@
         endDate: '',
         datePreset: 'ALL',
         calculationMode: 'MonthlyRunRate'
-      }
+      },
+      // Weekly Executive Report State
+      weeklyReportData: null,
+      weeklyActiveTab: 'overview', // 'overview' | 'sources'
+      weeklySourcesMode: 'pct', // 'pct' | 'etb'
+      weeklySelectedBranchId: null,
+      weeklySourceSort: 'total',
+      weeklySourceSearch: '',
+      weeklySourceHighlightStream: null
     };
 
     // ECharts Instances Map
@@ -906,6 +1047,12 @@
           renderActiveSlideChart(state.currentSlide, state.activeSlideData[state.currentSlide]);
         } else {
           refreshActiveSlideMetric(state.currentSlide);
+        }
+
+        // Re-render weekly report charts if data loaded
+        if (state.weeklyReportData) {
+          if (chartInstances.weeklyVelocity) renderWeeklyVelocityChart(state.weeklyReportData.dailyTrend);
+          if (chartInstances.branchTaxSources) renderWeeklyBranchSourcesChart();
         }
       }
     }
@@ -2426,6 +2573,9 @@
       if (!modal) return;
       modal.classList.remove('hidden');
       
+      const container = document.getElementById('weeklyReportContainer');
+      if (container) container.scrollTop = 0;
+
       // Pause carousel while executive briefing is open
       state.autoRotate = false;
       updatePlayPauseButtonState();
@@ -2444,8 +2594,9 @@
 
     async function loadWeeklyReportData() {
       try {
+        const fy = state.filters.fiscalYear && state.filters.fiscalYear !== 'ALL' ? state.filters.fiscalYear : '2019';
         const params = new URLSearchParams({
-          fiscalYearId: state.filters.fiscalYear || 'ALL',
+          fiscalYearId: fy,
           lang: state.currentLang || 'am'
         });
         const res = await fetch(`/api/dashboard/weekly-report?${params}`);
@@ -2459,6 +2610,7 @@
 
     function renderWeeklyReport(data) {
       if (!data) return;
+      state.weeklyReportData = data;
       const isAm = state.currentLang === 'am';
       const curPrefix = isAm ? 'ብር ' : 'ETB ';
       const bSuffix = isAm ? 'ቢ' : 'B';
@@ -2584,6 +2736,9 @@
         const now = new Date();
         tsEl.innerText = `${isAm ? 'የተዘጋጀበት ሰዓት' : 'Generated'}: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
       }
+
+      // Initialize or refresh Sources tab data
+      renderWeeklyBranchSources(data);
     }
 
     function renderWeeklyVelocityChart(dailyTrend) {
@@ -2680,6 +2835,652 @@
       };
 
       chartInstances.weeklyVelocity.setOption(option, { notMerge: true });
+    }
+
+    // =========================================================================
+    // PER-BRANCH REVENUE SOURCE ATTRIBUTION (LEAVES ONLY, NO ROLLUPS)
+    // =========================================================================
+    const WEEKLY_STREAM_CONFIG = [
+      { key: 'profit', nameEn: 'Business Profit', nameAm: 'ንግድ ትረፍ', color: '#06b6d4', icon: 'fa-briefcase' },
+      { key: 'vat', nameEn: 'VAT', nameAm: 'ተጨማሪ እሴት ታክስ', color: '#8b5cf6', icon: 'fa-receipt' },
+      { key: 'wages', nameEn: 'Employment Tax', nameAm: 'ምንዳና ደመወዝ', color: '#10b981', icon: 'fa-user-tie' },
+      { key: 'rental', nameEn: 'Rental Income', nameAm: 'የኪራይ ገቢ', color: '#f59e0b', icon: 'fa-building' },
+      { key: 'property', nameEn: 'Property Tax', nameAm: 'ቤት ግብር', color: '#f43f5e', icon: 'fa-house-chimney' },
+      { key: 'other', nameEn: 'Other & Municipal', nameAm: 'ልዩ ልዩና ማዘጋጃ', color: '#64748b', icon: 'fa-coins' }
+    ];
+
+    function formatWeeklyCurrency(val) {
+      if (!val || isNaN(val)) return '0';
+      const isAm = state.currentLang === 'am';
+      const curPrefix = isAm ? 'ብር ' : 'ETB ';
+      if (val >= 1e9) return `${curPrefix}${(val / 1e9).toFixed(2)}${isAm ? 'ቢ' : 'B'}`;
+      if (val >= 1e6) return `${curPrefix}${(val / 1e6).toFixed(1)}${isAm ? 'ሚ' : 'M'}`;
+      if (val >= 1e3) return `${curPrefix}${(val / 1e3).toFixed(1)}${isAm ? 'ሺህ' : 'K'}`;
+      return `${curPrefix}${Math.round(val).toLocaleString()}`;
+    }
+
+    function switchWeeklyReportTab(tab) {
+      state.weeklyActiveTab = tab;
+      const container = document.getElementById('weeklyReportContainer');
+      if (container) container.scrollTop = 0;
+
+      const tabOverview = document.getElementById('tabWeeklyOverview');
+      const tabSources = document.getElementById('tabWeeklySources');
+      const contentOverview = document.getElementById('weeklyTabContentOverview');
+      const contentSources = document.getElementById('weeklyTabContentSources');
+      const quickInfo = document.getElementById('sourcesTabQuickInfo');
+
+      if (tab === 'overview') {
+        if (tabOverview) {
+          tabOverview.className = 'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 cursor-pointer';
+        }
+        if (tabSources) {
+          tabSources.className = 'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent cursor-pointer';
+        }
+        if (contentOverview) contentOverview.classList.remove('hidden');
+        if (contentSources) contentSources.classList.add('hidden');
+        if (quickInfo) quickInfo.classList.add('hidden');
+        if (chartInstances.weeklyVelocity) chartInstances.weeklyVelocity.resize();
+      } else {
+        if (tabOverview) {
+          tabOverview.className = 'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent cursor-pointer';
+        }
+        if (tabSources) {
+          tabSources.className = 'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 cursor-pointer';
+        }
+        if (contentOverview) contentOverview.classList.add('hidden');
+        if (contentSources) contentSources.classList.remove('hidden');
+        if (quickInfo) quickInfo.classList.remove('hidden');
+
+        // Render sources view and trigger resize
+        renderWeeklyBranchSources(state.weeklyReportData);
+      }
+    }
+
+    function setWeeklySourcesMode(mode) {
+      state.weeklySourcesMode = mode;
+      const btnEtb = document.getElementById('btnSourcesModeEtb');
+      const btnPct = document.getElementById('btnSourcesModePct');
+      if (btnEtb && btnPct) {
+        if (mode === 'etb') {
+          btnEtb.className = 'px-3.5 py-1.5 text-xs font-bold rounded-lg transition bg-indigo-600 text-white shadow cursor-pointer';
+          btnPct.className = 'px-3.5 py-1.5 text-xs font-bold rounded-lg transition text-slate-400 hover:text-white cursor-pointer';
+        } else {
+          btnPct.className = 'px-3.5 py-1.5 text-xs font-bold rounded-lg transition bg-indigo-600 text-white shadow cursor-pointer';
+          btnEtb.className = 'px-3.5 py-1.5 text-xs font-bold rounded-lg transition text-slate-400 hover:text-white cursor-pointer';
+        }
+      }
+      renderWeeklyBranchSourcesChart();
+      renderWeeklyBranchDetail();
+    }
+
+    function onWeeklyBranchSearch(query) {
+      state.weeklySourceSearch = query || '';
+      renderWeeklyBranchSourcesChart();
+    }
+
+    function onWeeklyBranchSort(sortKey) {
+      state.weeklySourceSort = sortKey || 'total';
+      renderWeeklyBranchSourcesChart();
+    }
+
+    function selectWeeklyBranch(branchId) {
+      state.weeklySelectedBranchId = branchId;
+      renderWeeklyBranchDetail();
+      updateInsightChipsHighlight();
+      renderWeeklyBranchSourcesChart();
+    }
+
+    function toggleStreamHighlight(streamKey) {
+      if (state.weeklySourceHighlightStream === streamKey) {
+        state.weeklySourceHighlightStream = null;
+      } else {
+        state.weeklySourceHighlightStream = streamKey;
+      }
+      renderWeeklySourcesCustomLegend();
+      renderWeeklyBranchSourcesChart();
+    }
+
+    function renderWeeklyBranchSources(data) {
+      if (!data || !data.branchSources || data.branchSources.length === 0) return;
+      
+      // Default selection if none selected or selected not present
+      if (!state.weeklySelectedBranchId) {
+        const firstActive = data.branchSources.find(b => b.totalActual > 0) || data.branchSources[0];
+        state.weeklySelectedBranchId = firstActive.branchId;
+      }
+
+      renderWeeklyInsightChips(data.branchSources);
+      renderWeeklySourcesCustomLegend();
+      renderWeeklyBranchSourcesChart();
+      renderWeeklyBranchDetail();
+    }
+
+    function renderWeeklyInsightChips(branchSources) {
+      const container = document.getElementById('weeklyInsightChipsContainer');
+      const badgeCount = document.getElementById('badgeFlaggedCount');
+      if (!container || !branchSources) return;
+
+      const isAm = state.currentLang === 'am';
+      const flagged = branchSources.filter(b => b.isFlagged);
+      if (badgeCount) {
+        badgeCount.innerText = `${flagged.length} ${isAm ? 'ምልክት ተደርጎባቸዋል' : 'Flagged'}`;
+      }
+
+      const chipsData = [];
+      branchSources.forEach(b => {
+        if (b.isFlagged) {
+          chipsData.push({
+            branchId: b.branchId,
+            icon: 'fa-triangle-exclamation',
+            color: 'text-amber-400',
+            border: 'border-amber-500/40 bg-amber-500/10',
+            label: isAm 
+              ? `${b.branchNameAmharic.replace(' አነ/ግ/ክ/ቅ/ጽ/ቤት', '').replace(' መ/ ግ/ከ/ቅ/ጽ/ቤት', '').replace(' ግ/ከ/ቅ/ጽ/ቤት', '')}: ${b.flagReasonAmharic}`
+              : `${b.branchName}: ${b.flagReason}`
+          });
+        }
+      });
+
+      // Also add top collector insight
+      const ltb = branchSources.find(b => b.tier === 0);
+      if (ltb && ltb.totalActual > 0) {
+        chipsData.unshift({
+          branchId: ltb.branchId,
+          icon: 'fa-trophy',
+          color: 'text-cyan-400',
+          border: 'border-cyan-500/30 bg-cyan-500/10',
+          label: isAm
+            ? `ትልልቅ ግብር ከፋዮች: ${formatWeeklyCurrency(ltb.totalActual)} (${ltb.topStreamNameAmharic} ${ltb.topStreamSharePct}%)`
+            : `Large Taxpayers: ${formatWeeklyCurrency(ltb.totalActual)} (${ltb.topStreamName} ${ltb.topStreamSharePct}%)`
+        });
+      }
+
+      container.innerHTML = chipsData.map(c => `
+        <button onclick="selectWeeklyBranch('${c.branchId}')" id="chipBranch_${c.branchId}"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${c.border} text-slate-200 hover:brightness-125 ${c.branchId === state.weeklySelectedBranchId ? 'ring-2 ring-indigo-500 font-bold' : ''}">
+          <i class="fa-solid ${c.icon} ${c.color} text-xs"></i>
+          <span>${c.label}</span>
+        </button>
+      `).join('');
+    }
+
+    function updateInsightChipsHighlight() {
+      const chips = document.querySelectorAll('#weeklyInsightChipsContainer button');
+      chips.forEach(btn => {
+        if (btn.id === `chipBranch_${state.weeklySelectedBranchId}`) {
+          btn.classList.add('ring-2', 'ring-indigo-500', 'font-bold');
+        } else {
+          btn.classList.remove('ring-2', 'ring-indigo-500', 'font-bold');
+        }
+      });
+    }
+
+    function renderWeeklySourcesCustomLegend() {
+      const container = document.getElementById('sourcesCustomLegend');
+      if (!container) return;
+      const isAm = state.currentLang === 'am';
+
+      container.innerHTML = WEEKLY_STREAM_CONFIG.map(s => {
+        const isSelected = state.weeklySourceHighlightStream === s.key;
+        return `
+          <button onclick="toggleStreamHighlight('${s.key}')"
+            class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition text-xs font-semibold cursor-pointer ${isSelected ? 'bg-indigo-600 text-white border-indigo-400 shadow' : 'bg-slate-900/80 text-slate-300 border-slate-700/80 hover:bg-slate-800 hover:text-white'}">
+            <span class="w-2.5 h-2.5 rounded-sm inline-block flex-shrink-0" style="background:${s.color}"></span>
+            <span>${isAm ? s.nameAm : s.nameEn}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderWeeklyBranchSourcesChart() {
+      const chartDom = document.getElementById('chartBranchTaxSources');
+      if (!chartDom || !state.weeklyReportData || !state.weeklyReportData.branchSources) return;
+
+      const rawSources = state.weeklyReportData.branchSources;
+      const isAm = state.currentLang === 'am';
+      const mode = state.weeklySourcesMode; // 'pct' | 'etb'
+      const theme = appThemes[state.currentTheme] || appThemes.ocean;
+
+      // 1. Filter by search query
+      let filtered = rawSources;
+      if (state.weeklySourceSearch.trim()) {
+        const q = state.weeklySourceSearch.trim().toLowerCase();
+        filtered = rawSources.filter(b => 
+          (b.branchName && b.branchName.toLowerCase().includes(q)) ||
+          (b.branchNameAmharic && b.branchNameAmharic.toLowerCase().includes(q))
+        );
+      }
+
+      // 2. Sort within each tier
+      const sortKey = state.weeklySourceSort || 'total';
+      const sortFn = (a, b) => {
+        switch (sortKey) {
+          case 'attain': return (b.targetAttainmentPct || 0) - (a.targetAttainmentPct || 0);
+          case 'profit': return (b.profitSharePct || 0) - (a.profitSharePct || 0);
+          case 'vat': return (b.vatSharePct || 0) - (a.vatSharePct || 0);
+          case 'wages': return (b.wagesSharePct || 0) - (a.wagesSharePct || 0);
+          case 'rental': return (b.rentalSharePct || 0) - (a.rentalSharePct || 0);
+          case 'property': return (b.propertySharePct || 0) - (a.propertySharePct || 0);
+          case 'div': return (b.diversificationScore || 0) - (a.diversificationScore || 0);
+          case 'total':
+          default:
+            return (b.totalActual || 0) - (a.totalActual || 0);
+        }
+      };
+
+      const tier0 = filtered.filter(b => b.tier === 0).sort(sortFn);
+      const tier1 = filtered.filter(b => b.tier === 1).sort(sortFn);
+      const tier2 = filtered.filter(b => b.tier === 2).sort(sortFn);
+
+      // Reversing for ECharts category y-axis so top rank appears at top of visual chart
+      const t0Rev = tier0.slice().reverse();
+      const t1Rev = tier1.slice().reverse();
+      const t2Rev = tier2.slice().reverse();
+
+      // Dynamic Grid Layout based on branch count
+      const h0 = Math.max(28, t0Rev.length * 30);
+      const h1 = Math.max(30, t1Rev.length * 28);
+      const h2 = Math.max(60, t2Rev.length * 25);
+
+      const top0 = 42;
+      const top1 = top0 + h0 + 50;
+      const top2 = top1 + h1 + 50;
+      const totalHeight = top2 + h2 + 45;
+
+      chartDom.style.height = `${Math.max(560, totalHeight)}px`;
+
+      if (!chartInstances.branchTaxSources) {
+        chartInstances.branchTaxSources = echarts.init(chartDom, 'dark');
+        chartInstances.branchTaxSources.on('click', (params) => {
+          if (params.data && params.data.branchId) {
+            selectWeeklyBranch(params.data.branchId);
+          }
+        });
+      }
+      chartInstances.branchTaxSources.resize();
+
+      // Helper to compute independent max for each tier in ETB mode
+      const getTierMax = (tierList) => {
+        if (mode === 'pct') return 100;
+        const maxVal = tierList.reduce((m, b) => Math.max(m, b.totalActual || 0), 0);
+        if (maxVal <= 0) return 1000000;
+        if (maxVal >= 1e9) return Math.ceil((maxVal * 1.1) / 1e9) * 1e9;
+        if (maxVal >= 1e6) return Math.ceil((maxVal * 1.1) / 1e7) * 1e7;
+        return Math.ceil((maxVal * 1.1) / 1e5) * 1e5;
+      };
+
+      const max0 = getTierMax(tier0);
+      const max1 = getTierMax(tier1);
+      const max2 = getTierMax(tier2);
+
+      const xFormatter = (v) => {
+        if (mode === 'pct') return `${v}%`;
+        return formatWeeklyCurrency(v);
+      };
+
+      const yLabelFormatter = (name) => {
+        if (!name) return '';
+        if (name.length > 22) return name.substring(0, 20) + '…';
+        return name;
+      };
+
+      const grids = [
+        { left: '26%', right: '6%', top: `${top0}px`, height: `${h0}px`, containLabel: false },
+        { left: '26%', right: '6%', top: `${top1}px`, height: `${h1}px`, containLabel: false },
+        { left: '26%', right: '6%', top: `${top2}px`, height: `${h2}px`, containLabel: false }
+      ];
+
+      const xAxes = [
+        {
+          gridIndex: 0,
+          type: 'value',
+          min: 0,
+          max: max0,
+          axisLine: { lineStyle: { color: theme.border } },
+          splitLine: { lineStyle: { color: theme.border, type: 'dashed', opacity: 0.5 } },
+          axisLabel: { color: '#94a3b8', fontSize: 10, formatter: xFormatter }
+        },
+        {
+          gridIndex: 1,
+          type: 'value',
+          min: 0,
+          max: max1,
+          axisLine: { lineStyle: { color: theme.border } },
+          splitLine: { lineStyle: { color: theme.border, type: 'dashed', opacity: 0.5 } },
+          axisLabel: { color: '#94a3b8', fontSize: 10, formatter: xFormatter }
+        },
+        {
+          gridIndex: 2,
+          type: 'value',
+          min: 0,
+          max: max2,
+          axisLine: { lineStyle: { color: theme.border } },
+          splitLine: { lineStyle: { color: theme.border, type: 'dashed', opacity: 0.5 } },
+          axisLabel: { color: '#94a3b8', fontSize: 10, formatter: xFormatter }
+        }
+      ];
+
+      const yAxes = [
+        {
+          gridIndex: 0,
+          type: 'category',
+          data: t0Rev.map(b => isAm ? b.branchNameAmharic : b.branchName),
+          axisLine: { lineStyle: { color: theme.border } },
+          axisTick: { show: false },
+          axisLabel: {
+            color: (name, idx) => (t0Rev[idx]?.branchId === state.weeklySelectedBranchId) ? '#38bdf8' : '#cbd5e1',
+            fontWeight: (name, idx) => (t0Rev[idx]?.branchId === state.weeklySelectedBranchId) ? 'bold' : 'normal',
+            fontSize: 11,
+            formatter: yLabelFormatter
+          }
+        },
+        {
+          gridIndex: 1,
+          type: 'category',
+          data: t1Rev.map(b => isAm ? b.branchNameAmharic : b.branchName),
+          axisLine: { lineStyle: { color: theme.border } },
+          axisTick: { show: false },
+          axisLabel: {
+            color: (name, idx) => (t1Rev[idx]?.branchId === state.weeklySelectedBranchId) ? '#38bdf8' : '#cbd5e1',
+            fontWeight: (name, idx) => (t1Rev[idx]?.branchId === state.weeklySelectedBranchId) ? 'bold' : 'normal',
+            fontSize: 11,
+            formatter: yLabelFormatter
+          }
+        },
+        {
+          gridIndex: 2,
+          type: 'category',
+          data: t2Rev.map(b => isAm ? b.branchNameAmharic : b.branchName),
+          axisLine: { lineStyle: { color: theme.border } },
+          axisTick: { show: false },
+          axisLabel: {
+            color: (name, idx) => (t2Rev[idx]?.branchId === state.weeklySelectedBranchId) ? '#38bdf8' : '#cbd5e1',
+            fontWeight: (name, idx) => (t2Rev[idx]?.branchId === state.weeklySelectedBranchId) ? 'bold' : 'normal',
+            fontSize: 11,
+            formatter: yLabelFormatter
+          }
+        }
+      ];
+
+      const series = [];
+      WEEKLY_STREAM_CONFIG.forEach(s => {
+        const isDimmed = state.weeklySourceHighlightStream && state.weeklySourceHighlightStream !== s.key;
+        const opacity = isDimmed ? 0.2 : 0.95;
+
+        // Series Tier 0
+        series.push({
+          name: isAm ? s.nameAm : s.nameEn,
+          type: 'bar',
+          xAxisIndex: 0,
+          yAxisIndex: 0,
+          stack: 'tier0',
+          barWidth: 16,
+          itemStyle: { color: s.color, opacity, borderRadius: 0 },
+          data: t0Rev.map(b => ({
+            value: mode === 'pct' ? b[`${s.key}SharePct`] : b[`${s.key}Actual`],
+            branchId: b.branchId,
+            branchName: isAm ? b.branchNameAmharic : b.branchName,
+            streamKey: s.key,
+            sharePct: b[`${s.key}SharePct`],
+            actualAmount: b[`${s.key}Actual`],
+            totalActual: b.totalActual
+          }))
+        });
+
+        // Series Tier 1
+        series.push({
+          name: isAm ? s.nameAm : s.nameEn,
+          type: 'bar',
+          xAxisIndex: 1,
+          yAxisIndex: 1,
+          stack: 'tier1',
+          barWidth: 16,
+          itemStyle: { color: s.color, opacity, borderRadius: 0 },
+          data: t1Rev.map(b => ({
+            value: mode === 'pct' ? b[`${s.key}SharePct`] : b[`${s.key}Actual`],
+            branchId: b.branchId,
+            branchName: isAm ? b.branchNameAmharic : b.branchName,
+            streamKey: s.key,
+            sharePct: b[`${s.key}SharePct`],
+            actualAmount: b[`${s.key}Actual`],
+            totalActual: b.totalActual
+          }))
+        });
+
+        // Series Tier 2
+        series.push({
+          name: isAm ? s.nameAm : s.nameEn,
+          type: 'bar',
+          xAxisIndex: 2,
+          yAxisIndex: 2,
+          stack: 'tier2',
+          barWidth: 14,
+          itemStyle: { color: s.color, opacity, borderRadius: 0 },
+          data: t2Rev.map(b => ({
+            value: mode === 'pct' ? b[`${s.key}SharePct`] : b[`${s.key}Actual`],
+            branchId: b.branchId,
+            branchName: isAm ? b.branchNameAmharic : b.branchName,
+            streamKey: s.key,
+            sharePct: b[`${s.key}SharePct`],
+            actualAmount: b[`${s.key}Actual`],
+            totalActual: b.totalActual
+          }))
+        });
+      });
+
+      // Tier section headers
+      const graphicElements = [
+        {
+          type: 'text',
+          left: '26%',
+          top: top0 - 24,
+          style: {
+            text: isAm ? 'ደረጃ 0 - ትልልቅ ግብር ከፋዮች' : 'Tier 0 - Large Taxpayers',
+            fill: '#38bdf8',
+            font: 'bold 12px Inter, "Noto Sans Ethiopic", sans-serif'
+          }
+        },
+        {
+          type: 'text',
+          left: '26%',
+          top: top1 - 24,
+          style: {
+            text: isAm ? 'ደረጃ 1 - መካከለኛ ግብር ከፋዮች' : 'Tier 1 - Medium Taxpayers',
+            fill: '#818cf8',
+            font: 'bold 12px Inter, "Noto Sans Ethiopic", sans-serif'
+          }
+        },
+        {
+          type: 'text',
+          left: '26%',
+          top: top2 - 24,
+          style: {
+            text: isAm ? 'ደረጃ 2 - የክፍለ ከተማ ቅርንጫፎች' : 'Tier 2 - Sub-City Branches',
+            fill: '#34d399',
+            font: 'bold 12px Inter, "Noto Sans Ethiopic", sans-serif'
+          }
+        }
+      ];
+
+      const option = {
+        backgroundColor: 'transparent',
+        animation: true,
+        animationDuration: 600,
+        graphic: graphicElements,
+        tooltip: {
+          trigger: 'item',
+          backgroundColor: 'rgba(15, 23, 42, 0.96)',
+          borderColor: theme.border,
+          textStyle: { color: '#f8fafc', fontSize: 12 },
+          formatter: (params) => {
+            const d = params.data;
+            if (!d) return '';
+            const sConf = WEEKLY_STREAM_CONFIG.find(x => x.key === d.streamKey) || {};
+            const sName = isAm ? sConf.nameAm : sConf.nameEn;
+            return `
+              <div class="font-bold text-white mb-1.5 border-b border-slate-700 pb-1">${d.branchName}</div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${sConf.color}"></span>
+                <span class="font-semibold text-slate-200">${sName}:</span>
+                <span class="font-bold text-cyan-300 ml-auto">${d.sharePct?.toFixed(1)}%</span>
+              </div>
+              <div class="text-[11px] text-slate-400">የተሰበሰበ: <span class="text-white font-medium">${formatWeeklyCurrency(d.actualAmount || 0)}</span></div>
+              <div class="text-[11px] text-slate-400">የቅርንጫፉ ሳምንታዊ ጠቅላላ: <span class="text-white font-medium">${formatWeeklyCurrency(d.totalActual || 0)}</span></div>
+              <div class="text-[10px] text-indigo-400 mt-1.5 font-semibold">→ ለሙሉ ዝርዝር ይጫኑ</div>
+            `;
+          }
+        },
+        grid: grids,
+        xAxis: xAxes,
+        yAxis: yAxes,
+        series: series
+      };
+
+      chartInstances.branchTaxSources.setOption(option, { notMerge: true });
+    }
+
+    function renderWeeklyBranchDetail() {
+      const card = document.getElementById('weeklyBranchDetailCard');
+      if (!card || !state.weeklyReportData || !state.weeklyReportData.branchSources) return;
+
+      const sources = state.weeklyReportData.branchSources;
+      const isAm = state.currentLang === 'am';
+      const b = sources.find(x => x.branchId === state.weeklySelectedBranchId) || sources[0];
+      if (!b) return;
+
+      // Tier Peer Medians
+      const peers = sources.filter(x => x.tier === b.tier && x.totalActual > 0);
+      const getPeerMedian = (key) => {
+        if (peers.length === 0) return 0;
+        const arr = peers.map(x => x[`${key}SharePct`] || 0).sort((v1, v2) => v1 - v2);
+        const mid = Math.floor(arr.length / 2);
+        return arr.length % 2 !== 0 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
+      };
+
+      // Attainment color
+      let attainClass = 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+      if (b.targetAttainmentPct >= 90) attainClass = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+      else if (b.targetAttainmentPct >= 70) attainClass = 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+
+      // Tier Badge Color
+      let tierBadgeClass = 'bg-slate-700/60 text-slate-300';
+      if (b.tier === 0) tierBadgeClass = 'bg-sky-500/20 text-sky-300 border border-sky-500/40';
+      else if (b.tier === 1) tierBadgeClass = 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40';
+      else tierBadgeClass = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+
+      // Diversification Status
+      let divStatus = isAm ? 'ጥሩ' : 'Good';
+      let divColor = 'text-emerald-400';
+      if (b.diversificationScore < 2.0) {
+        divStatus = isAm ? 'ዝቅተኛ (ጥገኛ)' : 'Concentrated';
+        divColor = 'text-rose-400';
+      } else if (b.diversificationScore < 3.0) {
+        divStatus = isAm ? 'መካከለኛ' : 'Moderate';
+        divColor = 'text-amber-400';
+      }
+
+      const streamBarsHtml = WEEKLY_STREAM_CONFIG.map(s => {
+        const share = b[`${s.key}SharePct`] || 0;
+        const actual = b[`${s.key}Actual`] || 0;
+        const median = getPeerMedian(s.key);
+        const diff = share - median;
+        const diffSign = diff >= 0 ? '+' : '';
+        const name = isAm ? s.nameAm : s.nameEn;
+
+        return `
+          <div class="space-y-1">
+            <div class="flex items-center justify-between text-xs">
+              <span class="flex items-center gap-1.5 font-semibold text-slate-200">
+                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${s.color}"></span>
+                ${name}
+              </span>
+              <div class="flex items-center gap-2">
+                <span class="text-slate-400 text-[11px]">${formatWeeklyCurrency(actual)}</span>
+                <span class="font-bold text-white min-w-[38px] text-right">${share.toFixed(1)}%</span>
+              </div>
+            </div>
+            
+            <!-- Progress Bar with Peer Median Tick -->
+            <div class="relative w-full bg-slate-900/90 h-2 rounded-full overflow-visible border border-slate-700/60">
+              <div class="h-full rounded-full transition-all duration-500" style="width: ${Math.min(share, 100)}%; background: ${s.color}"></div>
+              ${peers.length > 1 ? `
+                <div class="absolute top-[-3px] bottom-[-3px] w-0.5 bg-white shadow-sm z-10" style="left: ${Math.min(median, 100)}%"
+                  title="${isAm ? 'የደረጃው ሚዲያን' : 'Tier Median'}: ${median.toFixed(1)}%"></div>
+              ` : ''}
+            </div>
+
+            ${peers.length > 1 ? `
+              <div class="flex items-center justify-between text-[10px] text-slate-500">
+                <span>${isAm ? 'አቻዎች ሚዲያን' : 'Peer Median'}: ${median.toFixed(1)}%</span>
+                <span class="${diff >= 0 ? 'text-emerald-400' : 'text-slate-400'}">${diffSign}${diff.toFixed(1)} pp</span>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+
+      card.innerHTML = `
+        <!-- Inspector Header -->
+        <div class="border-b border-slate-700/60 pb-3">
+          <div class="flex items-center justify-between gap-2 mb-1.5">
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${tierBadgeClass}">
+              ${isAm ? b.tierNameAmharic : b.tierName}
+            </span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-md border ${attainClass}">
+              ${b.targetAttainmentPct}% ${isAm ? 'ክንውን' : 'Attainment'}
+            </span>
+          </div>
+          <h4 class="text-base font-black text-white leading-tight">
+            ${isAm ? b.branchNameAmharic : b.branchName}
+          </h4>
+          <div class="text-xs text-slate-400 mt-0.5">
+            ${isAm ? 'የገቢ አፈጻጸምና የታክስ ምንጮች ዝርዝር' : 'Revenue Attribution & Tax Streams Profile'}
+          </div>
+        </div>
+
+        <!-- 4 Micro KPI Stats -->
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-slate-900/80 border border-slate-700/70 rounded-xl p-2.5">
+            <div class="text-[10px] text-slate-400 font-semibold">${isAm ? 'የተሰበሰበ ገቢ' : 'Total Collected'}</div>
+            <div class="text-sm font-black text-emerald-400 mt-0.5">${formatWeeklyCurrency(b.totalActual)}</div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-700/70 rounded-xl p-2.5">
+            <div class="text-[10px] text-slate-400 font-semibold">${isAm ? 'ሳምንታዊ ግብ' : 'Weekly Target'}</div>
+            <div class="text-sm font-black text-white mt-0.5">${formatWeeklyCurrency(b.targetAmount)}</div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-700/70 rounded-xl p-2.5">
+            <div class="text-[10px] text-slate-400 font-semibold">${isAm ? 'የምንጭ ብዝሃነት' : 'Diversification'}</div>
+            <div class="text-sm font-black ${divColor} mt-0.5">${b.diversificationScore} <span class="text-[10px] text-slate-400 font-normal">/ 6 (${divStatus})</span></div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-700/70 rounded-xl p-2.5">
+            <div class="text-[10px] text-slate-400 font-semibold">${isAm ? 'ዋና የታክስ ምንጭ' : 'Primary Driver'}</div>
+            <div class="text-xs font-bold text-cyan-300 mt-0.5 truncate" title="${isAm ? b.topStreamNameAmharic : b.topStreamName}">
+              ${isAm ? b.topStreamNameAmharic : b.topStreamName} (${b.topStreamSharePct}%)
+            </div>
+          </div>
+        </div>
+
+        <!-- Risk / Concentration Warning (if flagged) -->
+        ${b.isFlagged ? `
+          <div class="bg-amber-500/10 border border-amber-500/40 rounded-xl p-2.5 flex items-start gap-2.5 text-xs text-amber-200">
+            <i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm mt-0.5 flex-shrink-0"></i>
+            <div>
+              <div class="font-bold text-amber-300">${isAm ? 'የትኩረት ማስታወሻ' : 'Executive Alert'}</div>
+              <div class="text-[11px] text-amber-200/90 mt-0.5">${isAm ? b.flagReasonAmharic : b.flagReason}</div>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- 6 Leaf Tax Streams Detailed Breakdown -->
+        <div class="space-y-3 pt-1">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-300 border-b border-slate-700/40 pb-1">
+            <span>${isAm ? 'የታክስ ምንጭ ዝርዝር' : 'Revenue Source Breakdown'}</span>
+            <span class="text-[10px] text-slate-400 font-normal">${isAm ? 'ድርሻ % (መስመር = ሚዲያን)' : 'Share % (line = median)'}</span>
+          </div>
+          ${streamBarsHtml}
+        </div>
+      `;
     }
 
     // Initialize Everything on Load

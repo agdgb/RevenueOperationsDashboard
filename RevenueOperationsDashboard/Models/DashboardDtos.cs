@@ -177,6 +177,42 @@ namespace RevenueOperationsDashboard.Models
         // Demographic Activity Summary
         public int ActiveFilingTaxpayersCount { get; set; }
         public int TotalDailySubmissionBatches { get; set; }
+
+        // Per-Branch Revenue Source Attribution (Leaves only, no rollups)
+        public List<WeeklyBranchSourceDto> BranchSources { get; set; } = new();
+    }
+
+    public class WeeklyBranchSourceDto
+    {
+        public int Tier { get; set; } // 0 = Large, 1 = Medium, 2 = Sub-City
+        public string TierName { get; set; } = string.Empty;
+        public string TierNameAmharic { get; set; } = string.Empty;
+        public string BranchId { get; set; } = string.Empty;
+        public string BranchName { get; set; } = string.Empty;
+        public string BranchNameAmharic { get; set; } = string.Empty;
+        public decimal TotalActual { get; set; }
+        public decimal TargetAmount { get; set; }
+        public decimal TargetAttainmentPct { get; set; }
+        public decimal ProfitActual { get; set; }
+        public decimal VatActual { get; set; }
+        public decimal WagesActual { get; set; }
+        public decimal RentalActual { get; set; }
+        public decimal PropertyActual { get; set; }
+        public decimal OtherActual { get; set; }
+        public decimal ProfitSharePct { get; set; }
+        public decimal VatSharePct { get; set; }
+        public decimal WagesSharePct { get; set; }
+        public decimal RentalSharePct { get; set; }
+        public decimal PropertySharePct { get; set; }
+        public decimal OtherSharePct { get; set; }
+        public decimal DiversificationScore { get; set; }
+        public string TopStreamKey { get; set; } = string.Empty;
+        public string TopStreamName { get; set; } = string.Empty;
+        public string TopStreamNameAmharic { get; set; } = string.Empty;
+        public decimal TopStreamSharePct { get; set; }
+        public bool IsFlagged { get; set; }
+        public string FlagReason { get; set; } = string.Empty;
+        public string FlagReasonAmharic { get; set; } = string.Empty;
     }
 
     public class WeeklyTaxStreamItemDto
