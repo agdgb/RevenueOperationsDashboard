@@ -458,9 +458,9 @@
         </div>
         <!-- Variance & RDR -->
         <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
-          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyVariance">ልዩነት / የቀን ሩጫ</div>
+          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyVariance">ልዩነት እና ዕለታዊ ግብ</div>
           <div id="weeklyVarianceVal" class="text-xl sm:text-2xl font-black text-rose-400 mt-1 print:text-rose-700">-</div>
-          <div id="weeklyRdrVal" class="text-[10px] font-semibold text-cyan-400 mt-0.5 print:text-indigo-700">RDR: -</div>
+          <div id="weeklyRdrVal" class="text-[10px] font-semibold text-cyan-400 mt-0.5 print:text-indigo-700">-</div>
         </div>
       </div>
 
@@ -784,7 +784,8 @@
       "Weekly Target": "ሳምንታዊ ዕቅድ",
       "Collected Revenue": "የተሰበሰበ ገቢ",
       "Achievement Rate": "የአፈጻጸም ምጣኔ",
-      "Variance / Daily Run-Rate": "ልዩነት / የቀን ሩጫ",
+      "Variance / Daily Target": "ልዩነት እና ዕለታዊ ግብ",
+      "Variance / Daily Run-Rate": "ልዩነት እና ዕለታዊ ግብ",
       "Key Tax Streams Performance": "ዋና ዋና የታክስ አይነቶች ክንውን",
       "Top 3 Branches": "ቀዳሚ 3 ቅርንጫፎች",
       "Lagging Branches Needing Focus": "ትኩረት የሚሹ ቅርንጫፎች",
@@ -937,7 +938,7 @@
       if(document.getElementById('lblWeeklyTarget')) document.getElementById('lblWeeklyTarget').innerText = t_ui("Weekly Target");
       if(document.getElementById('lblWeeklyActual')) document.getElementById('lblWeeklyActual').innerText = t_ui("Collected Revenue");
       if(document.getElementById('lblWeeklyAchievement')) document.getElementById('lblWeeklyAchievement').innerText = t_ui("Achievement Rate");
-      if(document.getElementById('lblWeeklyVariance')) document.getElementById('lblWeeklyVariance').innerText = t_ui("Variance / Daily Run-Rate");
+      if(document.getElementById('lblWeeklyVariance')) document.getElementById('lblWeeklyVariance').innerText = t_ui("Variance / Daily Target");
       if(document.getElementById('lblWeeklyTaxStreamsTitle')) document.getElementById('lblWeeklyTaxStreamsTitle').innerHTML = `<i class="fa-solid fa-layer-group text-indigo-400"></i> ${t_ui("Key Tax Streams Performance")}`;
       if(document.getElementById('lblWeeklyTopBranches')) document.getElementById('lblWeeklyTopBranches').innerText = t_ui("Top 3 Branches");
       if(document.getElementById('lblWeeklyLaggingBranches')) document.getElementById('lblWeeklyLaggingBranches').innerText = t_ui("Lagging Branches Needing Focus");
@@ -2505,7 +2506,7 @@
 
       if (rdrEl) {
         rdrEl.innerText = isAm 
-          ? `የቀን ሩጫ (RDR): ${curPrefix}${(data.requiredDailyRunRate / 1e9).toFixed(2)}${bSuffix}/ቀን (${data.remainingDaysInMonth} ቀናት ቀሪ)`
+          ? `የሚጠበቅ ዕለታዊ ገቢ: ${curPrefix}${(data.requiredDailyRunRate / 1e9).toFixed(2)}${bSuffix}/ቀን (${data.remainingDaysInMonth} ቀናት ቀሪ)`
           : `Required Daily: ${curPrefix}${(data.requiredDailyRunRate / 1e9).toFixed(2)}${bSuffix}/day (${data.remainingDaysInMonth}d left)`;
       }
 
