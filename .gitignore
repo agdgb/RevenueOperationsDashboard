@@ -16,4 +16,6 @@ _references/
 *.zip
 *.pdf
 *.xlsx
-
+# Scratch & temporary scripts
+scratch/
+**/scratch/
