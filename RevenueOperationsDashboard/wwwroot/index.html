@@ -32,10 +32,25 @@
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="./css/all.min.css" />
 
+  <!-- Ethiopian Date Picker Styles & Scripts -->
+  <link rel="stylesheet" href="./css/et-date/jquery.calendars.picker.min.css" />
+  <script src="./js/jquery.min.js"></script>
+  <script src="./js/et-date/jquery.plugin.min.js"></script>
+  <script src="./js/et-date/jquery.calendars.min.js"></script>
+  <script src="./js/et-date/jquery.calendars.plus.min.js"></script>
+  <script src="./js/et-date/jquery.calendars.ethiopian.min.js"></script>
+  <script src="./js/et-date/jquery.calendars.picker.min.js"></script>
+  <script src="./js/et-date/jquery.calendars.picker-am.js"></script>
+  <script src="./js/et-date/et-picker-helper.js"></script>
+
   <!-- Apache ECharts -->
   <script src="./echarts.min.js"></script>
 
   <style>
+    /* Custom Ethiopian Calendar Pop-up Dark Theme */
+    .calendars-popup {
+      z-index: 100000 !important;
+    }
     body {
       background-color: #0b1120;
       color: #f8fafc;
@@ -218,8 +233,8 @@
         <div class="flex items-center gap-3">
           <i class="fa-solid fa-sliders text-blue-400 text-xl"></i>
           <div>
-            <h3 class="text-lg font-bold text-white" id="lblGlobalFilters">Global Dashboard Filters</h3>
-            <p class="text-xs text-slate-400">Refine metrics across all Operations Center slides</p>
+            <h3 class="text-lg font-bold text-white" id="lblGlobalFilters">አጠቃላይ የማጣሪያ አማራጮች</h3>
+            <p class="text-xs text-slate-400" id="lblFilterSubtitle">በሁሉም የስራ ክንውን ስላይዶች ላይ መረጃዎችን ያጣሩ</p>
           </div>
         </div>
         <button onclick="toggleFilterModal()" class="text-slate-400 hover:text-white text-xl">
@@ -230,27 +245,76 @@
       <!-- Filter Form Elements -->
       <div class="space-y-4">
         <div>
-          <label id="lblFiscalYear" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Fiscal Year</label>
+          <label id="lblFiscalYear" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የበጀት ዓመት</label>
           <select id="filterFiscalYear" onchange="applyFilters()"
             class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
-            <!-- Loaded dynamically from API -->
+            <option value="2018">2018 (በጀት ዓመት)</option>
           </select>
         </div>
 
+        <!-- KPI Calculation Mode (Run-Rate vs Cumulative) -->
         <div>
-          <label id="lblParentBranch" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Parent Branch</label>
+          <label id="lblCalcMode" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የአሰላል ዘዴ</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="setCalculationMode('MonthlyRunRate')" id="mode_MonthlyRunRate"
+              class="calc-mode-btn px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 bg-blue-600 text-white border border-blue-500">
+              <i class="fa-solid fa-chart-line"></i>
+              <span id="lblModeRunRate">ወርሃዊ አማካይ (Run-Rate)</span>
+            </button>
+            <button type="button" onclick="setCalculationMode('CumulativeYtd')" id="mode_CumulativeYtd"
+              class="calc-mode-btn px-3 py-2 rounded-lg text-xs font-medium transition flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">
+              <i class="fa-solid fa-layer-group"></i>
+              <span id="lblModeYtd">ዓመታዊ ድምር (YTD)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Time Period Flexibility Controls -->
+        <div>
+          <label id="lblTimePeriod" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የጊዜ ክልል</label>
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5 mb-3">
+            <button type="button" onclick="setTimePreset('ALL')" id="preset_ALL" class="time-preset-btn active-preset px-2 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white border border-blue-500">ሙሉ ዓመት</button>
+            <button type="button" onclick="setTimePreset('Q1')" id="preset_Q1" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">1ኛ ሩብ</button>
+            <button type="button" onclick="setTimePreset('Q2')" id="preset_Q2" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">2ኛ ሩብ</button>
+            <button type="button" onclick="setTimePreset('Q3')" id="preset_Q3" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">3ኛ ሩብ</button>
+            <button type="button" onclick="setTimePreset('Q4')" id="preset_Q4" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">4ኛ ሩብ</button>
+            <button type="button" onclick="setTimePreset('CUSTOM')" id="preset_CUSTOM" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">ከ..እስከ</button>
+          </div>
+
+          <!-- Ethiopian Custom Date Range Inputs -->
+          <div id="customDateRangeBox" class="grid grid-cols-2 gap-3 p-3 bg-slate-800/60 rounded-xl border border-slate-700/80">
+            <div>
+              <label id="lblStartDate" class="block text-[11px] font-medium text-slate-400 mb-1">የመጀመሪያ ቀን (ዓ.ም)</label>
+              <div class="relative">
+                <input type="text" id="filterStartDate" placeholder="yyyy-MM-dd"
+                  class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 cursor-pointer" />
+                <i class="fa-solid fa-calendar-days absolute right-3 top-2.5 text-slate-400 pointer-events-none text-xs"></i>
+              </div>
+            </div>
+            <div>
+              <label id="lblEndDate" class="block text-[11px] font-medium text-slate-400 mb-1">የመጨረሻ ቀን (ዓ.ም)</label>
+              <div class="relative">
+                <input type="text" id="filterEndDate" placeholder="yyyy-MM-dd"
+                  class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 cursor-pointer" />
+                <i class="fa-solid fa-calendar-days absolute right-3 top-2.5 text-slate-400 pointer-events-none text-xs"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label id="lblParentBranch" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የቅርንጫፍ መ/ቤት</label>
           <select id="filterParent" onchange="applyFilters()"
             class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
-            <!-- Loaded dynamically from API -->
+            <option value="ALL">ሁሉም ቅርንጫፎች</option>
           </select>
         </div>
 
         <div>
-          <label id="lblPlanTaxItem" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Plan / Tax
-            Item</label>
+          <label id="lblPlanTaxItem" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የእቅድ / የታክስ አይነት</label>
           <select id="filterPlanItem" onchange="applyFilters()"
             class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
-            <!-- Loaded dynamically from API -->
+            <option value="ALL">ሁሉም የታክስ አይነቶች</option>
           </select>
         </div>
       </div>
@@ -258,11 +322,11 @@
       <!-- Action Buttons -->
       <div class="flex items-center justify-between border-t border-slate-800 pt-4">
         <button onclick="resetFilters()" id="lblClearFilters" class="text-xs text-slate-400 hover:text-white underline">
-          Clear All Filters
+          ማጣሪያዎችን አጽዳ
         </button>
         <button onclick="toggleFilterModal()" id="lblApplyClose"
           class="bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm px-5 py-2 rounded-lg transition">
-          Apply & Close
+          ተግብርና ዝጋ
         </button>
       </div>
     </div>
@@ -309,6 +373,14 @@
       </div>
     </div>
 
+    <!-- Slide 4: Daily Revenue Trend -->
+    <div id="slide-4" class="slide-container slide-hidden h-full w-full flex-col gap-3 min-h-0">
+      <div
+        class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden">
+        <div id="chartDailyTrend" class="w-full flex-1 min-h-[300px]"></div>
+      </div>
+    </div>
+
   </main>
 
   <!-- DYNAMIC FOOTER TOOLBAR (HOVER TO SHOW) -->
@@ -334,9 +406,18 @@
       <!-- Dot Indicators -->
       <div id="carouselDots" class="flex items-center gap-1.5 mr-4"></div>
 
+      <!-- Calculation Mode Quick Toggle Button -->
+      <button onclick="toggleCalculationMode()" id="quickCalcModeBtn"
+        class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-2 rounded-lg border border-slate-700/50 transition focus:outline-none cursor-pointer"
+        title="ወርሃዊ አማካይ / ዓመታዊ ድምር ቀይር">
+        <i class="fa-solid fa-calculator text-blue-400"></i>
+        <span id="quickCalcModeText">ወርሃዊ አማካይ</span>
+      </button>
+
       <!-- Action Buttons -->
       <select id="themeSelector" onchange="changeTheme(this.value)" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2 py-2 rounded-lg border border-slate-700/50 transition focus:outline-none cursor-pointer">
         <option value="ocean">Ocean (Default)</option>
+        <option value="emerald">Deep Emerald Treasury</option>
         <option value="national">National (Green/Yellow/Red)</option>
         <option value="forest">Forest</option>
         <option value="sunset">Sunset</option>
@@ -365,7 +446,7 @@
     // Global Application State
     const state = {
       currentLang: 'en', // 'en' or 'am'
-      currentTheme: 'ocean',
+      currentTheme: localStorage.getItem('dashboard_theme') || 'ocean',
       currentSlide: 0,
       slideCount: 0,
       activeSlides: [],
@@ -376,7 +457,11 @@
       filters: {
         fiscalYear: 'ALL',
         parent: 'ALL',
-        planItem: 'ALL'
+        planItem: 'ALL',
+        startDate: '',
+        endDate: '',
+        datePreset: 'ALL',
+        calculationMode: 'MonthlyRunRate'
       }
     };
 
@@ -388,6 +473,11 @@
       ocean: {
         bg: '#0b1120', cardBg: 'rgba(30, 41, 59, 0.95)', border: '#334155',
         primary: '#06b6d4', secondary: '#3b82f6',
+        success: '#10b981', warning: '#f59e0b', danger: '#ef4444'
+      },
+      emerald: {
+        bg: '#04120e', cardBg: 'rgba(10, 34, 26, 0.95)', border: '#134e3d',
+        primary: '#10b981', secondary: '#34d399',
         success: '#10b981', warning: '#f59e0b', danger: '#ef4444'
       },
       national: {
@@ -448,15 +538,30 @@
     };
 
     const ui_en_to_am = {
-      "Global Dashboard Filters": "የዳሽቦርድ ማጣሪያዎች",
-      "Fiscal Year": "በጀት ዓመት",
-      "Parent Branch": "ዋና ቅርንጫፍ",
+      "Global Dashboard Filters": "አጠቃላይ የማጣሪያ አማራጮች",
+      "Refine metrics across all Operations Center slides": "በሁሉም የስራ ክንውን ስላይዶች ላይ መረጃዎችን ያጣሩ",
+      "Fiscal Year": "የበጀት ዓመት",
+      "Time Period": "የጊዜ ክልል",
+      "Full Year": "ሙሉ ዓመት",
+      "1st Quarter": "1ኛ ሩብ",
+      "2nd Quarter": "2ኛ ሩብ",
+      "3rd Quarter": "3ኛ ሩብ",
+      "4th Quarter": "4ኛ ሩብ",
+      "Custom Range": "ከ..እስከ",
+      "Start Date (EC)": "የመጀመሪያ ቀን (ዓ.ም)",
+      "End Date (EC)": "የመጨረሻ ቀን (ዓ.ም)",
+      "Parent Branch": "የቅርንጫፍ መ/ቤት",
       "Plan / Tax Item": "የእቅድ / የታክስ አይነት",
       "Clear All Filters": "ማጣሪያዎችን አጽዳ",
-      "Apply & Close": "ተግብር እና ዝጋ",
+      "Apply & Close": "ተግብርና ዝጋ",
       "All Branches": "ሁሉም ቅርንጫፎች",
       "All Tax Types": "ሁሉም የታክስ አይነቶች",
-      "Filters": "መለያ",
+      "Calculation Mode": "የአሰላል ዘዴ",
+      "Monthly Run-Rate (Run-Rate)": "ወርሃዊ አማካይ (Run-Rate)",
+      "Cumulative YTD (YTD)": "ዓመታዊ ድምር (YTD)",
+      "Monthly Run-Rate": "ወርሃዊ አማካይ",
+      "Cumulative YTD": "ዓመታዊ ድምር",
+      "Filters": "ማጣሪያ",
       "Slide": "ገጽ",
       "of": "ከ",
       "Plan": "እቅድ",
@@ -470,13 +575,7 @@
 
     function t_db(text) {
       if (!text) return text;
-      // Database values are Amharic. If currentLang is 'en', we translate to English.
-      if (state.currentLang === 'en') {
-        // Strip trailing spaces and try to match
-        const cleanText = text.toString().trim();
-        return db_am_to_en[cleanText] || text;
-      }
-      return text;
+      return text; // Preserve database values directly
     }
 
     function t_ui(text) {
@@ -551,7 +650,12 @@
     function changeTheme(themeKey, skipDataReload = false) {
       if (!appThemes[themeKey]) return;
       state.currentTheme = themeKey;
+      localStorage.setItem('dashboard_theme', themeKey);
       const theme = appThemes[themeKey];
+
+      // Synchronize dropdown value
+      const sel = document.getElementById('themeSelector');
+      if (sel && sel.value !== themeKey) sel.value = themeKey;
 
       // Update Global CSS Variables / Body
       document.body.style.backgroundColor = theme.bg;
@@ -588,12 +692,26 @@
 
     function updateUILanguage() {
       if(document.getElementById('lblGlobalFilters')) document.getElementById('lblGlobalFilters').innerText = t_ui("Global Dashboard Filters");
+      if(document.getElementById('lblFilterSubtitle')) document.getElementById('lblFilterSubtitle').innerText = t_ui("Refine metrics across all Operations Center slides");
       if(document.getElementById('lblFiscalYear')) document.getElementById('lblFiscalYear').innerText = t_ui("Fiscal Year");
+      if(document.getElementById('lblTimePeriod')) document.getElementById('lblTimePeriod').innerText = t_ui("Time Period");
+      if(document.getElementById('preset_ALL')) document.getElementById('preset_ALL').innerText = t_ui("Full Year");
+      if(document.getElementById('preset_Q1')) document.getElementById('preset_Q1').innerText = t_ui("1st Quarter");
+      if(document.getElementById('preset_Q2')) document.getElementById('preset_Q2').innerText = t_ui("2nd Quarter");
+      if(document.getElementById('preset_Q3')) document.getElementById('preset_Q3').innerText = t_ui("3rd Quarter");
+      if(document.getElementById('preset_Q4')) document.getElementById('preset_Q4').innerText = t_ui("4th Quarter");
+      if(document.getElementById('preset_CUSTOM')) document.getElementById('preset_CUSTOM').innerText = t_ui("Custom Range");
+      if(document.getElementById('lblStartDate')) document.getElementById('lblStartDate').innerText = t_ui("Start Date (EC)");
+      if(document.getElementById('lblEndDate')) document.getElementById('lblEndDate').innerText = t_ui("End Date (EC)");
       if(document.getElementById('lblParentBranch')) document.getElementById('lblParentBranch').innerText = t_ui("Parent Branch");
       if(document.getElementById('lblPlanTaxItem')) document.getElementById('lblPlanTaxItem').innerText = t_ui("Plan / Tax Item");
       if(document.getElementById('lblClearFilters')) document.getElementById('lblClearFilters').innerText = t_ui("Clear All Filters");
       if(document.getElementById('lblApplyClose')) document.getElementById('lblApplyClose').innerText = t_ui("Apply & Close");
       if(document.getElementById('lblFiltersBtn')) document.getElementById('lblFiltersBtn').innerText = t_ui("Filters");
+      if(document.getElementById('lblCalcMode')) document.getElementById('lblCalcMode').innerText = t_ui("Calculation Mode");
+      if(document.getElementById('lblModeRunRate')) document.getElementById('lblModeRunRate').innerText = t_ui("Monthly Run-Rate (Run-Rate)");
+      if(document.getElementById('lblModeYtd')) document.getElementById('lblModeYtd').innerText = t_ui("Cumulative YTD (YTD)");
+      updateCalculationModeButtons(state.filters.calculationMode || 'MonthlyRunRate');
       updatePlayPauseButtonState();
       
       // Update Slide Titles
@@ -629,6 +747,13 @@
         state.filters.fiscalYear = config.defaultFilters.fiscalYearId;
         state.filters.parent = config.defaultFilters.parentId;
         state.filters.planItem = config.defaultFilters.planItemId;
+        if (config.kpiCalculationMode) {
+          state.filters.calculationMode = config.kpiCalculationMode;
+        }
+        if (config.defaultFilters && config.defaultFilters.calculationMode) {
+          state.filters.calculationMode = config.defaultFilters.calculationMode;
+        }
+        updateCalculationModeButtons(state.filters.calculationMode || 'MonthlyRunRate');
 
         state.autoRotate = config.carousel.autoPlay;
         state.carouselDefaultDuration = config.carousel.intervalMs || 12000;
@@ -681,6 +806,10 @@
           fiscalYearId: state.filters.fiscalYear || 'ALL',
           parentId: state.filters.parent || 'ALL',
           planItemId: state.filters.planItem || 'ALL',
+          startDate: state.filters.startDate || '',
+          endDate: state.filters.endDate || '',
+          datePreset: state.filters.datePreset || 'ALL',
+          calculationMode: state.filters.calculationMode || 'MonthlyRunRate',
           lang: state.currentLang || 'am'
         });
         const res = await fetch(`/api/dashboard/top-cards?${params}`);
@@ -688,6 +817,114 @@
         renderTopKpiCards(data.cards);
       } catch (err) {
         console.error("Failed to load top KPI cards:", err);
+      }
+    }
+
+    function setCalculationMode(mode) {
+      state.filters.calculationMode = mode;
+      updateCalculationModeButtons(mode);
+      loadTopCards();
+    }
+
+    function toggleCalculationMode() {
+      const newMode = state.filters.calculationMode === 'CumulativeYtd' ? 'MonthlyRunRate' : 'CumulativeYtd';
+      setCalculationMode(newMode);
+    }
+
+    function updateCalculationModeButtons(mode) {
+      const isRunRate = mode === 'MonthlyRunRate';
+      const btnRunRate = document.getElementById('mode_MonthlyRunRate');
+      const btnYtd = document.getElementById('mode_CumulativeYtd');
+      const quickBtnText = document.getElementById('quickCalcModeText');
+
+      if (btnRunRate && btnYtd) {
+        if (isRunRate) {
+          btnRunRate.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+          btnRunRate.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
+          btnYtd.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
+          btnYtd.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+        } else {
+          btnYtd.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+          btnYtd.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
+          btnRunRate.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
+          btnRunRate.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+        }
+      }
+
+      if (quickBtnText) {
+        quickBtnText.innerText = state.currentLang === 'am'
+          ? (isRunRate ? 'ወርሃዊ አማካይ' : 'ዓመታዊ ድምር')
+          : (isRunRate ? 'Monthly Run-Rate' : 'Cumulative YTD');
+      }
+    }
+
+    function setTimePreset(preset) {
+      state.filters.datePreset = preset;
+      updatePresetButtons(preset);
+
+      if (preset !== 'CUSTOM') {
+        const startInp = document.getElementById('filterStartDate');
+        const endInp = document.getElementById('filterEndDate');
+        if (startInp) startInp.value = '';
+        if (endInp) endInp.value = '';
+        state.filters.startDate = '';
+        state.filters.endDate = '';
+      }
+
+      applyFilters();
+    }
+
+    function updatePresetButtons(preset) {
+      document.querySelectorAll('.time-preset-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
+        btn.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+      });
+      const activeBtn = document.getElementById(`preset_${preset}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+        activeBtn.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
+      }
+    }
+
+    function initETDatePickers() {
+      try {
+        if (typeof $ !== 'undefined' && $.calendars) {
+          const calendar = $.calendars.instance('ethiopian', 'am');
+
+          $('#filterStartDate').calendarsPicker({
+            calendar: calendar,
+            dateFormat: 'yyyy-mm-dd',
+            todayText: 'ዛሬ',
+            clearText: 'አጥፋ',
+            closeText: 'ዝጋ',
+            onSelect: function(dates) {
+              if (dates && dates.length > 0) {
+                state.filters.startDate = $('#filterStartDate').val();
+                state.filters.datePreset = 'CUSTOM';
+                updatePresetButtons('CUSTOM');
+                applyFilters();
+              }
+            }
+          });
+
+          $('#filterEndDate').calendarsPicker({
+            calendar: calendar,
+            dateFormat: 'yyyy-mm-dd',
+            todayText: 'ዛሬ',
+            clearText: 'አጥፋ',
+            closeText: 'ዝጋ',
+            onSelect: function(dates) {
+              if (dates && dates.length > 0) {
+                state.filters.endDate = $('#filterEndDate').val();
+                state.filters.datePreset = 'CUSTOM';
+                updatePresetButtons('CUSTOM');
+                applyFilters();
+              }
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("Ethiopian date picker init warning:", e);
       }
     }
 
@@ -720,12 +957,14 @@
           ? `${formatHumanValue(card.actual, true, state.currentLang)} (${formatHumanValue(card.target, true, state.currentLang)})`
           : formatHumanValue(card.target, false, state.currentLang);
         const titleText = state.currentLang === 'am' ? card.titleAmharic : card.titleEnglish;
+        const subText = state.currentLang === 'am' ? card.subtitleAmharic : card.subtitleEnglish;
 
         return `
           <div id="card_box_${card.id}" class="kpi-card-box bg-cardBg border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative overflow-hidden backdrop-blur-md transition-all hover:scale-[1.03] group min-h-[120px]" style="background-color: ${theme.cardBg}; ${cardGlow}">
-            <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
               <div class="min-w-0 flex-1">
-                <h4 id="card_title_${card.id}" class="text-xs 2xl:text-sm font-extrabold text-slate-100 whitespace-normal line-clamp-2" title="${titleText}">${titleText}</h4>
+                <h4 id="card_title_${card.id}" class="text-xs 2xl:text-sm font-extrabold text-slate-100 whitespace-normal line-clamp-1" title="${titleText}">${titleText}</h4>
+                <div id="card_sub_${card.id}" class="text-[9px] 2xl:text-[10px] font-semibold text-cyan-400 tracking-wide truncate mt-0.5">${subText || ''}</div>
               </div>
               <span id="card_badge_${card.id}" class="text-xs font-black px-2.5 py-1 rounded-lg border flex-shrink-0" style="${badgeBg}">${card.achievementPct}%</span>
             </div>
@@ -804,6 +1043,7 @@
         if (card.achievementPct < 70) statusColor = theme.danger;
 
         const titleEl = document.getElementById(`card_title_${card.id}`);
+        const subEl = document.getElementById(`card_sub_${card.id}`);
         const badgeEl = document.getElementById(`card_badge_${card.id}`);
         const actualEl = document.getElementById(`card_actual_${card.id}`);
         const targetEl = document.getElementById(`card_target_${card.id}`);
@@ -813,6 +1053,11 @@
           const titleText = state.currentLang === 'am' ? card.titleAmharic : card.titleEnglish;
           titleEl.innerText = titleText;
           titleEl.title = titleText;
+        }
+
+        if (subEl) {
+          const subText = state.currentLang === 'am' ? card.subtitleAmharic : card.subtitleEnglish;
+          subEl.innerText = subText || '';
         }
 
         if (badgeEl) {
@@ -856,9 +1101,11 @@
 
     // Apply Filter Changes
     async function applyFilters() {
-      state.filters.fiscalYear = document.getElementById('filterFiscalYear').value;
-      state.filters.parent = document.getElementById('filterParent').value;
-      state.filters.planItem = document.getElementById('filterPlanItem').value;
+      state.filters.fiscalYear = document.getElementById('filterFiscalYear')?.value || 'ALL';
+      state.filters.parent = document.getElementById('filterParent')?.value || 'ALL';
+      state.filters.planItem = document.getElementById('filterPlanItem')?.value || 'ALL';
+      state.filters.startDate = document.getElementById('filterStartDate')?.value || '';
+      state.filters.endDate = document.getElementById('filterEndDate')?.value || '';
 
       updateDropdownLabels();
 
@@ -870,16 +1117,27 @@
 
     async function resetFilters() {
       if (state.config && state.config.defaultFilters) {
-        document.getElementById('filterFiscalYear').value = state.config.defaultFilters.fiscalYearId;
-        document.getElementById('filterParent').value = state.config.defaultFilters.parentId;
-        document.getElementById('filterPlanItem').value = state.config.defaultFilters.planItemId;
+        document.getElementById('filterFiscalYear').value = state.config.defaultFilters.fiscalYearId || '2018';
+        document.getElementById('filterParent').value = state.config.defaultFilters.parentId || 'ALL';
+        document.getElementById('filterPlanItem').value = state.config.defaultFilters.planItemId || 'ALL';
+        state.filters.calculationMode = state.config.kpiCalculationMode || state.config.defaultFilters.calculationMode || 'MonthlyRunRate';
       } else {
         if (document.getElementById('filterFiscalYear').options.length > 0) {
           document.getElementById('filterFiscalYear').selectedIndex = 0;
         }
         document.getElementById('filterParent').value = 'ALL';
         document.getElementById('filterPlanItem').value = 'ALL';
+        state.filters.calculationMode = 'MonthlyRunRate';
       }
+      const startInp = document.getElementById('filterStartDate');
+      const endInp = document.getElementById('filterEndDate');
+      if (startInp) startInp.value = '';
+      if (endInp) endInp.value = '';
+      state.filters.startDate = '';
+      state.filters.endDate = '';
+      state.filters.datePreset = 'ALL';
+      updatePresetButtons('ALL');
+      updateCalculationModeButtons(state.filters.calculationMode);
       await applyFilters();
     }
 
@@ -892,7 +1150,11 @@
         const query = new URLSearchParams({
           fiscalYearId: state.filters.fiscalYear,
           parentId: state.filters.parent,
-          planItemId: state.filters.planItem
+          planItemId: state.filters.planItem,
+          startDate: state.filters.startDate || '',
+          endDate: state.filters.endDate || '',
+          datePreset: state.filters.datePreset || 'ALL',
+          lang: state.currentLang || 'am'
         }).toString();
 
         const resData = await fetch(`${slide.apiEndpoint}?${query}`).then(r => r.json());
@@ -952,42 +1214,270 @@
           renderYoYMonthlyTrendChart(resData, slide);
         }
       } else if (slide.id === 'slide-4') {
-        if (!chartInstances.topPerformers && document.getElementById('chartTopPerformers')) {
-          chartInstances.topPerformers = echarts.init(document.getElementById('chartTopPerformers'), 'dark');
+        const dailyDom = document.getElementById('chartDailyTrend');
+        if (dailyDom) {
+          if (!chartInstances.dailyTrend) {
+            chartInstances.dailyTrend = echarts.init(dailyDom, 'dark');
+          }
+          chartInstances.dailyTrend.resize();
+          renderDailyTrendChart(resData, slide);
         }
-        if (!chartInstances.bottomPerformers && document.getElementById('chartBottomPerformers')) {
-          chartInstances.bottomPerformers = echarts.init(document.getElementById('chartBottomPerformers'), 'dark');
-        }
-        if (chartInstances.topPerformers) chartInstances.topPerformers.resize();
-        if (chartInstances.bottomPerformers) chartInstances.bottomPerformers.resize();
-        renderBranchRankingOption3(resData, slide);
       }
+    }
+
+    // Helper to format Ethiopian date string (yyyy-MM-dd) to readable localized header
+    function formatEthiopianDateTitle(dateStr, lang) {
+      if (!dateStr) return '';
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      const year = parts[0];
+      const monthNum = parseInt(parts[1], 10);
+      const day = parseInt(parts[2], 10);
+      const amMonths = ['', 'መስከረም', 'ጥቅምት', 'ኅዳር', 'ታኅሣሥ', 'ጥር', 'የካቲት', 'መጋቢት', 'ሚያዝያ', 'ግንቦት', 'ሰኔ', 'ሐምሌ', 'ነሐሴ', 'ጳጉሜን'];
+      const enMonths = ['', 'Meskerem', 'Tikimt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Ginbot', 'Sene', 'Hamle', 'Nehasse', 'Pagume'];
+      const mName = lang === 'am' ? (amMonths[monthNum] || `ወር ${monthNum}`) : (enMonths[monthNum] || `Month ${monthNum}`);
+      const yrSuffix = lang === 'am' ? 'ዓ.ም' : 'E.C.';
+      return `${mName} ${day}፣ ${year} ${yrSuffix}`;
+    }
+
+    // 5. Daily Revenue Trend Chart
+    function renderDailyTrendChart(dailyRes, slideConfig) {
+      if (!chartInstances.dailyTrend) {
+        chartInstances.dailyTrend = echarts.init(document.getElementById('chartDailyTrend'), 'dark');
+      }
+
+      const dates = dailyRes && dailyRes.dates && dailyRes.dates.length > 0 ? dailyRes.dates : [];
+      const actuals = dailyRes && dailyRes.actualBillions && dailyRes.actualBillions.length > 0 ? dailyRes.actualBillions : [];
+      const targets = dailyRes && dailyRes.targetBillions && dailyRes.targetBillions.length > 0 ? dailyRes.targetBillions : [];
+
+      const theme = appThemes[state.currentTheme] || appThemes.ocean;
+      const curPrefix = state.currentLang === 'am' ? 'ብር ' : 'ETB ';
+      const magSuffix = state.currentLang === 'am' ? 'ቢ' : 'B';
+      const actualLabel = state.currentLang === 'am' ? 'ዕለታዊ ክንውን' : 'Daily Actual';
+      const targetLabel = state.currentLang === 'am' ? 'ዕለታዊ እቅድ (ግምት)' : 'Daily Target Rate';
+
+      const option = {
+        backgroundColor: 'transparent',
+        animation: true,
+        animationDuration: 1000,
+        animationEasing: 'cubicOut',
+        title: {
+          text: state.currentLang === 'am' && slideConfig && slideConfig.titleAm ? slideConfig.titleAm : (slideConfig && slideConfig.title ? slideConfig.title : t_ui('Daily Revenue Trend')),
+          subtext: state.currentLang === 'am' && slideConfig && slideConfig.subtitleAm ? slideConfig.subtitleAm : (slideConfig && slideConfig.subtitle ? slideConfig.subtitle : t_ui('Daily revenue performance trajectory')),
+          left: 'center',
+          top: 10,
+          textStyle: { color: '#f8fafc', fontSize: 18, fontWeight: 'bold' },
+          subtextStyle: { color: '#94a3b8', fontSize: 12 }
+        },
+        legend: {
+          show: true,
+          bottom: 5,
+          left: 'center',
+          icon: 'circle',
+          textStyle: { color: '#cbd5e1', fontSize: 12 },
+          data: [actualLabel, targetLabel]
+        },
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          borderColor: 'rgba(71, 85, 105, 0.8)',
+          borderWidth: 1,
+          padding: [12, 16],
+          textStyle: {
+            color: '#f8fafc',
+            fontFamily: 'Inter, Outfit, sans-serif'
+          },
+          extraCssText: 'box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border-radius: 10px; min-width: 250px; border: 1px solid rgba(148, 163, 184, 0.25);',
+          axisPointer: {
+            type: 'line',
+            lineStyle: {
+              color: 'rgba(56, 189, 248, 0.6)',
+              type: 'dashed',
+              width: 1.5
+            }
+          },
+          formatter: (params) => {
+            if (!params || params.length === 0) return '';
+            const rawDate = params[0].name || '';
+            const dateTitle = formatEthiopianDateTitle(rawDate, state.currentLang);
+
+            let actualVal = null;
+            let targetVal = null;
+
+            params.forEach(p => {
+              if (p.seriesName === actualLabel) actualVal = Number(p.value);
+              if (p.seriesName === targetLabel) targetVal = Number(p.value);
+            });
+
+            let out = `<div style="border-bottom:1px solid rgba(148,163,184,0.25);padding-bottom:6px;margin-bottom:8px;">
+              <span style="font-weight:700;font-size:13px;color:#f8fafc;letter-spacing:0.3px;">📅 ${dateTitle}</span>
+            </div>`;
+
+            params.forEach(p => {
+              const isActual = p.seriesName === actualLabel;
+              const valColor = isActual ? '#38bdf8' : '#f59e0b';
+              const dotColor = isActual ? '#06b6d4' : '#f59e0b';
+              out += `<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:5px;font-size:12px;">
+                <span style="color:#cbd5e1;display:flex;align-items:center;gap:6px;">
+                  <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background-color:${dotColor};box-shadow:0 0 6px ${dotColor}80;"></span>
+                  ${p.seriesName}:
+                </span>
+                <span style="font-weight:700;color:${valColor};font-family:monospace;font-size:13px;">${curPrefix}${Number(p.value).toFixed(2)} ${magSuffix}</span>
+              </div>`;
+            });
+
+            if (actualVal !== null && targetVal !== null && targetVal > 0) {
+              const diff = actualVal - targetVal;
+              const pct = ((actualVal / targetVal) * 100).toFixed(0);
+              const isPositive = diff >= 0;
+              const diffColor = isPositive ? '#10b981' : '#f43f5e';
+              const diffSign = isPositive ? '+' : '';
+              const diffLabel = isPositive
+                ? (state.currentLang === 'am' ? 'ከእቅድ በላይ' : 'Above Target')
+                : (state.currentLang === 'am' ? 'ከእቅድ በታች' : 'Below Target');
+
+              out += `<div style="border-top:1px solid rgba(148,163,184,0.2);margin-top:8px;padding-top:6px;display:flex;justify-content:space-between;align-items:center;font-size:11px;">
+                <span style="color:#94a3b8;">${state.currentLang === 'am' ? 'አፈፃፀም / ልዩነት' : 'Pace / Variance'}:</span>
+                <span style="font-weight:700;color:${diffColor};">
+                  ${diffSign}${diff.toFixed(2)} ${magSuffix} (${pct}% ${diffLabel})
+                </span>
+              </div>`;
+            }
+
+            return out;
+          }
+        },
+        grid: { left: '3%', right: '4%', bottom: '55px', top: '75px', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: dates,
+          axisLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.3)' } },
+          axisTick: { alignWithLabel: true, lineStyle: { color: 'rgba(148, 163, 184, 0.3)' } },
+          axisLabel: { 
+            color: '#cbd5e1', 
+            fontSize: 11, 
+            rotate: 45,
+            interval: dates.length > 50 ? 'auto' : 0,
+            formatter: (val) => {
+              if (!val) return '';
+              const parts = val.split('-');
+              if (parts.length !== 3) return val;
+              const m = parseInt(parts[1], 10);
+              const d = parseInt(parts[2], 10);
+              const amShort = ['', 'መስ', 'ጥቅ', 'ኅዳ', 'ታኅ', 'ጥር', 'የካ', 'መጋ', 'ሚያ', 'ግን', 'ሰኔ', 'ሐም', 'ነሐ', 'ጳጉ'];
+              const enShort = ['', 'Mes', 'Tik', 'Hid', 'Tah', 'Tir', 'Yek', 'Meg', 'Mia', 'Gin', 'Sen', 'Ham', 'Neh', 'Pag'];
+              const prefix = state.currentLang === 'am' ? (amShort[m] || m) : (enShort[m] || m);
+              return `${prefix} ${d < 10 ? '0' + d : d}`;
+            }
+          }
+        },
+        yAxis: {
+          type: 'value',
+          axisLabel: { 
+            color: '#94a3b8', 
+            fontSize: 11,
+            formatter: (val) => `${curPrefix}${val}${magSuffix}` 
+          },
+          splitLine: { 
+            lineStyle: { 
+              color: 'rgba(51, 65, 85, 0.45)',
+              type: 'dashed'
+            } 
+          }
+        },
+        series: [
+          {
+            name: actualLabel,
+            type: 'line',
+            smooth: 0.25,
+            symbol: 'circle',
+            symbolSize: 6,
+            showSymbol: dates.length <= 40,
+            emphasis: {
+              focus: 'series',
+              scale: 1.5,
+              itemStyle: {
+                color: '#38bdf8',
+                borderColor: '#ffffff',
+                borderWidth: 2,
+                shadowBlur: 10,
+                shadowColor: '#38bdf8'
+              }
+            },
+            data: actuals,
+            itemStyle: { color: theme.primary },
+            lineStyle: { 
+              width: 3.2, 
+              color: theme.primary,
+              shadowColor: theme.primary + '66',
+              shadowBlur: 10
+            },
+            areaStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: theme.primary + '55' },
+                { offset: 0.7, color: theme.primary + '10' },
+                { offset: 1, color: 'transparent' }
+              ])
+            }
+          },
+          {
+            name: targetLabel,
+            type: 'line',
+            smooth: false,
+            symbol: 'none',
+            data: targets,
+            itemStyle: { color: '#f59e0b' },
+            lineStyle: { 
+              width: 2.2, 
+              type: [6, 4], 
+              color: '#f59e0b',
+              shadowColor: 'rgba(245, 158, 11, 0.35)',
+              shadowBlur: 6
+            }
+          }
+        ]
+      };
+
+      chartInstances.dailyTrend.setOption(option, { notMerge: true });
     }
 
     // Populate Filter Modal Dropdowns on Page Load  
     async function loadFilterDropdowns() {
       try {
         const res = await fetch('/api/dashboard/filter-options');
+        if (!res.ok) {
+          console.error("Filter options fetch error:", res.status);
+          return;
+        }
         const options = await res.json();
+        const years = options.fiscalYears || options.FiscalYears || [];
+        const branches = options.branches || options.Branches || [];
+        const taxTypes = options.taxTypes || options.TaxTypes || [];
 
         const yearSelect = document.getElementById('filterFiscalYear');
-        yearSelect.innerHTML = options.fiscalYears.map(y => `<option value="${y.id}">${t_db(y.name)}</option>`).join('');
-        if (state.filters.fiscalYear) {
-          yearSelect.value = state.filters.fiscalYear;
+        if (yearSelect && years.length > 0) {
+          yearSelect.innerHTML = years.map(y => `<option value="${y.id || y.Id}">${y.name || y.Name}</option>`).join('');
+          if (state.filters.fiscalYear) {
+            yearSelect.value = state.filters.fiscalYear;
+          }
         }
 
         const branchSelect = document.getElementById('filterParent');
-        branchSelect.innerHTML = `<option value="ALL">${t_ui('All Branches')}</option>` +
-          options.branches.map(b => `<option value="${b.id}">${t_db(b.name)}</option>`).join('');
-        if (state.filters.parent) {
-          branchSelect.value = state.filters.parent;
+        if (branchSelect) {
+          branchSelect.innerHTML = `<option value="ALL">${t_ui('All Branches')}</option>` +
+            branches.map(b => `<option value="${b.id || b.Id}">${b.name || b.Name}</option>`).join('');
+          if (state.filters.parent) {
+            branchSelect.value = state.filters.parent;
+          }
         }
 
         const taxSelect = document.getElementById('filterPlanItem');
-        taxSelect.innerHTML = `<option value="ALL">${t_ui('All Tax Types')}</option>` +
-          options.taxTypes.map(t => `<option value="${t.id}">${t_db(t.name)}</option>`).join('');
-        if (state.filters.planItem) {
-          taxSelect.value = state.filters.planItem;
+        if (taxSelect) {
+          taxSelect.innerHTML = `<option value="ALL">${t_ui('All Tax Types')}</option>` +
+            taxTypes.map(t => `<option value="${t.id || t.Id}">${t.name || t.Name}</option>`).join('');
+          if (state.filters.planItem) {
+            taxSelect.value = state.filters.planItem;
+          }
         }
       } catch (err) {
         console.error("Failed to load filter dropdowns:", err);
@@ -1700,6 +2190,7 @@
 
       // 3. Immediately render slide 0 and load cards + filter options in parallel
       goToSlide(0);
+      initETDatePickers();
       loadTopCards().catch(err => console.error("Top cards error:", err));
       loadFilterDropdowns().catch(err => console.error("Filter options error:", err));
 
