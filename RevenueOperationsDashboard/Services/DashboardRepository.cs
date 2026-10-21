@@ -133,13 +133,21 @@ namespace RevenueOperationsDashboard.Services
             DateTime refDate;
             if (int.TryParse(fiscalYearId, out var fyNum) && fyNum < todayEt.Year)
             {
-                // Closed historical year: anchor to the final operational week of that fiscal year (Sene 30)
-                refDate = _clock.ToGregorian(fyNum, 10, 30).Date;
+                // Closed historical year: anchor to the final operational closeout week (Hamle 01)
+                // where the fiscal year's peak closing collections are consolidated
+                refDate = _clock.ToGregorian(fyNum, 11, 1).Date;
             }
             else
             {
-                // Current operational year: anchor to current date
+                // Current operational year: anchor to the latest closed reporting cutoff week.
+                // If today is the cutoff day itself (e.g. Wednesday daytime), the weekly batch
+                // closes on Wednesday evening. Until the evening batch arrives, anchor to the
+                // last fully closed weekly cutoff (previous Wednesday).
                 refDate = DateTime.Today;
+                if (refDate.DayOfWeek == cutoffDay)
+                {
+                    refDate = refDate.AddDays(-1);
+                }
             }
 
             int diff = ((int)refDate.DayOfWeek - (int)cutoffDay + 7) % 7;
