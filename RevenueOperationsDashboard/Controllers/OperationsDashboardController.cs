@@ -78,9 +78,13 @@ namespace RevenueOperationsDashboard.Controllers
         }
 
         [HttpGet("weekly-report")]
-        public async Task<IActionResult> GetWeeklyReport([FromQuery] DashboardFilterDto filters)
+        public async Task<IActionResult> GetWeeklyReport([FromQuery] DashboardFilterDto filters, [FromQuery] bool refresh = false)
         {
             string cacheKey = $"weekly_report_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}_{filters.Lang ?? "am"}";
+            if (refresh)
+            {
+                _cache.Remove(cacheKey);
+            }
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);

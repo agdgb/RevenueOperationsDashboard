@@ -1084,9 +1084,7 @@ namespace RevenueOperationsDashboard.Services
             var currencyPolicy = isEnglish ? "EnglishCurrency" : "AmharicCurrency";
             var currencyOptions = HumanNumbersConfig.Instance.GetPolicies().TryGetValue(currencyPolicy, out var cp) ? cp : HumanNumbersConfig.Instance.GlobalOptions;
 
-            using var conn = await GetConnectionAsync();
-
-            // 1. Weekly Core Revenue Totals
+            // 1. SQL Query Definitions
             const string sqlTotals = @"
                 WITH DistinctMonthlyTargets AS (
                     SELECT DISTINCT 
@@ -1139,31 +1137,6 @@ namespace RevenueOperationsDashboard.Services
                     ISNULL((SELECT TotalActual FROM ActualSum), 0) AS Actual,
                     ISNULL((SELECT DailyTarget FROM TargetRate) * @PeriodDays, 0) AS Target;";
 
-            var totalsRow = await conn.QueryFirstOrDefaultAsync<dynamic>(new CommandDefinition(sqlTotals, new
-            {
-                FiscalYearId = fy,
-                ParentId = parentId,
-                PlanItemId = planItemId,
-                StartDate = startDate,
-                EndDate = endDate,
-                PeriodDays = periodDays
-            }, commandTimeout: 120));
-
-            decimal weeklyAct = (decimal)(totalsRow?.Actual ?? 0m);
-            decimal weeklyTgt = (decimal)(totalsRow?.Target ?? 0m);
-            decimal calib = fy == "2018" ? (248950784607.89m / 256700000000.00m) : fy == "2019" ? (371558025609.84m / 380000000000.00m) : 1.0m;
-            weeklyTgt = Math.Round(weeklyTgt * calib, 2);
-            weeklyAct = Math.Round(weeklyAct, 2);
-            decimal achievementPct = weeklyTgt > 0 ? Math.Round((weeklyAct / weeklyTgt) * 100m, 1) : 0m;
-            decimal variance = weeklyAct - weeklyTgt;
-
-            // Required Daily Run-Rate (RDR)
-            int remainingDays = Math.Max(1, 30 - etE.Day);
-            decimal monthlyTgt = weeklyTgt / periodDays * 30.0m;
-            decimal remainingTgt = Math.Max(0m, monthlyTgt - weeklyAct);
-            decimal rdr = Math.Round(remainingTgt / remainingDays, 2);
-
-            // 2. 6 Core Tax Streams Performance
             const string sqlStreams = @"
                 SELECT 
                     PlanItemName,
@@ -1185,50 +1158,6 @@ namespace RevenueOperationsDashboard.Services
                 GROUP BY PlanItemName
                 ORDER BY ActualBillions DESC;";
 
-            var streamRows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sqlStreams, new
-            {
-                FiscalYearId = fy,
-                ParentId = parentId,
-                StartDate = startDate,
-                EndDate = endDate,
-                PeriodDays = periodDays
-            }, commandTimeout: 120))).ToList();
-
-            var taxStreams = new List<WeeklyTaxStreamItemDto>();
-            decimal totalStreamAct = streamRows.Sum(r => (decimal)(r.ActualBillions ?? 0m));
-
-            foreach (var r in streamRows)
-            {
-                string piName = (string)r.PlanItemName;
-                decimal sAct = (decimal)(r.ActualBillions ?? 0m);
-                decimal sTgt = (decimal)(r.TargetBillions ?? 0m);
-                sTgt = Math.Round(sTgt * calib, 2);
-                decimal sPct = sTgt > 0 ? Math.Round((sAct / sTgt) * 100m, 1) : 0m;
-                decimal sShare = totalStreamAct > 0 ? Math.Round((sAct / totalStreamAct) * 100m, 1) : 0m;
-
-                string enName = piName switch
-                {
-                    var x when x.Contains("1101") => "Employment & Wages (1101)",
-                    var x when x.Contains("1103") => "Business Profit (1103)",
-                    var x when x.Contains("1120") => "Value Added Tax (1120-1199)",
-                    var x when x.Contains("1102") => "Rental Income (1102)",
-                    var x when x.Contains("1700") => "Municipal Revenue (1700-1799)",
-                    var x when x.Contains("1701") => "Property / House Tax (1701)",
-                    _ => piName
-                };
-
-                taxStreams.Add(new WeeklyTaxStreamItemDto
-                {
-                    CategoryNameAmharic = piName,
-                    CategoryName = enName,
-                    ActualBillions = sAct,
-                    TargetBillions = sTgt,
-                    AchievementPct = sPct,
-                    SharePct = sShare
-                });
-            }
-
-            // 3. Branch Office League (Top 3 and Bottom 3)
             const string sqlBranches = @"
                 WITH DistinctMonthlyBranchTargets AS (
                     SELECT DISTINCT 
@@ -1299,29 +1228,6 @@ namespace RevenueOperationsDashboard.Services
                 LEFT JOIN BranchActuals ba ON bt.ParentId = ba.ParentId
                 ORDER BY AchievementPct DESC;";
 
-            var branchRows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sqlBranches, new
-            {
-                FiscalYearId = fy,
-                PlanItemId = planItemId,
-                StartDate = startDate,
-                EndDate = endDate,
-                PeriodDays = periodDays
-            }, commandTimeout: 120))).ToList();
-
-            var allBranches = branchRows.Select(r => new WeeklyBranchRankItemDto
-            {
-                BranchId = r.ParentId.ToString(),
-                BranchName = (string)r.ParentName,
-                ActualBillions = (decimal)(r.ActualBillions ?? 0m),
-                TargetBillions = Math.Round((decimal)(r.TargetBillions ?? 0m) * calib, 2),
-                AchievementPct = (decimal)(r.AchievementPct ?? 0m),
-                VarianceBillions = (decimal)(r.VarianceBillions ?? 0m)
-            }).ToList();
-
-            var topBranches = allBranches.Take(3).ToList();
-            var laggingBranches = allBranches.OrderBy(b => b.AchievementPct).Take(3).ToList();
-
-            // 4. Daily 7-Day Velocity Curve
             const string sqlDaily = @"
                 WITH DistinctMonthlyTargets AS (
                     SELECT DISTINCT 
@@ -1367,15 +1273,168 @@ namespace RevenueOperationsDashboard.Services
                 GROUP BY da.EntryDate
                 ORDER BY da.EntryDate ASC;";
 
-            var dailyRows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sqlDaily, new
-            {
-                FiscalYearId = fy,
-                ParentId = parentId,
-                PlanItemId = planItemId,
-                StartDate = startDate,
-                EndDate = endDate
-            }, commandTimeout: 120))).ToList();
+            const string sqlBranchSources = @"
+                SELECT 
+                    ParentId,
+                    ParentName,
+                    ROUND(SUM(DailyActual), 2) AS TotalActual,
+                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1103%' OR PlanItemId = '34D4D2FF-8A63-4A94-BACA-A00B6487EF80' THEN DailyActual ELSE 0 END), 2) AS ProfitActual,
+                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1120%' OR PlanItemId = 'DF4D92F4-AC35-4388-BE64-7C0413BD7C32' THEN DailyActual ELSE 0 END), 2) AS VatActual,
+                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1101%' OR PlanItemId = '0D1BA173-8989-4529-A479-1F0175D459F8' THEN DailyActual ELSE 0 END), 2) AS WagesActual,
+                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1102%' OR PlanItemId = '5CD30032-DCED-4B87-825F-28830F0B8079' THEN DailyActual ELSE 0 END), 2) AS RentalActual,
+                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1701%' OR PlanItemId = 'A89173E0-F938-45DC-83E8-1B14ED44CAA2' THEN DailyActual ELSE 0 END), 2) AS PropertyActual
+                FROM [dbo].[vw_RevenuePerformanceDaily]
+                WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                  AND EntryDate >= @StartDate AND EntryDate <= @EndDate
+                  AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
+                  AND ParentId <> '1'
+                  AND PlanItemId NOT IN (
+                      'F6D06033-5C3D-4647-A0F7-E8141C4B3AC0', -- የታክስ ድምር(1100-1299)
+                      '49352433-53B5-466A-88DA-71D146A60C89', -- ቀጥታ ታክስ(1100-1119)
+                      '98664116-7114-421A-82FD-B05865173EDF', -- ቀጥታ ያልሆነ ታክስ(1120-1299)
+                      'EB486830-7C2F-4C28-B2A4-195FDB6641C5', -- የማዘጋጃ ቤቶች ገቢ(1700-1799)
+                      '23FCD202-46FF-4C7D-ADF6-44C10D470003'  -- የታክስ ገቢዎች(1701-1719)
+                  )
+                GROUP BY ParentId, ParentName;";
 
+            // 2. Parallel Database Execution across independent pooled connections
+            var taskTotals = Task.Run(async () =>
+            {
+                using var conn = await GetConnectionAsync();
+                return await conn.QueryFirstOrDefaultAsync<dynamic>(new CommandDefinition(sqlTotals, new
+                {
+                    FiscalYearId = fy,
+                    ParentId = parentId,
+                    PlanItemId = planItemId,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    PeriodDays = periodDays
+                }, commandTimeout: 120));
+            });
+
+            var taskStreams = Task.Run(async () =>
+            {
+                using var conn = await GetConnectionAsync();
+                return (await conn.QueryAsync<dynamic>(new CommandDefinition(sqlStreams, new
+                {
+                    FiscalYearId = fy,
+                    ParentId = parentId,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    PeriodDays = periodDays
+                }, commandTimeout: 120))).ToList();
+            });
+
+            var taskBranches = Task.Run(async () =>
+            {
+                using var conn = await GetConnectionAsync();
+                return (await conn.QueryAsync<dynamic>(new CommandDefinition(sqlBranches, new
+                {
+                    FiscalYearId = fy,
+                    PlanItemId = planItemId,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    PeriodDays = periodDays
+                }, commandTimeout: 120))).ToList();
+            });
+
+            var taskDaily = Task.Run(async () =>
+            {
+                using var conn = await GetConnectionAsync();
+                return (await conn.QueryAsync<dynamic>(new CommandDefinition(sqlDaily, new
+                {
+                    FiscalYearId = fy,
+                    ParentId = parentId,
+                    PlanItemId = planItemId,
+                    StartDate = startDate,
+                    EndDate = endDate
+                }, commandTimeout: 120))).ToList();
+            });
+
+            var taskBranchSources = Task.Run(async () =>
+            {
+                using var conn = await GetConnectionAsync();
+                return (await conn.QueryAsync<dynamic>(new CommandDefinition(sqlBranchSources, new
+                {
+                    FiscalYearId = fy,
+                    StartDate = startDate,
+                    EndDate = endDate
+                }, commandTimeout: 120))).ToList();
+            });
+
+            await Task.WhenAll(taskTotals, taskStreams, taskBranches, taskDaily, taskBranchSources);
+
+            var totalsRow = await taskTotals;
+            var streamRows = await taskStreams;
+            var branchRows = await taskBranches;
+            var dailyRows = await taskDaily;
+            var branchSourceRows = await taskBranchSources;
+
+            // 3. Process Core Totals & RDR
+            decimal weeklyAct = (decimal)(totalsRow?.Actual ?? 0m);
+            decimal weeklyTgt = (decimal)(totalsRow?.Target ?? 0m);
+            decimal calib = fy == "2018" ? (248950784607.89m / 256700000000.00m) : fy == "2019" ? (371558025609.84m / 380000000000.00m) : 1.0m;
+            weeklyTgt = Math.Round(weeklyTgt * calib, 2);
+            weeklyAct = Math.Round(weeklyAct, 2);
+            decimal achievementPct = weeklyTgt > 0 ? Math.Round((weeklyAct / weeklyTgt) * 100m, 1) : 0m;
+            decimal variance = weeklyAct - weeklyTgt;
+
+            // Required Daily Run-Rate (RDR)
+            int remainingDays = Math.Max(1, 30 - etE.Day);
+            decimal monthlyTgt = weeklyTgt / periodDays * 30.0m;
+            decimal remainingTgt = Math.Max(0m, monthlyTgt - weeklyAct);
+            decimal rdr = Math.Round(remainingTgt / remainingDays, 2);
+
+            // 4. Process 6 Core Tax Streams Performance
+            var taxStreams = new List<WeeklyTaxStreamItemDto>();
+            decimal totalStreamAct = streamRows.Sum(r => (decimal)(r.ActualBillions ?? 0m));
+
+            foreach (var r in streamRows)
+            {
+                string piName = (string)r.PlanItemName;
+                decimal sAct = (decimal)(r.ActualBillions ?? 0m);
+                decimal sTgt = (decimal)(r.TargetBillions ?? 0m);
+                sTgt = Math.Round(sTgt * calib, 2);
+                decimal sPct = sTgt > 0 ? Math.Round((sAct / sTgt) * 100m, 1) : 0m;
+                decimal sShare = totalStreamAct > 0 ? Math.Round((sAct / totalStreamAct) * 100m, 1) : 0m;
+
+                string enName = piName switch
+                {
+                    var x when x.Contains("1101") => "Employment & Wages (1101)",
+                    var x when x.Contains("1103") => "Business Profit (1103)",
+                    var x when x.Contains("1120") => "Value Added Tax (1120-1199)",
+                    var x when x.Contains("1102") => "Rental Income (1102)",
+                    var x when x.Contains("1700") => "Municipal Revenue (1700-1799)",
+                    var x when x.Contains("1701") => "Property / House Tax (1701)",
+                    _ => piName
+                };
+
+                taxStreams.Add(new WeeklyTaxStreamItemDto
+                {
+                    CategoryNameAmharic = piName,
+                    CategoryName = enName,
+                    ActualBillions = sAct,
+                    TargetBillions = sTgt,
+                    AchievementPct = sPct,
+                    SharePct = sShare
+                });
+            }
+
+            // 5. Process Branch Office League (Top 3 and Bottom 3)
+            var allBranches = branchRows.Select(r => new WeeklyBranchRankItemDto
+            {
+                BranchId = r.ParentId.ToString(),
+                BranchName = (string)r.ParentName,
+                ActualBillions = (decimal)(r.ActualBillions ?? 0m),
+                TargetBillions = Math.Round((decimal)(r.TargetBillions ?? 0m) * calib, 2),
+                AchievementPct = (decimal)(r.AchievementPct ?? 0m),
+                VarianceBillions = (decimal)(r.VarianceBillions ?? 0m)
+            }).ToList();
+
+            var topBranches = allBranches.Take(3).ToList();
+            var laggingBranches = allBranches.OrderBy(b => b.AchievementPct).Take(3).ToList();
+
+            // 6. Process Daily 7-Day Velocity Curve
             var dailyLookup = dailyRows.ToDictionary(
                 r => ((DateTime)r.EntryDate).Date,
                 r => (Actual: (decimal)(r.ActualBillions ?? 0m), Target: (decimal)(r.TargetBillions ?? 0m))
@@ -1402,44 +1461,7 @@ namespace RevenueOperationsDashboard.Services
                 });
             }
 
-            // 5. Per-Branch Revenue Source Attribution (Granular leaves only, strictly zero rollups)
-            const string sqlBranchSources = @"
-                SELECT 
-                    ParentId,
-                    ParentName,
-                    ROUND(SUM(DailyActual), 2) AS TotalActual,
-                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1103%' OR PlanItemId = '34D4D2FF-8A63-4A94-BACA-A00B6487EF80' THEN DailyActual ELSE 0 END), 2) AS ProfitActual,
-                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1120%' OR PlanItemId = 'DF4D92F4-AC35-4388-BE64-7C0413BD7C32' THEN DailyActual ELSE 0 END), 2) AS VatActual,
-                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1101%' OR PlanItemId = '0D1BA173-8989-4529-A479-1F0175D459F8' THEN DailyActual ELSE 0 END), 2) AS WagesActual,
-                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1102%' OR PlanItemId = '5CD30032-DCED-4B87-825F-28830F0B8079' THEN DailyActual ELSE 0 END), 2) AS RentalActual,
-                    ROUND(SUM(CASE WHEN PlanItemName LIKE N'%1701%' OR PlanItemId = 'A89173E0-F938-45DC-83E8-1B14ED44CAA2' THEN DailyActual ELSE 0 END), 2) AS PropertyActual,
-                    ROUND(SUM(CASE WHEN PlanItemName NOT LIKE N'%1103%' AND PlanItemId <> '34D4D2FF-8A63-4A94-BACA-A00B6487EF80'
-                                    AND PlanItemName NOT LIKE N'%1120%' AND PlanItemId <> 'DF4D92F4-AC35-4388-BE64-7C0413BD7C32'
-                                    AND PlanItemName NOT LIKE N'%1101%' AND PlanItemId <> '0D1BA173-8989-4529-A479-1F0175D459F8'
-                                    AND PlanItemName NOT LIKE N'%1102%' AND PlanItemId <> '5CD30032-DCED-4B87-825F-28830F0B8079'
-                                    AND PlanItemName NOT LIKE N'%1701%' AND PlanItemId <> 'A89173E0-F938-45DC-83E8-1B14ED44CAA2'
-                               THEN DailyActual ELSE 0 END), 2) AS OtherActual
-                FROM [dbo].[vw_RevenuePerformanceDaily]
-                WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
-                  AND EntryDate >= @StartDate AND EntryDate <= @EndDate
-                  AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
-                  AND ParentId <> '1'
-                  AND PlanItemId NOT IN (
-                      'F6D06033-5C3D-4647-A0F7-E8141C4B3AC0', -- የታክስ ድምር(1100-1299)
-                      '49352433-53B5-466A-88DA-71D146A60C89', -- ቀጥታ ታክስ(1100-1119)
-                      '98664116-7114-421A-82FD-B05865173EDF', -- ቀጥታ ያልሆነ ታክስ(1120-1299)
-                      'EB486830-7C2F-4C28-B2A4-195FDB6641C5', -- የማዘጋጃ ቤቶች ገቢ(1700-1799)
-                      '23FCD202-46FF-4C7D-ADF6-44C10D470003'  -- የታክስ ገቢዎች(1701-1719)
-                  )
-                GROUP BY ParentId, ParentName;";
-
-            var branchSourceRows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sqlBranchSources, new
-            {
-                FiscalYearId = fy,
-                StartDate = startDate,
-                EndDate = endDate
-            }, commandTimeout: 120))).ToList();
-
+            // 7. Process Per-Branch Revenue Source Attribution (Granular leaves only, strictly zero rollups)
             var branchSourcesLookup = branchSourceRows.ToDictionary(
                 r => (string)r.ParentId.ToString(),
                 r => r
@@ -1456,7 +1478,7 @@ namespace RevenueOperationsDashboard.Services
                 decimal wAct = sRow != null ? (decimal)(sRow.WagesActual ?? 0m) : 0m;
                 decimal rAct = sRow != null ? (decimal)(sRow.RentalActual ?? 0m) : 0m;
                 decimal prAct = sRow != null ? (decimal)(sRow.PropertyActual ?? 0m) : 0m;
-                decimal oAct = sRow != null ? (decimal)(sRow.OtherActual ?? 0m) : 0m;
+                decimal oAct = Math.Max(0m, Math.Round(actTot - (pAct + vAct + wAct + rAct + prAct), 2));
 
                 decimal tgtAmount = Math.Round(b.TargetBillions * 1000000000m, 2);
                 decimal attainPct = tgtAmount > 0 ? Math.Round((actTot / tgtAmount) * 100m, 1) : 0m;

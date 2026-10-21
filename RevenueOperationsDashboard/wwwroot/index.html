@@ -208,6 +208,16 @@
       cursor: none;
     }
 
+    /* Executive Briefing Loading Shimmer Animation */
+    @keyframes pulseHorizontal {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(100%); }
+      100% { transform: translateX(300%); }
+    }
+    .animate-shimmer-bar {
+      animation: pulseHorizontal 1.8s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     /* Print & Executive PDF Generation Styles */
     @media print {
       body * {
@@ -398,8 +408,51 @@
   <div id="weeklyReportModal"
     class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center hidden transition-opacity overflow-y-auto p-3 sm:p-6 print:p-0 print:static print:bg-white print:overflow-visible">
     <div id="weeklyReportContainer"
-      class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-6xl xl:max-w-7xl p-5 sm:p-7 shadow-2xl space-y-5 text-slate-100 relative my-auto max-h-[92vh] overflow-y-auto print:max-h-none print:shadow-none print:border-none print:p-4 print:text-black print:bg-white">
+      class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-6xl xl:max-w-7xl p-5 sm:p-7 shadow-2xl space-y-5 text-slate-100 relative my-auto max-h-[92vh] overflow-y-auto print:max-h-none print:shadow-none print:border-none print:p-4 print:text-black print:bg-white min-h-[500px]">
       
+      <!-- EXECUTIVE BRIEFING LOADING OVERLAY -->
+      <div id="weeklyReportLoadingOverlay"
+        class="absolute inset-0 bg-slate-900/92 backdrop-blur-md z-40 rounded-3xl flex flex-col items-center justify-center p-8 transition-all duration-300 print:hidden hidden min-h-[480px]">
+        
+        <!-- Loading Spinner Box -->
+        <div id="weeklyReportLoadingSpinnerBox" class="flex flex-col items-center text-center max-w-md space-y-4">
+          <div class="relative flex items-center justify-center">
+            <div class="w-20 h-20 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 border-r-cyan-400 animate-spin"></div>
+            <div class="absolute w-12 h-12 rounded-2xl bg-indigo-600/20 flex items-center justify-center border border-indigo-500/30 shadow-lg shadow-indigo-500/20">
+              <i class="fa-solid fa-file-invoice text-cyan-400 text-xl animate-pulse"></i>
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <h3 id="weeklyReportLoadingTitle" class="text-base sm:text-lg font-black text-white tracking-tight">
+              የሳምንቱ የስራ አፈፃፀም ሪፖርት እየተዘጋጀ ነው...
+            </h3>
+            <p id="weeklyReportLoadingSubtitle" class="text-xs text-slate-400">
+              የ 7 ቀናት ዕለታዊ ገቢ፣ የታክስ ምንጮች እና የቅርንጫፎች አፈፃፀም መረጃ በመሰብሰብ ላይ
+            </p>
+          </div>
+          <!-- Shimmer Bar -->
+          <div class="w-64 h-1.5 bg-slate-800/80 rounded-full overflow-hidden mx-auto mt-2 border border-slate-700/50 relative">
+            <div class="absolute h-full w-2/5 bg-gradient-to-r from-indigo-500 via-cyan-400 to-indigo-500 rounded-full animate-shimmer-bar"></div>
+          </div>
+        </div>
+
+        <!-- Error State Box (hidden by default) -->
+        <div id="weeklyReportLoadingError" class="hidden flex flex-col items-center text-center max-w-md space-y-3">
+          <div class="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 text-2xl shadow-lg shadow-rose-500/20">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="space-y-1">
+            <h3 id="weeklyReportErrorTitle" class="text-base font-black text-white">ሪፖርቱን መጫን አልተቻለም</h3>
+            <p id="weeklyReportErrorMessage" class="text-xs text-slate-400">የውሂብ ግንኙነት ችግር አጋጥሟል። እባክዎ እንደገና ይሞክሩ።</p>
+          </div>
+          <button onclick="loadWeeklyReportData(true)"
+            class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-lg shadow-indigo-600/30 cursor-pointer flex items-center gap-1.5 mt-2">
+            <i class="fa-solid fa-rotate-right"></i>
+            <span id="lblWeeklyRetryBtn">እንደገና ሞክር / Retry</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Modal Header -->
       <div class="flex items-start justify-between border-b border-slate-800 pb-3 print:border-slate-300">
         <div class="flex items-center gap-3.5">
@@ -419,8 +472,14 @@
           </div>
         </div>
 
-        <!-- Controls: Print & Close -->
+        <!-- Controls: Refresh, Print & Close -->
         <div class="flex items-center gap-2 print:hidden flex-shrink-0">
+          <button onclick="loadWeeklyReportData(true)" id="btnWeeklyRefresh"
+            class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs px-3 py-2 rounded-xl transition border border-slate-700/60 shadow-md cursor-pointer"
+            title="መረጃውን አድስ / Refresh">
+            <i class="fa-solid fa-arrows-rotate text-indigo-400"></i>
+            <span class="hidden sm:inline" id="lblWeeklyRefreshBtn">አድስ</span>
+          </button>
           <button onclick="printWeeklyReport()" id="btnWeeklyPrint"
             class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-lg shadow-indigo-600/30 cursor-pointer">
             <i class="fa-solid fa-print"></i>
@@ -986,6 +1045,12 @@
       
       // 3. Update filter dropdown labels in place without losing selection
       updateDropdownLabels();
+
+      // 4. If weekly report modal is open, refresh its contents in new language
+      const weeklyModal = document.getElementById('weeklyReportModal');
+      if (weeklyModal && !weeklyModal.classList.contains('hidden')) {
+        loadWeeklyReportData();
+      }
     }
 
     function updateDropdownLabels() {
@@ -1034,6 +1099,17 @@
       if (footer) {
         footer.style.backgroundColor = theme.bg;
         footer.style.borderColor = theme.border;
+      }
+
+      // Update weekly report container & loading overlay
+      const weeklyOverlay = document.getElementById('weeklyReportLoadingOverlay');
+      if (weeklyOverlay && theme.bg) {
+        weeklyOverlay.style.backgroundColor = `${theme.bg}f0`;
+      }
+      const weeklyContainer = document.getElementById('weeklyReportContainer');
+      if (weeklyContainer && theme.cardBg) {
+        weeklyContainer.style.backgroundColor = theme.cardBg;
+        weeklyContainer.style.borderColor = theme.border;
       }
 
       if (!skipDataReload) {
@@ -2568,6 +2644,90 @@
     }
 
     // --- EXECUTIVE WEEKLY REPORT BRIEFING LOGIC ---
+    function showWeeklyReportLoading(isLoading, errorMessage = null) {
+      const overlay = document.getElementById('weeklyReportLoadingOverlay');
+      const spinnerBox = document.getElementById('weeklyReportLoadingSpinnerBox');
+      const errorBox = document.getElementById('weeklyReportLoadingError');
+      const errMsgEl = document.getElementById('weeklyReportErrorMessage');
+      const btn = document.getElementById('btnWeeklyReport');
+      const refreshBtn = document.getElementById('btnWeeklyRefresh');
+      const isAm = state.currentLang === 'am';
+
+      // Dynamically align loading backdrop with current theme
+      if (overlay) {
+        const theme = appThemes[state.currentTheme] || appThemes.ocean;
+        if (theme && theme.bg) {
+          overlay.style.backgroundColor = `${theme.bg}f0`;
+        }
+      }
+
+      // Localize loading status messages
+      const titleEl = document.getElementById('weeklyReportLoadingTitle');
+      const subEl = document.getElementById('weeklyReportLoadingSubtitle');
+      const errTitleEl = document.getElementById('weeklyReportErrorTitle');
+      const retryBtnEl = document.getElementById('lblWeeklyRetryBtn');
+
+      if (titleEl) {
+        titleEl.innerText = isAm ? 'የሳምንቱ የስራ አፈፃፀም ሪፖርት እየተዘጋጀ ነው...' : 'Compiling Executive Weekly Performance Briefing...';
+      }
+      if (subEl) {
+        subEl.innerText = isAm ? 'የ 7 ቀናት ዕለታዊ ገቢ፣ የታክስ ምንጮች እና የቅርንጫፎች አፈፃፀም መረጃ በመሰብሰብ ላይ' : 'Aggregating 7-day velocity, tax streams, and branch rankings';
+      }
+      if (errTitleEl) {
+        errTitleEl.innerText = isAm ? 'ሪፖርቱን መጫን አልተቻለም' : 'Failed to Load Weekly Briefing';
+      }
+      if (retryBtnEl) {
+        retryBtnEl.innerText = isAm ? 'እንደገና ሞክር / Retry' : 'Retry';
+      }
+
+      if (isLoading) {
+        if (overlay) {
+          overlay.classList.remove('hidden');
+          overlay.style.opacity = '1';
+          overlay.style.pointerEvents = 'auto';
+        }
+        if (spinnerBox) spinnerBox.classList.remove('hidden');
+        if (errorBox) errorBox.classList.add('hidden');
+        if (btn) {
+          btn.classList.add('opacity-75', 'cursor-wait');
+          const btnIcon = btn.querySelector('i');
+          if (btnIcon) btnIcon.className = 'fa-solid fa-circle-notch fa-spin';
+        }
+        if (refreshBtn) {
+          refreshBtn.querySelector('i')?.classList.add('fa-spin');
+        }
+      } else {
+        if (errorMessage) {
+          if (overlay) {
+            overlay.classList.remove('hidden');
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'auto';
+          }
+          if (spinnerBox) spinnerBox.classList.add('hidden');
+          if (errorBox) errorBox.classList.remove('hidden');
+          if (errMsgEl) errMsgEl.innerText = errorMessage;
+        } else {
+          if (overlay) {
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
+            setTimeout(() => {
+              if (overlay.style.opacity === '0') {
+                overlay.classList.add('hidden');
+              }
+            }, 300);
+          }
+        }
+        if (btn) {
+          btn.classList.remove('opacity-75', 'cursor-wait');
+          const btnIcon = btn.querySelector('i');
+          if (btnIcon) btnIcon.className = 'fa-solid fa-file-lines';
+        }
+        if (refreshBtn) {
+          refreshBtn.querySelector('i')?.classList.remove('fa-spin');
+        }
+      }
+    }
+
     async function openWeeklyReportModal() {
       const modal = document.getElementById('weeklyReportModal');
       if (!modal) return;
@@ -2580,31 +2740,42 @@
       state.autoRotate = false;
       updatePlayPauseButtonState();
 
+      // Immediately display prominent loading overlay
+      showWeeklyReportLoading(true);
+
       await loadWeeklyReportData();
     }
 
     function closeWeeklyReportModal() {
       const modal = document.getElementById('weeklyReportModal');
       if (modal) modal.classList.add('hidden');
+      showWeeklyReportLoading(false);
     }
 
     function printWeeklyReport() {
       window.print();
     }
 
-    async function loadWeeklyReportData() {
+    async function loadWeeklyReportData(force = false) {
+      showWeeklyReportLoading(true);
       try {
         const fy = state.filters.fiscalYear && state.filters.fiscalYear !== 'ALL' ? state.filters.fiscalYear : '2019';
         const params = new URLSearchParams({
           fiscalYearId: fy,
           lang: state.currentLang || 'am'
         });
+        if (force) {
+          params.append('refresh', 'true');
+        }
         const res = await fetch(`/api/dashboard/weekly-report?${params}`);
         if (!res.ok) throw new Error("HTTP error " + res.status);
         const data = await res.json();
         renderWeeklyReport(data);
+        showWeeklyReportLoading(false);
       } catch (err) {
         console.error("Failed to load weekly report:", err);
+        const isAm = state.currentLang === 'am';
+        showWeeklyReportLoading(false, isAm ? "የውሂብ ግንኙነት ችግር አጋጥሟል። እባክዎ እንደገና ይሞክሩ።" : "Failed to load weekly report data. Please check connection and retry.");
       }
     }
 
