@@ -320,19 +320,19 @@
           </select>
         </div>
 
-        <!-- KPI Calculation Mode (Run-Rate vs Cumulative) -->
+        <!-- KPI Calculation Mode (To-Date Target vs Full Year Target) -->
         <div>
-          <label id="lblCalcMode" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የአሰላል ዘዴ</label>
+          <label id="lblCalcMode" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የዕቅድ ማነጻጸሪያ ዘዴ</label>
           <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="setCalculationMode('MonthlyRunRate')" id="mode_MonthlyRunRate"
+            <button type="button" onclick="setCalculationMode('ToDateTarget')" id="mode_ToDateTarget"
               class="calc-mode-btn px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 bg-blue-600 text-white border border-blue-500">
-              <i class="fa-solid fa-chart-line"></i>
-              <span id="lblModeRunRate">ወርሃዊ አማካይ (Run-Rate)</span>
+              <i class="fa-solid fa-calendar-check"></i>
+              <span id="lblModeToDate">የዕስከ ዛሬ ዕቅድ (To-Date)</span>
             </button>
-            <button type="button" onclick="setCalculationMode('CumulativeYtd')" id="mode_CumulativeYtd"
+            <button type="button" onclick="setCalculationMode('AnnualTarget')" id="mode_AnnualTarget"
               class="calc-mode-btn px-3 py-2 rounded-lg text-xs font-medium transition flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">
-              <i class="fa-solid fa-layer-group"></i>
-              <span id="lblModeYtd">ዓመታዊ ድምር (YTD)</span>
+              <i class="fa-solid fa-bullseye"></i>
+              <span id="lblModeAnnual">የሙሉ ዓመት ዕቅድ (Annual)</span>
             </button>
           </div>
         </div>
@@ -827,9 +827,9 @@
       <!-- Calculation Mode Quick Toggle Button -->
       <button onclick="toggleCalculationMode()" id="quickCalcModeBtn"
         class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-2 rounded-lg border border-slate-700/50 transition focus:outline-none cursor-pointer"
-        title="ወርሃዊ አማካይ / ዓመታዊ ድምር ቀይር">
-        <i class="fa-solid fa-calculator text-blue-400"></i>
-        <span id="quickCalcModeText">ወርሃዊ አማካይ</span>
+        title="የዕስከ ዛሬ ዕቅድ / የሙሉ ዓመት ዕቅድ ቀይር">
+        <i class="fa-solid fa-bullseye text-blue-400"></i>
+        <span id="quickCalcModeText">የዕስከ ዛሬ ዕቅድ</span>
       </button>
 
       <!-- Action Buttons -->
@@ -891,7 +891,7 @@
         startDate: '',
         endDate: '',
         datePreset: 'ALL',
-        calculationMode: 'MonthlyRunRate'
+        calculationMode: 'ToDateTarget'
       },
       // Weekly Executive Report State
       weeklyReportData: null,
@@ -996,11 +996,13 @@
       "Apply & Close": "ተግብርና ዝጋ",
       "All Branches": "ሁሉም ቅርንጫፎች",
       "All Tax Types": "ሁሉም የታክስ አይነቶች",
-      "Calculation Mode": "የአሰላል ዘዴ",
-      "Monthly Run-Rate (Run-Rate)": "ወርሃዊ አማካይ (Run-Rate)",
-      "Cumulative YTD (YTD)": "ዓመታዊ ድምር (YTD)",
-      "Monthly Run-Rate": "ወርሃዊ አማካይ",
-      "Cumulative YTD": "ዓመታዊ ድምር",
+      "Calculation Mode": "የዕቅድ ማነጻጸሪያ ዘዴ",
+      "To-Date Target (To-Date)": "የዕስከ ዛሬ ዕቅድ (To-Date)",
+      "Full Year Target (Annual)": "የሙሉ ዓመት ዕቅድ (Annual)",
+      "To-Date Target": "የዕስከ ዛሬ ዕቅድ",
+      "Full Year Target": "የሙሉ ዓመት ዕቅድ",
+      "To-Date Total": "የዕስከ ዛሬ ድምር",
+      "Annual Target Share": "የዓመታዊ ዕቅድ ድርሻ",
       "Filters": "ማጣሪያ",
       "Slide": "ገጽ",
       "of": "ከ",
@@ -1188,8 +1190,8 @@
       if(document.getElementById('lblApplyClose')) document.getElementById('lblApplyClose').innerText = t_ui("Apply & Close");
       if(document.getElementById('lblFiltersBtn')) document.getElementById('lblFiltersBtn').innerText = t_ui("Filters");
       if(document.getElementById('lblCalcMode')) document.getElementById('lblCalcMode').innerText = t_ui("Calculation Mode");
-      if(document.getElementById('lblModeRunRate')) document.getElementById('lblModeRunRate').innerText = t_ui("Monthly Run-Rate (Run-Rate)");
-      if(document.getElementById('lblModeYtd')) document.getElementById('lblModeYtd').innerText = t_ui("Cumulative YTD (YTD)");
+      if(document.getElementById('lblModeToDate')) document.getElementById('lblModeToDate').innerText = t_ui("To-Date Target (To-Date)");
+      if(document.getElementById('lblModeAnnual')) document.getElementById('lblModeAnnual').innerText = t_ui("Full Year Target (Annual)");
       if(document.getElementById('lblWeeklyReportBtn')) document.getElementById('lblWeeklyReportBtn').innerText = t_ui("Weekly Report");
       if(document.getElementById('lblPresetWeekly')) document.getElementById('lblPresetWeekly').innerText = t_ui("Weekly");
       if(document.getElementById('lblPrintBtn')) document.getElementById('lblPrintBtn').innerText = t_ui("Print / PDF");
@@ -1204,7 +1206,7 @@
       if(document.getElementById('lblWeeklyTopBranches')) document.getElementById('lblWeeklyTopBranches').innerText = t_ui("Top 3 Branches");
       if(document.getElementById('lblWeeklyLaggingBranches')) document.getElementById('lblWeeklyLaggingBranches').innerText = t_ui("Lagging Branches Needing Focus");
       if(document.getElementById('lblWeeklyVelocityTitle')) document.getElementById('lblWeeklyVelocityTitle').innerHTML = `<i class="fa-solid fa-chart-simple text-cyan-400"></i> ${t_ui("7-Day Revenue Velocity Curve")}`;
-      updateCalculationModeButtons(state.filters.calculationMode || 'MonthlyRunRate');
+      updateCalculationModeButtons(state.filters.calculationMode || 'ToDateTarget');
       updatePlayPauseButtonState();
       
       // Update Slide Titles
@@ -1246,7 +1248,7 @@
         if (config.defaultFilters && config.defaultFilters.calculationMode) {
           state.filters.calculationMode = config.defaultFilters.calculationMode;
         }
-        updateCalculationModeButtons(state.filters.calculationMode || 'MonthlyRunRate');
+        updateCalculationModeButtons(state.filters.calculationMode || 'ToDateTarget');
 
         // Check Weekly Report cutoff pulse
         if (config.weeklyReport && config.weeklyReport.enabled) {
@@ -1331,37 +1333,38 @@
       state.filters.calculationMode = mode;
       updateCalculationModeButtons(mode);
       loadTopCards();
+      refreshActiveSlideMetric(state.currentSlide);
     }
 
     function toggleCalculationMode() {
-      const newMode = state.filters.calculationMode === 'CumulativeYtd' ? 'MonthlyRunRate' : 'CumulativeYtd';
+      const newMode = (state.filters.calculationMode === 'AnnualTarget') ? 'ToDateTarget' : 'AnnualTarget';
       setCalculationMode(newMode);
     }
 
     function updateCalculationModeButtons(mode) {
-      const isRunRate = mode === 'MonthlyRunRate';
-      const btnRunRate = document.getElementById('mode_MonthlyRunRate');
-      const btnYtd = document.getElementById('mode_CumulativeYtd');
+      const isAnnual = mode === 'AnnualTarget';
+      const btnToDate = document.getElementById('mode_ToDateTarget');
+      const btnAnnual = document.getElementById('mode_AnnualTarget');
       const quickBtnText = document.getElementById('quickCalcModeText');
 
-      if (btnRunRate && btnYtd) {
-        if (isRunRate) {
-          btnRunRate.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
-          btnRunRate.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
-          btnYtd.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
-          btnYtd.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+      if (btnToDate && btnAnnual) {
+        if (isAnnual) {
+          btnAnnual.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+          btnAnnual.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
+          btnToDate.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
+          btnToDate.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
         } else {
-          btnYtd.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
-          btnYtd.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
-          btnRunRate.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
-          btnRunRate.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+          btnToDate.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+          btnToDate.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
+          btnAnnual.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
+          btnAnnual.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
         }
       }
 
       if (quickBtnText) {
         quickBtnText.innerText = state.currentLang === 'am'
-          ? (isRunRate ? 'ወርሃዊ አማካይ' : 'ዓመታዊ ድምር')
-          : (isRunRate ? 'Monthly Run-Rate' : 'Cumulative YTD');
+          ? (isAnnual ? 'የሙሉ ዓመት ዕቅድ' : 'የዕስከ ዛሬ ዕቅድ')
+          : (isAnnual ? 'Full Year Target' : 'To-Date Target');
       }
     }
 
@@ -1643,14 +1646,14 @@
         document.getElementById('filterFiscalYear').value = state.config.defaultFilters.fiscalYearId || '2018';
         document.getElementById('filterParent').value = state.config.defaultFilters.parentId || 'ALL';
         document.getElementById('filterPlanItem').value = state.config.defaultFilters.planItemId || 'ALL';
-        state.filters.calculationMode = state.config.kpiCalculationMode || state.config.defaultFilters.calculationMode || 'MonthlyRunRate';
+        state.filters.calculationMode = state.config.kpiCalculationMode || state.config.defaultFilters.calculationMode || 'ToDateTarget';
       } else {
         if (document.getElementById('filterFiscalYear').options.length > 0) {
           document.getElementById('filterFiscalYear').selectedIndex = 0;
         }
         document.getElementById('filterParent').value = 'ALL';
         document.getElementById('filterPlanItem').value = 'ALL';
-        state.filters.calculationMode = 'MonthlyRunRate';
+        state.filters.calculationMode = 'ToDateTarget';
       }
       const startInp = document.getElementById('filterStartDate');
       const endInp = document.getElementById('filterEndDate');
@@ -1677,7 +1680,8 @@
           startDate: state.filters.startDate || '',
           endDate: state.filters.endDate || '',
           datePreset: state.filters.datePreset || 'ALL',
-          lang: state.currentLang || 'am'
+          lang: state.currentLang || 'am',
+          calculationMode: state.filters.calculationMode || 'ToDateTarget'
         }).toString();
 
         const resData = await fetch(`${slide.apiEndpoint}?${query}`).then(r => r.json());
@@ -2381,6 +2385,20 @@
         return val >= 100 ? theme.primary : theme.secondary;
       }
 
+      const isAnnual = state.filters.calculationMode === 'AnnualTarget';
+      const subTextAm = isAnnual 
+        ? 'የቅርንጫፍ ጽህፈት ቤቶች የዓመታዊ ዕቅድ ድርሻ (የዓመቱ ሙሉ ግብ)' 
+        : 'የቅርንጫፍ ጽህፈት ቤቶች የዕስከ ዛሬ ዕቅድ አፈፃፀም (የዕስከ ዛሬ ድምር)';
+      const subTextEn = isAnnual 
+        ? 'Branch office full year quota progress' 
+        : 'Comparing to-date target achievement percentages across all branch offices';
+      const seriesName = isAnnual
+        ? (state.currentLang === 'am' ? 'የዓመታዊ ዕቅድ ድርሻ %' : 'Annual Quota Share %')
+        : (state.currentLang === 'am' ? 'የዕስከ ዛሬ አፈፃፀም %' : 'To-Date Achievement %');
+      const markLineText = isAnnual
+        ? (state.currentLang === 'am' ? '100% (ዓመታዊ ግብ)' : '100% (Annual Target)')
+        : (state.currentLang === 'am' ? '100% (የዕስከ ዛሬ ዕቅድ)' : '100% (To-Date Target)');
+
       const option = {
         backgroundColor: 'transparent',
         animation: true,
@@ -2390,7 +2408,7 @@
         animationEasingUpdate: 'cubicOut',
         title: {
           text: state.currentLang === 'am' && slideConfig && slideConfig.titleAm ? slideConfig.titleAm : (slideConfig && slideConfig.title ? slideConfig.title : t_ui('Branch Office Achievement')),
-          subtext: state.currentLang === 'am' && slideConfig && slideConfig.subtitleAm ? slideConfig.subtitleAm : (slideConfig && slideConfig.subtitle ? slideConfig.subtitle : t_ui('Comparing target achievement percentages across all branch offices')),
+          subtext: state.currentLang === 'am' ? subTextAm : subTextEn,
           left: 'center',
           top: 10,
           textStyle: { color: '#f8fafc', fontSize: 18, fontWeight: 'bold' },
@@ -2402,7 +2420,7 @@
           left: 'center',
           icon: 'circle',
           textStyle: { color: '#cbd5e1', fontSize: 12 },
-          data: [t_ui('Achievement Percentage') || 'Achievement %']
+          data: [seriesName]
         },
         tooltip: {
           trigger: 'axis',
@@ -2434,7 +2452,7 @@
           axisLine: { lineStyle: { color: theme.border } }
         },
         series: [{
-          name: t_ui('Achievement Percentage') || 'Achievement %',
+          name: seriesName,
           type: 'bar',
           barCategoryGap: '40%',
           data: scores.map((val, idx) => ({
@@ -2462,7 +2480,7 @@
             },
             label: {
               position: 'insideEndTop',
-              formatter: '100% (Target)',
+              formatter: markLineText,
               color: theme.warning,
               fontSize: 11,
               fontWeight: 'bold'

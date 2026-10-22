@@ -419,30 +419,118 @@ namespace RevenueOperationsDashboard.Services
         // 3. Branch Performance Ranking (%)  
         public async Task<BranchRankingDto> GetBranchRankingAsync(DashboardFilterDto filters)
         {
+            var fy = NormalizeFilter(filters.FiscalYearId) ?? "2019";
             var preset = filters.DatePreset?.Trim().ToUpperInvariant();
             string? quarter = preset is "Q1" or "Q2" or "Q3" or "Q4" ? preset : null;
 
-            const string sql = @"
-                SELECT
-                    ParentName AS BranchName,
-                    CASE
-                        WHEN SUM(SelectedTarget) > 0
-                        THEN ROUND(SUM(SelectedActual) / SUM(SelectedTarget) * 100, 2)
-                        ELSE 0
-                    END AS AchievementPct
-                FROM [ops].[vw_revenue_performance]
-                WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
-                  AND (@Quarter IS NULL OR Quarter = @Quarter)
-                  AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
-                  AND MonthId IN (1,2,3,4,5,6,7,8,9,10,11,12)
-                GROUP BY ParentId, ParentName  
-                ORDER BY AchievementPct ASC;";
+            var activeMode = string.Equals(filters.CalculationMode, "AnnualTarget", StringComparison.OrdinalIgnoreCase)
+                ? "AnnualTarget"
+                : "ToDateTarget";
+
+            bool isAnnual = activeMode == "AnnualTarget";
 
             using var conn = await GetConnectionAsync();
+
+            if (quarter != null)
+            {
+                const string sqlQuarter = @"
+                    SELECT
+                        ParentName AS BranchName,
+                        CASE
+                            WHEN SUM(SelectedTarget) > 0
+                            THEN ROUND(SUM(SelectedActual) / SUM(SelectedTarget) * 100, 2)
+                            ELSE 0
+                        END AS AchievementPct
+                    FROM [ops].[vw_revenue_performance]
+                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                      AND Quarter = @Quarter
+                      AND ParentId IN (2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
+                    GROUP BY ParentId, ParentName  
+                    ORDER BY AchievementPct ASC;";
+
+                var qRows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sqlQuarter, new
+                {
+                    FiscalYearId = fy,
+                    Quarter = quarter
+                }, commandTimeout: 120))).ToList();
+
+                return new BranchRankingDto
+                {
+                    Branches = qRows.Select(r => (string)r.BranchName).ToList(),
+                    Scores = qRows.Select(r => (decimal)(r.AchievementPct ?? 0m)).ToList()
+                };
+            }
+
+            bool isCurFy = (fy == "2019");
+            try
+            {
+                const string sqlFy = @"SELECT TOP 1 IsCurrent FROM [dbo].[FiscalYears] WHERE FiscalYearId = @FiscalYearId;";
+                var isCur = await conn.QueryFirstOrDefaultAsync<bool?>(new CommandDefinition(sqlFy, new { FiscalYearId = fy }, commandTimeout: 30));
+                if (isCur.HasValue) isCurFy = isCur.Value;
+            }
+            catch { }
+
+            int curMonthOrder = 13;
+            int curDay = 30;
+            if (isCurFy)
+            {
+                var todayEt = _clock.Today();
+                curMonthOrder = todayEt.Month switch
+                {
+                    11 => 1, // Hamle
+                    12 or 13 => 2, // Nehase / Pagume
+                    >= 1 and <= 10 => todayEt.Month + 2, // Meskerem (1)->3, Tikimt (2)->4, etc.
+                    _ => 13
+                };
+                curDay = Math.Clamp(todayEt.Day, 0, 30);
+            }
+
+            const string sql = @"
+                WITH Targets AS (
+                    SELECT 
+                        ParentId,
+                        ParentName,
+                        CAST(SUM(CASE 
+                            WHEN @IsAnnual = 1 THEN SelectedTarget
+                            WHEN MonthOrder < @CurMonthOrder THEN SelectedTarget
+                            WHEN MonthOrder = @CurMonthOrder THEN SelectedTarget * (CAST(@CurDay AS DECIMAL(18,4)) / 30.0)
+                            ELSE 0
+                        END) AS DECIMAL(28,2)) AS Target,
+                        CAST(SUM(SelectedActual) AS DECIMAL(28,2)) AS OpsActual
+                    FROM [ops].[vw_revenue_performance]
+                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                      AND ParentId IN (2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
+                      AND MonthId IN (1,2,3,4,5,6,7,8,9,10,11,12)
+                    GROUP BY ParentId, ParentName
+                ),
+                DailyAct AS (
+                    SELECT 
+                        ParentId,
+                        CAST(SUM(DailyActual) AS DECIMAL(28,2)) AS DailyActualSum
+                    FROM [dbo].[vw_RevenuePerformanceDaily]
+                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                      AND ParentId IN (2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
+                      AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF')
+                    GROUP BY ParentId
+                )
+                SELECT 
+                    t.ParentName AS BranchName,
+                    CASE 
+                        WHEN t.Target > 0 
+                        THEN ROUND(ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) / t.Target * 100, 2)
+                        ELSE 0 
+                    END AS AchievementPct
+                FROM Targets t
+                LEFT JOIN DailyAct d ON t.ParentId = d.ParentId
+                WHERE t.Target > 0 AND t.ParentId <> 1
+                ORDER BY AchievementPct ASC;";
+
             var rows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sql, new
             {
-                FiscalYearId = NormalizeFilter(filters.FiscalYearId),
-                Quarter = quarter
+                FiscalYearId = fy,
+                IsAnnual = isAnnual,
+                CurMonthOrder = curMonthOrder,
+                CurDay = curDay
             }, commandTimeout: 120))).ToList();
 
             return new BranchRankingDto
@@ -584,12 +672,12 @@ namespace RevenueOperationsDashboard.Services
             var planItemId = NormalizeFilter(filters.PlanItemId);
             var (startDate, endDate) = ResolveDateRange(filters);
 
-            var defaultMode = _configuration.GetValue<string>("DashboardSettings:KpiCalculationMode") ?? "MonthlyRunRate";
-            var activeMode = string.Equals(filters.CalculationMode, "CumulativeYtd", StringComparison.OrdinalIgnoreCase)
-                ? "CumulativeYtd"
-                : (string.Equals(filters.CalculationMode, "MonthlyRunRate", StringComparison.OrdinalIgnoreCase) ? "MonthlyRunRate" : defaultMode);
+            var defaultMode = _configuration.GetValue<string>("DashboardSettings:KpiCalculationMode") ?? "ToDateTarget";
+            var activeMode = string.Equals(filters.CalculationMode, "AnnualTarget", StringComparison.OrdinalIgnoreCase)
+                ? "AnnualTarget"
+                : "ToDateTarget";
 
-            bool isRunRate = string.Equals(activeMode, "MonthlyRunRate", StringComparison.OrdinalIgnoreCase);
+            bool isAnnualTarget = string.Equals(activeMode, "AnnualTarget", StringComparison.OrdinalIgnoreCase);
 
             var preset = filters.DatePreset?.Trim().ToUpperInvariant();
             bool isQuarter = preset is "Q1" or "Q2" or "Q3" or "Q4";
@@ -601,8 +689,9 @@ namespace RevenueOperationsDashboard.Services
                 {
                     const string sqlCard1Quarter = @"
                         SELECT 
-                            SUM(SelectedActual) AS Actual,
-                            SUM(SelectedTarget) AS Target,
+                            CAST(SUM(SelectedActual) AS DECIMAL(28, 2)) AS Actual,
+                            CAST(SUM(SelectedTarget) AS DECIMAL(28, 2)) AS ToDateTarget,
+                            CAST((SELECT SUM(SelectedTarget) FROM [ops].[vw_revenue_performance] WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId) AND (@ParentId IS NULL OR ParentId = @ParentId) AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)) AS DECIMAL(28, 2)) AS AnnualTarget,
                             COUNT(DISTINCT CASE WHEN SelectedActual > 0 THEN MonthId END) AS ActiveMonths
                         FROM [ops].[vw_revenue_performance]
                         WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
@@ -675,17 +764,77 @@ namespace RevenueOperationsDashboard.Services
                     return await conn.QueryFirstOrDefaultAsync<dynamic>(new CommandDefinition(sqlCard1Date, new { FiscalYearId = fy, ParentId = parentId, PlanItemId = planItemId, StartDate = startDate, EndDate = endDate, NumDays = numDays }, commandTimeout: 120));
                 }
 
+                bool isCurFy = (fy == "2019");
+                try
+                {
+                    const string sqlFy = @"SELECT TOP 1 IsCurrent FROM [dbo].[FiscalYears] WHERE FiscalYearId = @FiscalYearId;";
+                    var isCur = await conn.QueryFirstOrDefaultAsync<bool?>(new CommandDefinition(sqlFy, new { FiscalYearId = fy }, commandTimeout: 30));
+                    if (isCur.HasValue) isCurFy = isCur.Value;
+                }
+                catch { }
+
+                int curMonthOrder = 13;
+                int curDay = 30;
+                if (isCurFy)
+                {
+                    var todayEt = _clock.Today();
+                    curMonthOrder = todayEt.Month switch
+                    {
+                        11 => 1, // Hamle
+                        12 or 13 => 2, // Nehase / Pagume
+                        >= 1 and <= 10 => todayEt.Month + 2, // Meskerem (1)->3, Tikimt (2)->4, etc.
+                        _ => 13
+                    };
+                    curDay = Math.Clamp(todayEt.Day, 0, 30);
+                }
+
                 const string sqlCard1 = @"
+                    WITH Targets AS (
+                        SELECT 
+                            FiscalYearId,
+                            MonthId,
+                            MonthOrder,
+                            MonthName,
+                            SUM(SelectedTarget) AS ApprovedTarget,
+                            SUM(SelectedActual) AS OpsActual
+                        FROM [ops].[vw_revenue_performance]
+                        WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                          AND (@ParentId IS NULL OR ParentId = @ParentId)
+                          AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
+                          AND (@PlanItemId IS NULL OR PlanItemId = @PlanItemId)
+                        GROUP BY FiscalYearId, MonthId, MonthOrder, MonthName
+                    ),
+                    DailyAct AS (
+                        SELECT 
+                            FiscalYearId,
+                            MonthId,
+                            COUNT(DISTINCT EntryDate) AS DaysRecorded,
+                            SUM(DailyActual) AS DailyActualSum
+                        FROM [dbo].[vw_RevenuePerformanceDaily]
+                        WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                          AND (@ParentId IS NULL OR ParentId = @ParentId)
+                          AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
+                          AND (
+                              (@PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF'))
+                              OR (@PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId)
+                          )
+                        GROUP BY FiscalYearId, MonthId
+                    )
                     SELECT 
-                        SUM(SelectedActual) AS Actual,
-                        SUM(SelectedTarget) AS Target,
-                        COUNT(DISTINCT CASE WHEN SelectedActual > 0 THEN MonthId END) AS ActiveMonths
-                    FROM [ops].[vw_revenue_performance]
-                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
-                      AND (@ParentId IS NULL OR ParentId = @ParentId)
-                      AND MonthId IN (1,2,3,4,5,6,7,8,9,10,11,12)
-                      AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68);";
-                return await conn.QueryFirstOrDefaultAsync<dynamic>(new CommandDefinition(sqlCard1, new { FiscalYearId = fy, ParentId = parentId }, commandTimeout: 120));
+                        CAST(SUM(CASE 
+                            WHEN d.DailyActualSum IS NOT NULL AND d.DailyActualSum > 0 THEN d.DailyActualSum
+                            ELSE ISNULL(t.OpsActual, 0)
+                        END) AS DECIMAL(28, 2)) AS Actual,
+                        CAST(SUM(CASE 
+                            WHEN t.MonthOrder < @CurMonthOrder THEN t.ApprovedTarget
+                            WHEN t.MonthOrder = @CurMonthOrder THEN t.ApprovedTarget * (CAST(@CurDay AS DECIMAL(18,4)) / 30.0)
+                            ELSE 0
+                        END) AS DECIMAL(28, 2)) AS ToDateTarget,
+                        CAST(SUM(t.ApprovedTarget) AS DECIMAL(28, 2)) AS AnnualTarget,
+                        COUNT(DISTINCT CASE WHEN t.MonthOrder <= @CurMonthOrder THEN t.MonthId END) AS ActiveMonths
+                    FROM Targets t
+                    LEFT JOIN DailyAct d ON t.MonthId = d.MonthId;";
+                return await conn.QueryFirstOrDefaultAsync<dynamic>(new CommandDefinition(sqlCard1, new { FiscalYearId = fy, ParentId = parentId, PlanItemId = planItemId, CurMonthOrder = curMonthOrder, CurDay = curDay }, commandTimeout: 120));
             });
 
             // Card 2: Annual Filing (Business Profit Tax: 61.49k / 213.49k = 28.8% for FY 2019; 361.34k / 325.23k = 111.1% for FY 2018)
@@ -809,7 +958,9 @@ namespace RevenueOperationsDashboard.Services
 
             // Card 1: Revenue (Pure operational plan from ops.vw_revenue_performance)
             decimal c1Act = (decimal)(card1Row?.Actual ?? 0m);
-            decimal c1Tgt = (decimal)(card1Row?.Target ?? 0m);
+            decimal c1Tgt = isAnnualTarget 
+                ? (decimal)(card1Row?.AnnualTarget ?? 0m) 
+                : (decimal)(card1Row?.ToDateTarget ?? card1Row?.Target ?? 0m);
 
             if (startDate.HasValue || endDate.HasValue)
             {
@@ -817,21 +968,10 @@ namespace RevenueOperationsDashboard.Services
                 c1Tgt = Math.Round(c1Tgt * calib, 2);
                 c1Act = Math.Round(c1Act, 2);
             }
-            else if (isCurrentFy && isRunRate)
+            else
             {
-                int revMonths = Math.Max(1, Convert.ToInt32(card1Row?.ActiveMonths ?? 1));
-                c1Act = Math.Round(c1Act / revMonths, 2);
-                c1Tgt = Math.Round(c1Tgt / 12m, 2); // 12-month standard monthly run-rate target
-            }
-            else if (!isCurrentFy && isRunRate && isQuarter)
-            {
-                c1Act = Math.Round(c1Act / 3m, 2);
-                c1Tgt = Math.Round(c1Tgt / 3m, 2);
-            }
-            else if (!isCurrentFy && isRunRate && !isQuarter)
-            {
-                c1Act = Math.Round(c1Act / 12m, 2);
-                c1Tgt = Math.Round(c1Tgt / 12m, 2);
+                c1Act = Math.Round(c1Act, 2);
+                c1Tgt = Math.Round(c1Tgt, 2);
             }
             decimal c1Pct = c1Tgt > 0 ? Math.Round((c1Act / c1Tgt) * 100m, 1) : 0m;
 
@@ -843,12 +983,12 @@ namespace RevenueOperationsDashboard.Services
             // Card 3: Renewal & Clearance
             decimal c3Act = (decimal)(card3Row?.Actual ?? 0m);
             decimal c3Tgt = (decimal)(card3Row?.Target ?? 0m);
-            if (isCurrentFy && isRunRate)
+            if (isCurrentFy && !isAnnualTarget)
             {
                 int actM = Math.Max(1, Convert.ToInt32(card3Row?.ActiveMonths ?? 1));
                 int tgtM = Math.Max(1, Convert.ToInt32(card3Row?.PlannedMonths ?? 1));
-                c3Act = Math.Round(c3Act / actM, 0);
-                c3Tgt = Math.Round(c3Tgt / tgtM, 0);
+                decimal proratedTgt = Math.Round(c3Tgt * ((decimal)actM / (decimal)tgtM), 0);
+                c3Tgt = proratedTgt > 0 ? proratedTgt : c3Tgt;
             }
             decimal c3Pct = c3Tgt > 0 ? Math.Round((c3Act / c3Tgt) * 100m, 1) : 0m;
 
@@ -909,29 +1049,37 @@ namespace RevenueOperationsDashboard.Services
                 return isCurrency ? val.ToHumanCurrency(currencyOptions) : val.ToHuman(countOptions);
             }
 
-            string runRateSubAm = "ወርሃዊ አማካይ";
-            string runRateSubEn = "Monthly Run-Rate";
-            string ytdSubAm = "ዓመታዊ ድምር";
-            string ytdSubEn = "Cumulative YTD";
+            string toDateSubAm = "የዕስከ ዛሬ ድምር";
+            string toDateSubEn = "To-Date Total";
+            string annualSubAm = "የዓመታዊ ዕቅድ ድርሻ";
+            string annualSubEn = "Annual Target Share";
             string weeklySubAm = "ሳምንታዊ ድምር";
             string weeklySubEn = "Weekly Total";
 
             string cardSubtitleAm(string cardId)
             {
                 if (preset is "WEEKLY_REPORT" or "THIS_WEEK") return weeklySubAm;
-                if (cardId == "kpi2" || cardId == "kpi7") return "ዓመታዊ ድምር";
+                if (preset is "Q1") return isAnnualTarget ? "የዓመታዊ ዕቅድ ድርሻ" : "1ኛ ሩብ ዓመት ድምር";
+                if (preset is "Q2") return isAnnualTarget ? "የዓመታዊ ዕቅድ ድርሻ" : "2ኛ ሩብ ዓመት ድምር";
+                if (preset is "Q3") return isAnnualTarget ? "የዓመታዊ ዕቅድ ድርሻ" : "3ኛ ሩብ ዓመት ድምር";
+                if (preset is "Q4") return isAnnualTarget ? "የዓመታዊ ዕቅድ ድርሻ" : "4ኛ ሩብ ዓመት ድምር";
+                if (cardId == "kpi2" || cardId == "kpi7") return "የዓመታዊ ዕቅድ ድርሻ";
                 if (cardId == "kpi4" || cardId == "kpi5") return "ወርሃዊ አማካይ";
                 if (!isCurrentFy) return "ዓመታዊ ድምር";
-                return isRunRate ? runRateSubAm : ytdSubAm;
+                return isAnnualTarget ? annualSubAm : toDateSubAm;
             }
 
             string cardSubtitleEn(string cardId)
             {
                 if (preset is "WEEKLY_REPORT" or "THIS_WEEK") return weeklySubEn;
-                if (cardId == "kpi2" || cardId == "kpi7") return "Cumulative YTD";
+                if (preset is "Q1") return isAnnualTarget ? "Annual Target Share" : "Q1 Total";
+                if (preset is "Q2") return isAnnualTarget ? "Annual Target Share" : "Q2 Total";
+                if (preset is "Q3") return isAnnualTarget ? "Annual Target Share" : "Q3 Total";
+                if (preset is "Q4") return isAnnualTarget ? "Annual Target Share" : "Q4 Total";
+                if (cardId == "kpi2" || cardId == "kpi7") return "Annual Target Share";
                 if (cardId == "kpi4" || cardId == "kpi5") return "Monthly Average";
                 if (!isCurrentFy) return "Annual Total";
-                return isRunRate ? runRateSubEn : ytdSubEn;
+                return isAnnualTarget ? annualSubEn : toDateSubEn;
             }
 
             return new TopCardsResponseDto

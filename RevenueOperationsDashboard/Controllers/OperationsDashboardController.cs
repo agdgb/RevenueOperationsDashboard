@@ -97,7 +97,7 @@ namespace RevenueOperationsDashboard.Controllers
         [HttpGet("branch-ranking")]  
         public async Task<IActionResult> GetBranchRanking([FromQuery] DashboardFilterDto filters)  
         {
-            string cacheKey = $"branch_ranking_{filters.FiscalYearId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}";
+            string cacheKey = $"branch_ranking_{filters.FiscalYearId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}_{filters.CalculationMode}";
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
