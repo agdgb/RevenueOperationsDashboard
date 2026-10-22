@@ -204,11 +204,24 @@ namespace RevenueOperationsDashboard.Services
         // 1. Tax Type Performance (Billions ETB)  
         public async Task<TaxTypePerformanceDto> GetTaxTypePerformanceAsync(DashboardFilterDto filters)
         {
+            var fy = NormalizeFilter(filters.FiscalYearId) ?? "2019";
+            var parentId = NormalizeFilter(filters.ParentId);
+            var planItemId = NormalizeFilter(filters.PlanItemId);
             var (startDate, endDate) = ResolveDateRange(filters);
             var preset = filters.DatePreset?.Trim().ToUpperInvariant();
             bool isQuarter = preset is "Q1" or "Q2" or "Q3" or "Q4";
 
+            var activeMode = string.Equals(filters.CalculationMode, "AnnualTarget", StringComparison.OrdinalIgnoreCase)
+                ? "AnnualTarget"
+                : "ToDateTarget";
+
+            bool isAnnual = activeMode == "AnnualTarget";
+
+            using var conn = await GetConnectionAsync();
+
             string sql;
+            object sqlParams;
+
             if (isQuarter)
             {
                 sql = @"  
@@ -232,6 +245,13 @@ namespace RevenueOperationsDashboard.Services
                       )
                     GROUP BY PlanItemName  
                     ORDER BY TargetBillions DESC;";
+                sqlParams = new
+                {
+                    FiscalYearId = fy,
+                    ParentId = parentId,
+                    PlanItemId = planItemId,
+                    Quarter = preset
+                };
             }
             else if (startDate.HasValue || endDate.HasValue)
             {
@@ -257,41 +277,106 @@ namespace RevenueOperationsDashboard.Services
                       )
                     GROUP BY PlanItemName  
                     ORDER BY TargetBillions DESC;";
+                sqlParams = new
+                {
+                    FiscalYearId = fy,
+                    ParentId = parentId,
+                    PlanItemId = planItemId,
+                    StartDate = startDate,
+                    EndDate = endDate
+                };
             }
             else
             {
+                bool isCurFy = (fy == "2019");
+                try
+                {
+                    const string sqlFy = @"SELECT TOP 1 IsCurrent FROM [dbo].[FiscalYears] WHERE FiscalYearId = @FiscalYearId;";
+                    var isCur = await conn.QueryFirstOrDefaultAsync<bool?>(new CommandDefinition(sqlFy, new { FiscalYearId = fy }, commandTimeout: 30));
+                    if (isCur.HasValue) isCurFy = isCur.Value;
+                }
+                catch { }
+
+                int curMonthOrder = 13;
+                int curDay = 30;
+                if (isCurFy)
+                {
+                    var todayEt = _clock.Today();
+                    curMonthOrder = todayEt.Month switch
+                    {
+                        11 => 1, // Hamle
+                        12 or 13 => 2, // Nehase / Pagume
+                        >= 1 and <= 10 => todayEt.Month + 2, // Meskerem (1)->3, Tikimt (2)->4, etc.
+                        _ => 13
+                    };
+                    curDay = Math.Clamp(todayEt.Day, 0, 30);
+                }
+
                 sql = @"  
-                    SELECT   
-                        PlanItemName,  
-                        ROUND(SUM(TotalTarget) / 1000000000.0, 2) AS TargetBillions,  
-                        ROUND(SUM(TotalActual) / 1000000000.0, 2) AS ActualBillions  
-                    FROM [ops].[vw_revenue_performance]  
-                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)  
-                      AND (@ParentId IS NULL OR ParentId = @ParentId)  
-                      AND (@PlanItemId IS NULL OR PlanItemId = @PlanItemId)  
-                      AND ParentId <> '1'
-                      AND PlanItemName IN (
-                          N'ምንዳና ደመወዝ(1101)',
-                          N'ንግድ ትረፍ(1103)',
-                          N'የተጨማሪ እሴት ታክስ ድምር(1120-1199)',
-                          N'የኪራይ ገቢ(1102)',
-                          N'የማዘጋጃ ቤቶች ገቢ(1700-1799)',
-                          N'ቤት ግብር(1701)'
-                      )
-                    GROUP BY PlanItemName  
+                    WITH Targets AS (
+                        SELECT   
+                            PlanItemName,  
+                            CAST(SUM(CASE 
+                                WHEN @IsAnnual = 1 THEN TotalTarget
+                                WHEN MonthOrder < @CurMonthOrder THEN TotalTarget
+                                WHEN MonthOrder = @CurMonthOrder THEN TotalTarget * (CAST(@CurDay AS DECIMAL(18,4)) / 30.0)
+                                ELSE 0
+                            END) AS DECIMAL(28,2)) AS Target,
+                            CAST(SUM(TotalActual) AS DECIMAL(28,2)) AS OpsActual
+                        FROM [ops].[vw_revenue_performance]  
+                        WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)  
+                          AND (@ParentId IS NULL OR ParentId = @ParentId)  
+                          AND (@PlanItemId IS NULL OR PlanItemId = @PlanItemId)  
+                          AND ParentId <> '1'
+                          AND PlanItemName IN (
+                              N'ምንዳና ደመወዝ(1101)',
+                              N'ንግድ ትረፍ(1103)',
+                              N'የተጨማሪ እሴት ታክስ ድምር(1120-1199)',
+                              N'የኪራይ ገቢ(1102)',
+                              N'የማዘጋጃ ቤቶች ገቢ(1700-1799)',
+                              N'ቤት ግብር(1701)'
+                          )
+                        GROUP BY PlanItemName  
+                    ),
+                    DailyAct AS (
+                        SELECT 
+                            PlanItemName,
+                            CAST(SUM(DailyActual) AS DECIMAL(28,2)) AS DailyActualSum
+                        FROM [dbo].[vw_RevenuePerformanceDaily]
+                        WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)  
+                          AND (@ParentId IS NULL OR ParentId = @ParentId)  
+                          AND (@PlanItemId IS NULL OR PlanItemId = @PlanItemId)  
+                          AND ParentId <> '1'
+                          AND PlanItemName IN (
+                              N'ምንዳና ደመወዝ(1101)',
+                              N'ንግድ ትረፍ(1103)',
+                              N'የተጨማሪ እሴት ታክስ ድምር(1120-1199)',
+                              N'የኪራይ ገቢ(1102)',
+                              N'የማዘጋጃ ቤቶች ገቢ(1700-1799)',
+                              N'ቤት ግብር(1701)'
+                          )
+                        GROUP BY PlanItemName
+                    )
+                    SELECT 
+                        t.PlanItemName,
+                        ROUND(t.Target / 1000000000.0, 2) AS TargetBillions,
+                        ROUND(ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) / 1000000000.0, 2) AS ActualBillions
+                    FROM Targets t
+                    LEFT JOIN DailyAct d ON t.PlanItemName = d.PlanItemName
                     ORDER BY TargetBillions DESC;";
+
+                sqlParams = new
+                {
+                    FiscalYearId = fy,
+                    ParentId = parentId,
+                    PlanItemId = planItemId,
+                    IsAnnual = isAnnual,
+                    CurMonthOrder = curMonthOrder,
+                    CurDay = curDay
+                };
             }
 
-            using var conn = await GetConnectionAsync();
-            var rows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sql, new
-            {
-                FiscalYearId = NormalizeFilter(filters.FiscalYearId),
-                ParentId = NormalizeFilter(filters.ParentId),
-                PlanItemId = NormalizeFilter(filters.PlanItemId),
-                StartDate = startDate,
-                EndDate = endDate,
-                Quarter = preset
-            }, commandTimeout: 120))).ToList();
+            var rows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sql, sqlParams, commandTimeout: 120))).ToList();
 
             var result = new TaxTypePerformanceDto();
             foreach (var r in rows)

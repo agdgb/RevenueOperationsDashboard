@@ -31,7 +31,7 @@ namespace RevenueOperationsDashboard.Controllers
         [HttpGet("tax-type-performance")]  
         public async Task<IActionResult> GetTaxTypePerformance([FromQuery] DashboardFilterDto filters)  
         {
-            string cacheKey = $"tax_type_perf_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}";
+            string cacheKey = $"tax_type_perf_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}_{filters.CalculationMode}";
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
