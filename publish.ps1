@@ -108,13 +108,13 @@ $publishArgs = @(
     "--nologo"
 )
 
-$publishCmd = "dotnet " + ($publishArgs -join " ")
+$publishCmd = "dotnet publish `"$ProjectFile`" -c $Configuration -o `"$OutputDir`" --nologo"
 Write-Host "Running: $publishCmd" -ForegroundColor DarkGray
 
-$process = Start-Process -FilePath "dotnet" -ArgumentList $publishArgs -NoNewWindow -PassThru -Wait
-if ($process.ExitCode -ne 0) {
-    Write-Error "dotnet publish failed with exit code $($process.ExitCode)."
-    exit $process.ExitCode
+dotnet publish "$ProjectFile" -c $Configuration -o "$OutputDir" --nologo
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "dotnet publish failed with exit code $LASTEXITCODE."
+    exit $LASTEXITCODE
 }
 
 Write-Host "[OK] Build and publish completed successfully." -ForegroundColor Green
