@@ -19,3 +19,5 @@ _references/
 # Scratch & temporary scripts
 scratch/
 **/scratch/
+_untracked_archive/
+**/_untracked_archive/
