@@ -94,7 +94,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAll");
-app.UseStaticFiles(new StaticFileOptions
+
+var staticFileOptions = new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
@@ -102,10 +103,13 @@ app.UseStaticFiles(new StaticFileOptions
         ctx.Context.Response.Headers.Append("Pragma", "no-cache");
         ctx.Context.Response.Headers.Append("Expires", "0");
     }
-});
+};
+
+app.UseDefaultFiles();
+app.UseStaticFiles(staticFileOptions);
 app.UseAuthorization();
 app.MapControllers();
 
-app.MapFallbackToFile("index.html");
+app.MapFallbackToFile("index.html", staticFileOptions);
 
 app.Run();
