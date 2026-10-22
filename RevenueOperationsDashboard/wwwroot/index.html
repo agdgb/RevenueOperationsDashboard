@@ -462,7 +462,7 @@
           <div>
             <div class="flex items-center gap-2">
               <h2 id="weeklyReportTitle" class="text-lg sm:text-xl font-black text-white tracking-tight print:text-slate-900">የስራ ክንውን ሳምንታዊ መግለጫ</h2>
-              <span id="weeklyCutoffBadge" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 print:text-slate-700 print:border-slate-300">እሮብ ምሽት የተዘጋጀ</span>
+              <span id="weeklyCutoffBadge" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 print:text-slate-700 print:border-slate-300">የ 7 ቀናት ክንውን</span>
             </div>
             <p id="weeklyReportSubtitle" class="text-xs text-slate-400 mt-0.5 print:text-slate-600">የ 7 ቀናት ተከታታይ የስራ አፈፃፀም፣ የታክስ አይነቶች እና የቅርንጫፎች ደረጃ</p>
             <div id="weeklyReportPeriod" class="text-xs font-semibold text-cyan-400 mt-1 print:text-indigo-800">
@@ -511,6 +511,38 @@
         <div id="sourcesTabQuickInfo" class="hidden text-xs text-slate-400 flex items-center gap-2">
           <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span id="lblSourcesAuditClean">ቀጥተኛ የታክስ ቅጠሎች (Double-counting የሌለበት)</span>
+        </div>
+      </div>
+
+      <!-- Weekly Report Custom Date Filter Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-3 p-2.5 bg-slate-800/40 border border-slate-800 rounded-xl print:hidden">
+        <div class="flex items-center gap-2 text-xs text-slate-300 font-medium">
+          <i class="fa-regular fa-calendar-days text-indigo-400"></i>
+          <span id="lblWeeklyDateRange">የቀን ክልል መምረጫ:</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="relative w-36 sm:w-40">
+            <input type="text" id="weeklyStartDate" placeholder="ከ (YYYY-MM-DD)"
+              class="w-full bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 cursor-pointer" />
+            <i class="fa-solid fa-calendar-day absolute right-2.5 top-2 text-slate-400 pointer-events-none text-[10px]"></i>
+          </div>
+          <span class="text-xs text-slate-500">-</span>
+          <div class="relative w-36 sm:w-40">
+            <input type="text" id="weeklyEndDate" placeholder="እስከ (YYYY-MM-DD)"
+              class="w-full bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 cursor-pointer" />
+            <i class="fa-solid fa-calendar-day absolute right-2.5 top-2 text-slate-400 pointer-events-none text-[10px]"></i>
+          </div>
+          <button id="btnWeeklyApplyRange" onclick="applyWeeklyCustomDateRange()"
+            class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5">
+            <i class="fa-solid fa-filter"></i>
+            <span id="lblWeeklyApplyBtn">አሳይ</span>
+          </button>
+          <button id="btnWeeklyResetRange" onclick="resetWeeklyDateRange()"
+            class="px-2.5 py-1.5 rounded-lg bg-slate-700/80 hover:bg-slate-600 text-slate-300 hover:text-white text-xs font-medium transition cursor-pointer flex items-center gap-1"
+            title="ወደ ነባሪ 7 ቀናት መልስ">
+            <i class="fa-solid fa-arrow-rotate-left"></i>
+            <span class="hidden sm:inline" id="lblWeeklyResetBtn">ነባሪ</span>
+          </button>
         </div>
       </div>
 
@@ -868,7 +900,9 @@
       weeklySelectedBranchId: null,
       weeklySourceSort: 'total',
       weeklySourceSearch: '',
-      weeklySourceHighlightStream: null
+      weeklySourceHighlightStream: null,
+      weeklyCustomStartDate: '',
+      weeklyCustomEndDate: ''
     };
 
     // ECharts Instances Map
@@ -990,7 +1024,9 @@
       "Top 3 Branches": "ቀዳሚ 3 ቅርንጫፎች",
       "Lagging Branches Needing Focus": "ትኩረት የሚሹ ቅርንጫፎች",
       "7-Day Revenue Velocity Curve": "የ 7 ቀናት የቀን ገቢ ፍጥነት",
-      "Prepared Wednesday Evening": "እሮብ ምሽት የተዘጋጀ"
+      "Past 7 Days": "የ 7 ቀናት ክንውን",
+      "Past 7 Days Record": "የባለፉት 7 ቀናት ክንውን",
+      "Past 7 days performance, revenue streams, and branch rankings": "የ 7 ቀናት ተከታታይ የስራ አፈፃፀም፣ የታክስ አይነቶች እና የቅርንጫፎች ደረጃ"
     };
 
     function t_db(text) {
@@ -1158,6 +1194,8 @@
       if(document.getElementById('lblPresetWeekly')) document.getElementById('lblPresetWeekly').innerText = t_ui("Weekly");
       if(document.getElementById('lblPrintBtn')) document.getElementById('lblPrintBtn').innerText = t_ui("Print / PDF");
       if(document.getElementById('weeklyReportTitle')) document.getElementById('weeklyReportTitle').innerText = t_ui("Weekly Operations Briefing");
+      if(document.getElementById('weeklyCutoffBadge')) document.getElementById('weeklyCutoffBadge').innerText = t_ui("Past 7 Days");
+      if(document.getElementById('weeklyReportSubtitle')) document.getElementById('weeklyReportSubtitle').innerText = t_ui("Past 7 days performance, revenue streams, and branch rankings");
       if(document.getElementById('lblWeeklyTarget')) document.getElementById('lblWeeklyTarget').innerText = t_ui("Weekly Target");
       if(document.getElementById('lblWeeklyActual')) document.getElementById('lblWeeklyActual').innerText = t_ui("Collected Revenue");
       if(document.getElementById('lblWeeklyAchievement')) document.getElementById('lblWeeklyAchievement').innerText = t_ui("Achievement Rate");
@@ -1390,6 +1428,22 @@
                 applyFilters();
               }
             }
+          });
+
+          $('#weeklyStartDate').calendarsPicker({
+            calendar: calendar,
+            dateFormat: 'yyyy-mm-dd',
+            todayText: 'ዛሬ',
+            clearText: 'አጥፋ',
+            closeText: 'ዝጋ'
+          });
+
+          $('#weeklyEndDate').calendarsPicker({
+            calendar: calendar,
+            dateFormat: 'yyyy-mm-dd',
+            todayText: 'ዛሬ',
+            clearText: 'አጥፋ',
+            closeText: 'ዝጋ'
           });
         }
       } catch (e) {
@@ -2736,6 +2790,12 @@
       const container = document.getElementById('weeklyReportContainer');
       if (container) container.scrollTop = 0;
 
+      // Ensure custom date inputs reflect state
+      const sInp = document.getElementById('weeklyStartDate');
+      const eInp = document.getElementById('weeklyEndDate');
+      if (sInp) sInp.value = state.weeklyCustomStartDate || '';
+      if (eInp) eInp.value = state.weeklyCustomEndDate || '';
+
       // Pause carousel while executive briefing is open
       state.autoRotate = false;
       updatePlayPauseButtonState();
@@ -2756,6 +2816,24 @@
       window.print();
     }
 
+    function applyWeeklyCustomDateRange() {
+      const s = document.getElementById('weeklyStartDate')?.value?.trim() || '';
+      const e = document.getElementById('weeklyEndDate')?.value?.trim() || '';
+      state.weeklyCustomStartDate = s;
+      state.weeklyCustomEndDate = e;
+      loadWeeklyReportData(true);
+    }
+
+    function resetWeeklyDateRange() {
+      const sInp = document.getElementById('weeklyStartDate');
+      const eInp = document.getElementById('weeklyEndDate');
+      if (sInp) sInp.value = '';
+      if (eInp) eInp.value = '';
+      state.weeklyCustomStartDate = '';
+      state.weeklyCustomEndDate = '';
+      loadWeeklyReportData(true);
+    }
+
     async function loadWeeklyReportData(force = false) {
       showWeeklyReportLoading(true);
       try {
@@ -2764,6 +2842,18 @@
           fiscalYearId: fy,
           lang: state.currentLang || 'am'
         });
+        if (state.filters.parent && state.filters.parent !== 'ALL') {
+          params.append('parentId', state.filters.parent);
+        }
+        if (state.filters.planItem && state.filters.planItem !== 'ALL') {
+          params.append('planItemId', state.filters.planItem);
+        }
+        if (state.weeklyCustomStartDate) {
+          params.append('startDate', state.weeklyCustomStartDate);
+        }
+        if (state.weeklyCustomEndDate) {
+          params.append('endDate', state.weeklyCustomEndDate);
+        }
         if (force) {
           params.append('refresh', 'true');
         }
@@ -2793,7 +2883,7 @@
       }
       const cutoffBadge = document.getElementById('weeklyCutoffBadge');
       if (cutoffBadge) {
-        cutoffBadge.innerText = isAm ? 'እሮብ ምሽት የተዘጋጀ' : 'Wednesday Cutoff';
+        cutoffBadge.innerText = data.reportingDay || (isAm ? 'የ 7 ቀናት ክንውን' : 'Past 7 Days');
       }
 
       // 4 KPI Cards

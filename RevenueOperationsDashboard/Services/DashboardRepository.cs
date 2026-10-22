@@ -120,40 +120,83 @@ namespace RevenueOperationsDashboard.Services
             return (null, null);
         }
 
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime MaxDate, DateTime CachedAt)> _maxDateCache = new();
+
+        public void InvalidateRecordedDateCache(string? fiscalYearId = null)
+        {
+            if (string.IsNullOrEmpty(fiscalYearId) || fiscalYearId.Equals("ALL", StringComparison.OrdinalIgnoreCase))
+            {
+                _maxDateCache.Clear();
+            }
+            else
+            {
+                _maxDateCache.TryRemove(fiscalYearId, out _);
+            }
+        }
+
+        public DateTime GetLatestRecordedDate(string? fiscalYearId)
+        {
+            var fy = NormalizeFilter(fiscalYearId) ?? "2019";
+            var cacheKey = fy;
+            if (_maxDateCache.TryGetValue(cacheKey, out var entry) && (DateTime.UtcNow - entry.CachedAt).TotalMinutes < 5)
+            {
+                return entry.MaxDate;
+            }
+
+            try
+            {
+                using var conn = new SqlConnection(_connectionString);
+                conn.Open();
+                var maxDate = conn.QueryFirstOrDefault<DateTime?>(
+                    @"SELECT MAX(EntryDate) 
+                      FROM [dbo].[vw_RevenuePerformanceDaily] 
+                      WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId) 
+                        AND DailyActual > 0",
+                    new { FiscalYearId = fy },
+                    commandTimeout: 15);
+
+                if (maxDate.HasValue && maxDate.Value > DateTime.MinValue)
+                {
+                    var res = maxDate.Value.Date;
+                    _maxDateCache[cacheKey] = (res, DateTime.UtcNow);
+                    return res;
+                }
+            }
+            catch
+            {
+                // Fallback on query failure
+            }
+
+            var todayEt = _clock.Today();
+            if (int.TryParse(fy, out var fyNum) && fyNum < todayEt.Year)
+            {
+                return _clock.ToGregorian(fyNum, 11, 1).Date;
+            }
+            return DateTime.Today;
+        }
+
         public (DateTime StartDate, DateTime EndDate) GetWeeklyReportingWindow(string? fiscalYearId)
         {
-            if (!Enum.TryParse<DayOfWeek>(_configuration["DashboardSettings:WeeklyReport:CutoffDayOfWeek"], true, out var cutoffDay))
-            {
-                cutoffDay = DayOfWeek.Wednesday;
-            }
             int periodDays = int.TryParse(_configuration["DashboardSettings:WeeklyReport:PeriodDays"], out var pd) ? pd : 7;
             if (periodDays <= 0) periodDays = 7;
 
             var todayEt = _clock.Today();
             DateTime refDate;
+
             if (int.TryParse(fiscalYearId, out var fyNum) && fyNum < todayEt.Year)
             {
-                // Closed historical year: anchor to the final operational closeout week (Hamle 01)
-                // where the fiscal year's peak closing collections are consolidated
-                refDate = _clock.ToGregorian(fyNum, 11, 1).Date;
+                // Closed historical year: anchor to the final recorded operational date of that fiscal year
+                refDate = GetLatestRecordedDate(fiscalYearId);
             }
             else
             {
-                // Current operational year: anchor to the latest closed reporting cutoff week.
-                // If today is the cutoff day itself (e.g. Wednesday daytime), the weekly batch
-                // closes on Wednesday evening. Until the evening batch arrives, anchor to the
-                // last fully closed weekly cutoff (previous Wednesday).
-                refDate = DateTime.Today;
-                if (refDate.DayOfWeek == cutoffDay)
-                {
-                    refDate = refDate.AddDays(-1);
-                }
+                // Current operational year: anchor directly to TODAY (ጥቅምት 11, 2019) using the date helper
+                refDate = _clock.ToGregorian(todayEt.Year, todayEt.Month, todayEt.Day).Date;
             }
 
-            int diff = ((int)refDate.DayOfWeek - (int)cutoffDay + 7) % 7;
-            DateTime cutoffDate = refDate.AddDays(-diff).Date;
-            DateTime startDate = cutoffDate.AddDays(-periodDays + 1).Date;
-            DateTime endDate = cutoffDate.Date.AddDays(1).AddTicks(-1);
+            // Rolling past 7 sequential days ending on refDate (today inclusive)
+            DateTime endDate = refDate.Date.AddDays(1).AddTicks(-1);
+            DateTime startDate = refDate.Date.AddDays(-periodDays + 1).Date;
 
             return (startDate, endDate);
         }
@@ -1073,12 +1116,27 @@ namespace RevenueOperationsDashboard.Services
             var planItemId = NormalizeFilter(filters.PlanItemId);
             var isEnglish = string.Equals(filters.Lang, "en", StringComparison.OrdinalIgnoreCase);
 
-            var (startDate, endDate) = GetWeeklyReportingWindow(fy);
-            int periodDays = (int)Math.Max(1, (endDate.Date - startDate.Date).TotalDays + 1);
+            DateTime startDate;
+            DateTime endDate;
+            if (!string.IsNullOrWhiteSpace(filters.StartDate) || !string.IsNullOrWhiteSpace(filters.EndDate))
+            {
+                var resolved = ResolveDateRange(filters);
+                var defaultWindow = GetWeeklyReportingWindow(fy);
+                startDate = resolved.StartDate ?? defaultWindow.StartDate;
+                endDate = resolved.EndDate ?? defaultWindow.EndDate;
+            }
+            else
+            {
+                (startDate, endDate) = GetWeeklyReportingWindow(fy);
+            }
 
-            var cutoffConfig = _configuration["DashboardSettings:WeeklyReport:CutoffDayOfWeek"] ?? "Wednesday";
+            int periodDays = (int)Math.Max(1, (endDate.Date - startDate.Date).TotalDays + 1);
+            var reportingLabel = isEnglish 
+                ? (periodDays == 7 ? "Past 7 Days" : $"{periodDays}-Day Period") 
+                : (periodDays == 7 ? "የ 7 ቀናት ክንውን" : $"የ {periodDays} ቀናት ክንውን");
             var etS = _clock.FromGregorian(startDate);
             var etE = _clock.FromGregorian(endDate);
+            string monthId = etE.Month.ToString();
 
             string[] amMonths = ["መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜ"];
             string amStartM = (etS.Month >= 1 && etS.Month <= 13) ? amMonths[etS.Month - 1] : "";
@@ -1108,37 +1166,38 @@ namespace RevenueOperationsDashboard.Services
                           (@PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF'))
                           OR (@PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId)
                       )
-                      AND (
-                          MonthId IN (
-                              SELECT DISTINCT MonthId 
-                              FROM [dbo].[vw_RevenuePerformanceDaily] 
-                              WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId) 
-                                AND EntryDate >= @StartDate AND EntryDate <= @EndDate
-                          )
-                          OR NOT EXISTS (
-                              SELECT 1 
-                              FROM [dbo].[vw_RevenuePerformanceDaily] 
-                              WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId) 
-                                AND EntryDate >= @StartDate AND EntryDate <= @EndDate
-                          )
-                      )
+                      AND MonthId = @MonthId
                 ),
                 TargetRate AS (
                     SELECT 
                         SUM(TotalMonthlyTarget / 30.0) AS DailyTarget
                     FROM DistinctMonthlyTargets
                 ),
-                ActualSum AS (
+                DayRollupPresence AS (
                     SELECT 
-                        SUM(DailyActual) AS TotalActual
+                        CAST(EntryDate AS DATE) AS DayDate,
+                        MAX(CASE WHEN PlanItemId IN ('49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF', 'EB486830-7C2F-4C28-B2A4-195FDB6641C5') THEN 1 ELSE 0 END) AS HasRollup
                     FROM [dbo].[vw_RevenuePerformanceDaily]
                     WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
                       AND (@ParentId IS NULL OR ParentId = @ParentId)
                       AND EntryDate >= @StartDate AND EntryDate <= @EndDate
-                      AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
+                    GROUP BY CAST(EntryDate AS DATE)
+                ),
+                ActualSum AS (
+                    SELECT 
+                        SUM(v.DailyActual) AS TotalActual
+                    FROM [dbo].[vw_RevenuePerformanceDaily] v
+                    JOIN DayRollupPresence drp ON CAST(v.EntryDate AS DATE) = drp.DayDate
+                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                      AND (@ParentId IS NULL OR ParentId = @ParentId)
+                      AND v.EntryDate >= @StartDate AND v.EntryDate <= @EndDate
+                      AND v.ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
                       AND (
-                          (@PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF'))
-                          OR (@PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId)
+                          (@PlanItemId IS NOT NULL AND v.PlanItemId = @PlanItemId)
+                          OR (@PlanItemId IS NULL AND (
+                              (drp.HasRollup = 1 AND v.PlanItemId IN ('49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF', 'EB486830-7C2F-4C28-B2A4-195FDB6641C5'))
+                              OR (drp.HasRollup = 0 AND v.PlanItemId NOT IN ('F6D06033-5C3D-4647-A0F7-E8141C4B3AC0', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF', 'EB486830-7C2F-4C28-B2A4-195FDB6641C5'))
+                          ))
                       )
                 )
                 SELECT 
@@ -1146,25 +1205,67 @@ namespace RevenueOperationsDashboard.Services
                     ISNULL((SELECT DailyTarget FROM TargetRate) * @PeriodDays, 0) AS Target;";
 
             const string sqlStreams = @"
+                WITH TargetStreams AS (
+                    SELECT 
+                        PlanItemName,
+                        ROUND((SUM(TotalMonthlyTarget) / 30.0 * @PeriodDays) / 1000000000.0, 4) AS TargetBillions
+                    FROM [dbo].[vw_RevenuePerformanceDaily]
+                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                      AND (@ParentId IS NULL OR ParentId = @ParentId)
+                      AND MonthId = @MonthId
+                      AND ParentId <> '1'
+                      AND PlanItemName IN (
+                          N'ምንዳና ደመወዝ(1101)',
+                          N'ንግድ ትረፍ(1103)',
+                          N'የተጨማሪ እሴት ታክስ ድምር(1120-1199)',
+                          N'የኪራይ ገቢ(1102)',
+                          N'የማዘጋጃ ቤቶች ገቢ(1700-1799)',
+                          N'ቤት ግብር(1701)'
+                      )
+                    GROUP BY PlanItemName
+                ),
+                ActualStreams AS (
+                    SELECT 
+                        CASE 
+                            WHEN PlanItemName LIKE N'%1101%' THEN N'ምንዳና ደመወዝ(1101)'
+                            WHEN PlanItemName LIKE N'%1103%' THEN N'ንግድ ትረፍ(1103)'
+                            WHEN PlanItemName LIKE N'%1120%' THEN N'የተጨማሪ እሴት ታክስ ድምር(1120-1199)'
+                            WHEN PlanItemName LIKE N'%1102%' THEN N'የኪራይ ገቢ(1102)'
+                            WHEN PlanItemName LIKE N'%1700%' THEN N'የማዘጋጃ ቤቶች ገቢ(1700-1799)'
+                            WHEN PlanItemName LIKE N'%1701%' THEN N'ቤት ግብር(1701)'
+                            ELSE PlanItemName
+                        END AS PlanItemName,
+                        ROUND(SUM(DailyActual) / 1000000000.0, 4) AS ActualBillions
+                    FROM [dbo].[vw_RevenuePerformanceDaily]
+                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                      AND (@ParentId IS NULL OR ParentId = @ParentId)
+                      AND EntryDate >= @StartDate AND EntryDate <= @EndDate
+                      AND (
+                          PlanItemName LIKE N'%1101%'
+                          OR PlanItemName LIKE N'%1103%'
+                          OR PlanItemName LIKE N'%1120%'
+                          OR PlanItemName LIKE N'%1102%'
+                          OR PlanItemName LIKE N'%1700%'
+                          OR PlanItemName LIKE N'%1701%'
+                      )
+                    GROUP BY 
+                        CASE 
+                            WHEN PlanItemName LIKE N'%1101%' THEN N'ምንዳና ደመወዝ(1101)'
+                            WHEN PlanItemName LIKE N'%1103%' THEN N'ንግድ ትረፍ(1103)'
+                            WHEN PlanItemName LIKE N'%1120%' THEN N'የተጨማሪ እሴት ታክስ ድምር(1120-1199)'
+                            WHEN PlanItemName LIKE N'%1102%' THEN N'የኪራይ ገቢ(1102)'
+                            WHEN PlanItemName LIKE N'%1700%' THEN N'የማዘጋጃ ቤቶች ገቢ(1700-1799)'
+                            WHEN PlanItemName LIKE N'%1701%' THEN N'ቤት ግብር(1701)'
+                            ELSE PlanItemName
+                        END
+                )
                 SELECT 
-                    PlanItemName,
-                    ROUND(SUM(DailyActual) / 1000000000.0, 4) AS ActualBillions,
-                    ROUND((MAX(TotalMonthlyTarget) / 30.0 * @PeriodDays) / 1000000000.0, 4) AS TargetBillions
-                FROM [dbo].[vw_RevenuePerformanceDaily]
-                WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
-                  AND (@ParentId IS NULL OR ParentId = @ParentId)
-                  AND EntryDate >= @StartDate AND EntryDate <= @EndDate
-                  AND ParentId <> '1'
-                  AND PlanItemName IN (
-                      N'ምንዳና ደመወዝ(1101)',
-                      N'ንግድ ትረፍ(1103)',
-                      N'የተጨማሪ እሴት ታክስ ድምር(1120-1199)',
-                      N'የኪራይ ገቢ(1102)',
-                      N'የማዘጋጃ ቤቶች ገቢ(1700-1799)',
-                      N'ቤት ግብር(1701)'
-                  )
-                GROUP BY PlanItemName
-                ORDER BY ActualBillions DESC;";
+                    ts.PlanItemName,
+                    ISNULL(ast.ActualBillions, 0) AS ActualBillions,
+                    ts.TargetBillions
+                FROM TargetStreams ts
+                LEFT JOIN ActualStreams ast ON ts.PlanItemName = ast.PlanItemName
+                ORDER BY ActualBillions DESC, TargetBillions DESC;";
 
             const string sqlBranches = @"
                 WITH DistinctMonthlyBranchTargets AS (
@@ -1182,20 +1283,7 @@ namespace RevenueOperationsDashboard.Services
                           (@PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF'))
                           OR (@PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId)
                       )
-                      AND (
-                          MonthId IN (
-                              SELECT DISTINCT MonthId 
-                              FROM [dbo].[vw_RevenuePerformanceDaily] 
-                              WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId) 
-                                AND EntryDate >= @StartDate AND EntryDate <= @EndDate
-                          )
-                          OR NOT EXISTS (
-                              SELECT 1 
-                              FROM [dbo].[vw_RevenuePerformanceDaily] 
-                              WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId) 
-                                AND EntryDate >= @StartDate AND EntryDate <= @EndDate
-                          )
-                      )
+                      AND MonthId = @MonthId
                 ),
                 BranchTargets AS (
                     SELECT 
@@ -1205,21 +1293,34 @@ namespace RevenueOperationsDashboard.Services
                     FROM DistinctMonthlyBranchTargets
                     GROUP BY ParentId, ParentName
                 ),
-                BranchActuals AS (
+                DayRollupPresence AS (
                     SELECT 
-                        ParentId,
-                        ParentName,
-                        ROUND(SUM(DailyActual) / 1000000000.0, 4) AS ActualBillions
+                        CAST(EntryDate AS DATE) AS DayDate,
+                        MAX(CASE WHEN PlanItemId IN ('49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF', 'EB486830-7C2F-4C28-B2A4-195FDB6641C5') THEN 1 ELSE 0 END) AS HasRollup
                     FROM [dbo].[vw_RevenuePerformanceDaily]
                     WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
                       AND EntryDate >= @StartDate AND EntryDate <= @EndDate
-                      AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
-                      AND ParentId <> '1'
+                    GROUP BY CAST(EntryDate AS DATE)
+                ),
+                BranchActuals AS (
+                    SELECT 
+                        v.ParentId,
+                        v.ParentName,
+                        ROUND(SUM(v.DailyActual) / 1000000000.0, 4) AS ActualBillions
+                    FROM [dbo].[vw_RevenuePerformanceDaily] v
+                    JOIN DayRollupPresence drp ON CAST(v.EntryDate AS DATE) = drp.DayDate
+                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                      AND v.EntryDate >= @StartDate AND v.EntryDate <= @EndDate
+                      AND v.ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
+                      AND v.ParentId <> '1'
                       AND (
-                          (@PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF'))
-                          OR (@PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId)
+                          (@PlanItemId IS NOT NULL AND v.PlanItemId = @PlanItemId)
+                          OR (@PlanItemId IS NULL AND (
+                              (drp.HasRollup = 1 AND v.PlanItemId IN ('49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF', 'EB486830-7C2F-4C28-B2A4-195FDB6641C5'))
+                              OR (drp.HasRollup = 0 AND v.PlanItemId NOT IN ('F6D06033-5C3D-4647-A0F7-E8141C4B3AC0', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF', 'EB486830-7C2F-4C28-B2A4-195FDB6641C5'))
+                          ))
                       )
-                    GROUP BY ParentId, ParentName
+                    GROUP BY v.ParentId, v.ParentName
                 )
                 SELECT 
                     bt.ParentId,
@@ -1234,7 +1335,7 @@ namespace RevenueOperationsDashboard.Services
                     ROUND(ISNULL(ba.ActualBillions, 0) - ISNULL(bt.TargetBillions, 0), 4) AS VarianceBillions
                 FROM BranchTargets bt
                 LEFT JOIN BranchActuals ba ON bt.ParentId = ba.ParentId
-                ORDER BY AchievementPct DESC;";
+                ORDER BY AchievementPct DESC, TargetBillions DESC;";
 
             const string sqlDaily = @"
                 WITH DistinctMonthlyTargets AS (
@@ -1249,6 +1350,7 @@ namespace RevenueOperationsDashboard.Services
                           (@PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF'))
                           OR (@PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId)
                       )
+                      AND MonthId = @MonthId
                 ),
                 DailyTargetsByMonth AS (
                     SELECT 
@@ -1257,28 +1359,40 @@ namespace RevenueOperationsDashboard.Services
                     FROM DistinctMonthlyTargets
                     GROUP BY MonthId
                 ),
-                DailyActuals AS (
+                DayRollupPresence AS (
                     SELECT 
-                        EntryDate,
-                        MonthId,
-                        ROUND(SUM(DailyActual) / 1000000000.0, 4) AS ActualBillions
+                        CAST(EntryDate AS DATE) AS DayDate,
+                        MAX(CASE WHEN PlanItemId IN ('49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF', 'EB486830-7C2F-4C28-B2A4-195FDB6641C5') THEN 1 ELSE 0 END) AS HasRollup
                     FROM [dbo].[vw_RevenuePerformanceDaily]
                     WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
                       AND (@ParentId IS NULL OR ParentId = @ParentId)
-                      AND (
-                          (@PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF'))
-                          OR (@PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId)
-                      )
                       AND EntryDate >= @StartDate AND EntryDate <= @EndDate
-                    GROUP BY EntryDate, MonthId
+                    GROUP BY CAST(EntryDate AS DATE)
+                ),
+                DailyActuals AS (
+                    SELECT 
+                        CAST(v.EntryDate AS DATE) AS EntryDate,
+                        ROUND(SUM(v.DailyActual) / 1000000000.0, 4) AS ActualBillions
+                    FROM [dbo].[vw_RevenuePerformanceDaily] v
+                    JOIN DayRollupPresence drp ON CAST(v.EntryDate AS DATE) = drp.DayDate
+                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                      AND (@ParentId IS NULL OR ParentId = @ParentId)
+                      AND v.EntryDate >= @StartDate AND v.EntryDate <= @EndDate
+                      AND v.ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
+                      AND (
+                          (@PlanItemId IS NOT NULL AND v.PlanItemId = @PlanItemId)
+                          OR (@PlanItemId IS NULL AND (
+                              (drp.HasRollup = 1 AND v.PlanItemId IN ('49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF', 'EB486830-7C2F-4C28-B2A4-195FDB6641C5'))
+                              OR (drp.HasRollup = 0 AND v.PlanItemId NOT IN ('F6D06033-5C3D-4647-A0F7-E8141C4B3AC0', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF', 'EB486830-7C2F-4C28-B2A4-195FDB6641C5'))
+                          ))
+                      )
+                    GROUP BY CAST(v.EntryDate AS DATE)
                 )
                 SELECT 
                     da.EntryDate,
-                    SUM(da.ActualBillions) AS ActualBillions,
-                    MAX(ISNULL(dt.DailyTargetRunRateBillions, 0)) AS TargetBillions
+                    da.ActualBillions,
+                    (SELECT ISNULL(MAX(DailyTargetRunRateBillions), 0) FROM DailyTargetsByMonth) AS TargetBillions
                 FROM DailyActuals da
-                LEFT JOIN DailyTargetsByMonth dt ON da.MonthId = dt.MonthId
-                GROUP BY da.EntryDate
                 ORDER BY da.EntryDate ASC;";
 
             const string sqlBranchSources = @"
@@ -1316,7 +1430,8 @@ namespace RevenueOperationsDashboard.Services
                     PlanItemId = planItemId,
                     StartDate = startDate,
                     EndDate = endDate,
-                    PeriodDays = periodDays
+                    PeriodDays = periodDays,
+                    MonthId = monthId
                 }, commandTimeout: 120));
             });
 
@@ -1329,7 +1444,8 @@ namespace RevenueOperationsDashboard.Services
                     ParentId = parentId,
                     StartDate = startDate,
                     EndDate = endDate,
-                    PeriodDays = periodDays
+                    PeriodDays = periodDays,
+                    MonthId = monthId
                 }, commandTimeout: 120))).ToList();
             });
 
@@ -1342,7 +1458,8 @@ namespace RevenueOperationsDashboard.Services
                     PlanItemId = planItemId,
                     StartDate = startDate,
                     EndDate = endDate,
-                    PeriodDays = periodDays
+                    PeriodDays = periodDays,
+                    MonthId = monthId
                 }, commandTimeout: 120))).ToList();
             });
 
@@ -1355,7 +1472,8 @@ namespace RevenueOperationsDashboard.Services
                     ParentId = parentId,
                     PlanItemId = planItemId,
                     StartDate = startDate,
-                    EndDate = endDate
+                    EndDate = endDate,
+                    MonthId = monthId
                 }, commandTimeout: 120))).ToList();
             });
 
@@ -1451,6 +1569,10 @@ namespace RevenueOperationsDashboard.Services
             string[] amDayNames = ["እሑድ", "ሰኞ", "ማክሰኞ", "እሮብ", "ሐሙስ", "ዓርብ", "ቅዳሜ"];
             string[] enDayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+            decimal fallbackDailyTgtB = (totalsRow?.Target != null && periodDays > 0)
+                ? Math.Round(((decimal)totalsRow.Target / periodDays * calib) / 1000000000m, 4)
+                : 0m;
+
             var dailyTrend = new List<WeeklyDailyPointDto>();
             for (int i = 0; i < periodDays; i++)
             {
@@ -1458,6 +1580,7 @@ namespace RevenueOperationsDashboard.Services
                 var etD = _dateMapper.ToEthiopian(DateOnly.FromDateTime(curDate));
                 int dayOfWeekIdx = (int)curDate.DayOfWeek;
                 var (actB, tgtB) = dailyLookup.TryGetValue(curDate, out var val) ? val : (0m, 0m);
+                decimal finalTgtB = tgtB > 0m ? Math.Round(tgtB * calib, 4) : fallbackDailyTgtB;
 
                 dailyTrend.Add(new WeeklyDailyPointDto
                 {
@@ -1465,7 +1588,7 @@ namespace RevenueOperationsDashboard.Services
                     DayName = enDayNames[dayOfWeekIdx],
                     DayNameAmharic = amDayNames[dayOfWeekIdx],
                     ActualBillions = actB,
-                    TargetBillions = Math.Round(tgtB * calib, 2)
+                    TargetBillions = finalTgtB
                 });
             }
 
@@ -1626,7 +1749,7 @@ namespace RevenueOperationsDashboard.Services
 
             return new WeeklyReportDto
             {
-                ReportingDay = cutoffConfig,
+                ReportingDay = reportingLabel,
                 StartDate = startDate,
                 EndDate = endDate,
                 FormattedPeriodAmharic = periodAm,

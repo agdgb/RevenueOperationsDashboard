@@ -75,8 +75,8 @@ namespace RevenueOperationsDashboard.Models
         public bool AutoShowOnCutoffDay { get; set; } = false;
         public string TitleAm { get; set; } = "ሳምንታዊ የገቢ አፈፃፀም ሪፖርት";
         public string TitleEn { get; set; } = "Executive Weekly Performance Report";
-        public string SubtitleAm { get; set; } = "ከቀዳሚው ሐሙስ እስከ እሮብ የተሰበሰበ ገቢ እና የእቅድ አፈፃፀም";
-        public string SubtitleEn { get; set; } = "Weekly collection trajectory and operational plan achievement (Thursday to Wednesday)";
+        public string SubtitleAm { get; set; } = "የ 7 ቀናት ተከታታይ የስራ አፈፃፀም፣ የታክስ አይነቶች እና የቅርንጫፎች ደረጃ";
+        public string SubtitleEn { get; set; } = "Past 7 days performance, revenue streams, and branch rankings";
     }
 
     public class DashboardConfigDto
