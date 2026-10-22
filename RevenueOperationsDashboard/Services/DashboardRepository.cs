@@ -391,43 +391,90 @@ namespace RevenueOperationsDashboard.Services
         // 2. Monthly Achievement Trend (%)  
         public async Task<MonthlyTrendDto> GetMonthlyTrendAsync(DashboardFilterDto filters)
         {
+            var fy = NormalizeFilter(filters.FiscalYearId) ?? "2019";
+            var parentId = NormalizeFilter(filters.ParentId);
+            var planItemId = NormalizeFilter(filters.PlanItemId);
             var preset = filters.DatePreset?.Trim().ToUpperInvariant();
             string? quarter = preset is "Q1" or "Q2" or "Q3" or "Q4" ? preset : null;
 
-            const string sql = @"  
-                SELECT   
-                    MonthName,  
-                    MonthOrder,  
-                    CASE   
-                        WHEN SUM(CASE 
-                            WHEN @PlanItemId IS NULL THEN SelectedTarget
-                            ELSE TotalTarget
-                        END) > 0 
-                        THEN ROUND((SUM(CASE 
-                            WHEN @PlanItemId IS NULL THEN SelectedActual
-                            ELSE TotalActual
-                        END) / SUM(CASE 
-                            WHEN @PlanItemId IS NULL THEN SelectedTarget
-                            ELSE TotalTarget
-                        END)) * 100, 2)
-                        ELSE 0 
-                    END AS AchievementPct  
-                FROM [ops].[vw_revenue_performance]  
-                WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)  
-                  AND (@ParentId IS NULL OR ParentId = @ParentId)  
-                  AND (@Quarter IS NULL OR Quarter = @Quarter)
-                  AND (@PlanItemId IS NULL OR PlanItemId = @PlanItemId)
-                  AND ParentId IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
-                GROUP BY MonthName, MonthOrder  
-                ORDER BY MonthOrder ASC;";
-
             using var conn = await GetConnectionAsync();
+
+            bool isCurFy = (fy == "2019");
+            try
+            {
+                const string sqlFy = @"SELECT TOP 1 IsCurrent FROM [dbo].[FiscalYears] WHERE FiscalYearId = @FiscalYearId;";
+                var isCur = await conn.QueryFirstOrDefaultAsync<bool?>(new CommandDefinition(sqlFy, new { FiscalYearId = fy }, commandTimeout: 30));
+                if (isCur.HasValue) isCurFy = isCur.Value;
+            }
+            catch { }
+
+            int curMonthOrder = 13;
+            int curDay = 30;
+            if (isCurFy)
+            {
+                var todayEt = _clock.Today();
+                curMonthOrder = todayEt.Month switch
+                {
+                    11 => 1, // Hamle
+                    12 or 13 => 2, // Nehase / Pagume
+                    >= 1 and <= 10 => todayEt.Month + 2, // Meskerem (1)->3, Tikimt (2)->4, etc.
+                    _ => 13
+                };
+                curDay = Math.Clamp(todayEt.Day, 0, 30);
+            }
+
+            const string sql = @"  
+                WITH MonthlyTargets AS (
+                    SELECT 
+                        MonthId,
+                        MonthName,
+                        MonthOrder,
+                        CAST(SUM(CASE WHEN @PlanItemId IS NULL THEN SelectedTarget ELSE TotalTarget END) AS DECIMAL(28,2)) AS Target,
+                        CAST(SUM(CASE WHEN @PlanItemId IS NULL THEN SelectedActual ELSE TotalActual END) AS DECIMAL(28,2)) AS OpsActual
+                    FROM [ops].[vw_revenue_performance]
+                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                      AND (@ParentId IS NULL OR ParentId = @ParentId)
+                      AND (@Quarter IS NULL OR Quarter = @Quarter)
+                      AND (@PlanItemId IS NULL OR PlanItemId = @PlanItemId)
+                      AND ParentId IN (2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
+                    GROUP BY MonthId, MonthName, MonthOrder
+                ),
+                DailyAct AS (
+                    SELECT 
+                        MonthId,
+                        CAST(SUM(DailyActual) AS DECIMAL(28,2)) AS DailyActualSum
+                    FROM [dbo].[vw_RevenuePerformanceDaily]
+                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
+                      AND (@ParentId IS NULL OR ParentId = @ParentId)
+                      AND ParentId IN (2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
+                      AND (
+                          (@PlanItemId IS NULL AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF'))
+                          OR (@PlanItemId IS NOT NULL AND PlanItemId = @PlanItemId)
+                      )
+                    GROUP BY MonthId
+                )
+                SELECT 
+                    t.MonthName,
+                    t.MonthOrder,
+                    CASE 
+                        WHEN t.MonthOrder < @CurMonthOrder AND t.Target > 0 
+                            THEN ROUND(ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) / t.Target * 100, 2)
+                        WHEN t.MonthOrder = @CurMonthOrder AND t.Target > 0 
+                            THEN ROUND(ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) / (t.Target * (CAST(@CurDay AS DECIMAL(18,4)) / 30.0)) * 100, 2)
+                        ELSE 0 
+                    END AS AchievementPct
+                FROM MonthlyTargets t
+                LEFT JOIN DailyAct d ON t.MonthId = d.MonthId
+                ORDER BY t.MonthOrder ASC;";
+
             var rows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sql, new
             {
-                FiscalYearId = NormalizeFilter(filters.FiscalYearId),
-                ParentId = NormalizeFilter(filters.ParentId),
-                PlanItemId = NormalizeFilter(filters.PlanItemId),
-                Quarter = quarter
+                FiscalYearId = fy,
+                ParentId = parentId,
+                PlanItemId = planItemId,
+                Quarter = quarter,
+                CurMonthOrder = curMonthOrder,
+                CurDay = curDay
             }, commandTimeout: 120))).ToList();
 
             return new MonthlyTrendDto
