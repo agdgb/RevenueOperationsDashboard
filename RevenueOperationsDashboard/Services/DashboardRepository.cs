@@ -1849,8 +1849,8 @@ namespace RevenueOperationsDashboard.Services
             string[] amDayNames = ["እሑድ", "ሰኞ", "ማክሰኞ", "እሮብ", "ሐሙስ", "ዓርብ", "ቅዳሜ"];
             string[] enDayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-            decimal fallbackDailyTgtB = (totalsRow?.Target != null && periodDays > 0)
-                ? Math.Round(((decimal)totalsRow.Target / periodDays * calib) / 1000000000m, 4)
+            decimal fallbackDailyTgtB = (weeklyTgt > 0m && periodDays > 0)
+                ? Math.Round((weeklyTgt / periodDays) / 1000000000m, 4)
                 : 0m;
 
             var dailyTrend = new List<WeeklyDailyPointDto>();

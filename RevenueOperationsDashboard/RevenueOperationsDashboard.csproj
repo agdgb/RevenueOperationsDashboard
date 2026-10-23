@@ -19,4 +19,11 @@
     <ProjectReference Include="..\RevenueOperationsDashboard.Infrastructure\RevenueOperationsDashboard.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Safeguard against test/scratch files ever leaking into publish packages -->
+    <Content Remove="wwwroot\*.ps1" />
+    <Content Remove="wwwroot\*sample*.html" />
+    <Content Remove="**\*.sql" />
+  </ItemGroup>
+
 </Project>
