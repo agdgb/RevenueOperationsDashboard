@@ -37,7 +37,7 @@ Here is the complete and cleaned schema currently supported:
   "DashboardSettings": {
     "DefaultLanguage": "am",
     "KpiCalculationMode": "ToDateTarget",
-    "DefaultChartMetricMode": "pct",
+    "DefaultChartMetricMode": "wicks",
     "DefaultTheme": "ocean",
     "DefaultFilters": {
       "FiscalYearId": "2019",
@@ -74,7 +74,8 @@ Here is the complete and cleaned schema currently supported:
           "Subtitle": "Monthly Cumulative Achievement Trend % against 100% target baseline",
           "SubtitleAm": "ወርሃዊ ድምር አፈፃፀም ንፅፅር በመቶኛ",
           "ApiEndpoint": "/api/dashboard/monthly-trend",
-          "DurationMs": 20000
+          "DurationMs": 20000,
+          "DefaultMetricMode": "wicks"
         },
         {
           "Id": "slide-3",
@@ -84,7 +85,8 @@ Here is the complete and cleaned schema currently supported:
           "Subtitle": "Monthly Achievement Trend Comparison with Previous Year",
           "SubtitleAm": "ከቀዳሚው ዓመት ጋር የወርሃዊ አፈፃፀም ንፅፅር",
           "ApiEndpoint": "/api/dashboard/yoy-monthly-trend",
-          "DurationMs": 20000
+          "DurationMs": 20000,
+          "DefaultMetricMode": "wicks"
         },
         {
           "Id": "slide-2",
@@ -185,6 +187,7 @@ Each entry in `Slides` has the following properties:
 | `SubtitleAm` | string | Amharic explanatory subtitle. |
 | `ApiEndpoint` | string | Backend controller route providing metrics for this slide. |
 | `DurationMs` | integer | Custom display duration in milliseconds for this specific slide (e.g. `20000`). |
+| `DefaultMetricMode` | string | Optional per-slide metric mode override (`"wicks"` or `"pct"`) for time-series slides. |
 
 #### Available Slide IDs
 

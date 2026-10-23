@@ -98,7 +98,7 @@ namespace RevenueOperationsDashboard.Models
     {
         public string DefaultLanguage { get; set; } = "am";
         public string KpiCalculationMode { get; set; } = "ToDateTarget";
-        public string DefaultChartMetricMode { get; set; } = "pct"; // "pct", "amount", "both"
+        public string DefaultChartMetricMode { get; set; } = "wicks"; // "wicks", "pct", "amount"
         public string DefaultTheme { get; set; } = "ocean";
         public DefaultFiltersDto DefaultFilters { get; set; } = new();
         public WeeklyReportSettingsDto WeeklyReport { get; set; } = new();
@@ -133,6 +133,7 @@ namespace RevenueOperationsDashboard.Models
         public string SubtitleAm { get; set; } = string.Empty;
         public string ApiEndpoint { get; set; } = string.Empty;
         public int? DurationMs { get; set; }
+        public string? DefaultMetricMode { get; set; }
     }
 
     public class TopKpiCardItemDto

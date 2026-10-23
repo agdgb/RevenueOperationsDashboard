@@ -980,10 +980,10 @@
     const state = {
       currentLang: 'en', // 'en' or 'am'
       currentTheme: localStorage.getItem('dashboard_theme') || 'ocean',
-      chartMetricMode: localStorage.getItem('dashboard_chart_metric_mode') || 'pct', // fallback
+      chartMetricMode: 'wicks',
       chartMetricModes: {
-        monthlyTrend: localStorage.getItem('dashboard_metric_monthlyTrend') || 'pct',
-        yoyTrend: localStorage.getItem('dashboard_metric_yoyTrend') || 'pct'
+        monthlyTrend: 'wicks',
+        yoyTrend: 'wicks'
       },
       currentSlide: 0,
       slideCount: 0,
@@ -1355,14 +1355,20 @@
           if (themeSelector) themeSelector.value = config.defaultTheme;
         }
 
-        // Apply default chart metric mode
-        if (config.defaultChartMetricMode) {
-          state.chartMetricMode = config.defaultChartMetricMode;
-          if (!localStorage.getItem('dashboard_metric_monthlyTrend')) {
-            state.chartMetricModes.monthlyTrend = config.defaultChartMetricMode;
-          }
-          if (!localStorage.getItem('dashboard_metric_yoyTrend')) {
-            state.chartMetricModes.yoyTrend = config.defaultChartMetricMode;
+        // Apply default chart metric mode from appsettings
+        const defaultMode = config.defaultChartMetricMode || 'wicks';
+        state.chartMetricMode = defaultMode;
+        state.chartMetricModes.monthlyTrend = defaultMode;
+        state.chartMetricModes.yoyTrend = defaultMode;
+
+        // Apply slide-level metric mode overrides from appsettings if defined
+        if (config.carousel && config.carousel.slides) {
+          for (const s of config.carousel.slides) {
+            if (s.id === 'slide-1' && s.defaultMetricMode) {
+              state.chartMetricModes.monthlyTrend = s.defaultMetricMode;
+            } else if (s.id === 'slide-3' && s.defaultMetricMode) {
+              state.chartMetricModes.yoyTrend = s.defaultMetricMode;
+            }
           }
         }
         updateAllMetricTogglesUI();
