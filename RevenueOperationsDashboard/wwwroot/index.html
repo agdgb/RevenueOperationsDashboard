@@ -127,9 +127,9 @@
     /* Edge Hover Trigger Zones & Floating Animated Navigation */
     .nav-side-zone {
       position: fixed;
-      top: 0;
-      bottom: 0;
-      width: 110px;
+      top: calc(50% - 100px);
+      height: 200px;
+      width: 64px;
       z-index: 45;
       display: flex;
       align-items: center;
@@ -859,11 +859,11 @@
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
         <!-- Floating Metric Mode Toggle Pill for Monthly Trend -->
         <div id="monthlyTrendToggleGroup"
-          class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
+          class="absolute top-3 right-6 z-30 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
           <button data-mode="pct" onclick="setSlideChartMetricMode('monthlyTrend', 'pct')"
-            class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
+            class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">በመቶኛ (%)</button>
           <button data-mode="wicks" onclick="setSlideChartMetricMode('monthlyTrend', 'wicks')"
-            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር (Wicks)</button>
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white cursor-pointer">በብር (Wicks)</button>
         </div>
         <div id="chartMonthlyTrend" class="w-full flex-1 min-h-[300px]"></div>
       </div>
@@ -883,11 +883,11 @@
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
         <!-- Floating Metric Mode Toggle Pill for YoY Trend -->
         <div id="yoyTrendToggleGroup"
-          class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
+          class="absolute top-3 right-6 z-30 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
           <button data-mode="pct" onclick="setSlideChartMetricMode('yoyTrend', 'pct')"
-            class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
+            class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">በመቶኛ (%)</button>
           <button data-mode="wicks" onclick="setSlideChartMetricMode('yoyTrend', 'wicks')"
-            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር (Wicks)</button>
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white cursor-pointer">በብር (Wicks)</button>
         </div>
         <div id="chartYoYMonthlyTrend" class="w-full flex-1 min-h-[300px]"></div>
       </div>
@@ -1539,9 +1539,9 @@
           btn.innerText = labels[btnMode] || btnMode;
           const isSelected = (btnMode === mode) || ((mode === 'amount' || mode === 'both' || mode === 'wicks') && btnMode === 'wicks') || (mode === 'pct' && btnMode === 'pct');
           if (isSelected) {
-            btn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm';
+            btn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm cursor-pointer';
           } else {
-            btn.className = 'px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white hover:bg-slate-800/60';
+            btn.className = 'px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white hover:bg-slate-800/60 cursor-pointer';
           }
         }
       });
