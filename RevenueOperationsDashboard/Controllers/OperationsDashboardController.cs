@@ -53,11 +53,17 @@ namespace RevenueOperationsDashboard.Controllers
         }
 
         [HttpGet("yoy-monthly-trend")]
-        public async Task<ActionResult<YoYMonthlyTrendDto>> GetYoYMonthlyTrend([FromQuery] DashboardFilterDto filters)
+        public async Task<IActionResult> GetYoYMonthlyTrend([FromQuery] DashboardFilterDto filters)
         {
             try
             {
-                return await _repo.GetYoYMonthlyTrendAsync(filters);
+                string cacheKey = $"yoy_monthly_trend_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}_{filters.Lang ?? "am"}";
+                var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
+                {
+                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
+                    return await _repo.GetYoYMonthlyTrendAsync(filters);
+                });
+                return Ok(data);
             }
             catch
             {

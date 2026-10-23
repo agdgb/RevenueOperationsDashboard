@@ -1185,7 +1185,9 @@
       }
 
       // 2. Refresh active slide metrics to retrieve localized formatted currency strings
+      state.activeSlideData = {};
       refreshActiveSlideMetric(state.currentSlide);
+      preloadAllSlides();
 
       // 3. Update filter dropdown labels in place without losing selection
       updateDropdownLabels();
@@ -1819,6 +1821,20 @@
       });
     }
 
+    // Build Unified Query String for Slide Metric Endpoints
+    function buildSlideQuery() {
+      return new URLSearchParams({
+        fiscalYearId: state.filters.fiscalYear,
+        parentId: state.filters.parent,
+        planItemId: state.filters.planItem,
+        startDate: state.filters.startDate || '',
+        endDate: state.filters.endDate || '',
+        datePreset: state.filters.datePreset || 'ALL',
+        lang: state.currentLang || 'am',
+        calculationMode: state.filters.calculationMode || 'ToDateTarget'
+      }).toString();
+    }
+
     // Apply Filter Changes
     async function applyFilters() {
       state.filters.fiscalYear = document.getElementById('filterFiscalYear')?.value || 'ALL';
@@ -1829,10 +1845,16 @@
 
       updateDropdownLabels();
 
+      // Reset slide data cache so fresh query results are loaded
+      state.activeSlideData = {};
+
       await Promise.all([
         loadTopCards(),
         refreshActiveSlideMetric(state.currentSlide)
       ]);
+
+      // Preload all remaining slides concurrently in background
+      preloadAllSlides();
     }
 
     async function resetFilters() {
@@ -1861,23 +1883,41 @@
       await applyFilters();
     }
 
-    // Dynamic API Fetch & Render Pipeline for Visible Slide Only
+    // Eagerly preload and pre-render all slides to eliminate black empty container delays
+    async function preloadAllSlides() {
+      if (!state.activeSlides || state.activeSlides.length === 0) return;
+      const query = buildSlideQuery();
+
+      const promises = state.activeSlides.map(async (slide, idx) => {
+        try {
+          if (!state.activeSlideData) state.activeSlideData = {};
+          if (!state.activeSlideData[idx]) {
+            const resData = await fetch(`${slide.apiEndpoint}?${query}`).then(r => r.json());
+            state.activeSlideData[idx] = resData;
+          }
+          // Pre-render into DOM container so it is fully drawn before slide transition!
+          renderActiveSlideChart(idx, state.activeSlideData[idx]);
+        } catch (err) {
+          console.warn(`Failed to preload slide ${idx} (${slide.id}):`, err);
+        }
+      });
+
+      await Promise.allSettled(promises);
+    }
+
+    // Dynamic API Fetch & Render Pipeline
     async function refreshActiveSlideMetric(index) {
       try {
         const slide = state.activeSlides[index];
         if (!slide) return;
 
-        const query = new URLSearchParams({
-          fiscalYearId: state.filters.fiscalYear,
-          parentId: state.filters.parent,
-          planItemId: state.filters.planItem,
-          startDate: state.filters.startDate || '',
-          endDate: state.filters.endDate || '',
-          datePreset: state.filters.datePreset || 'ALL',
-          lang: state.currentLang || 'am',
-          calculationMode: state.filters.calculationMode || 'ToDateTarget'
-        }).toString();
+        // If already in cache, render synchronously immediately!
+        if (state.activeSlideData && state.activeSlideData[index]) {
+          renderActiveSlideChart(index, state.activeSlideData[index]);
+          return;
+        }
 
+        const query = buildSlideQuery();
         const resData = await fetch(`${slide.apiEndpoint}?${query}`).then(r => r.json());
         if (!state.activeSlideData) state.activeSlideData = {};
         state.activeSlideData[index] = resData;
@@ -1927,10 +1967,11 @@
           renderBranchVolumeChart(resData, slide);
         }
       } else if (slide.id === 'slide-3') {
-        if (!chartInstances.yoyTrend && document.getElementById('chartYoYMonthlyTrend')) {
-          chartInstances.yoyTrend = echarts.init(document.getElementById('chartYoYMonthlyTrend'), 'dark');
-        }
-        if (chartInstances.yoyTrend) {
+        const yoyDom = document.getElementById('chartYoYMonthlyTrend');
+        if (yoyDom) {
+          if (!chartInstances.yoyTrend) {
+            chartInstances.yoyTrend = echarts.init(yoyDom, 'dark');
+          }
           chartInstances.yoyTrend.resize();
           renderYoYMonthlyTrendChart(resData, slide);
         }
@@ -1944,6 +1985,16 @@
           renderDailyTrendChart(resData, slide);
         }
       }
+    }
+
+    function resizeActiveSlideChart(index) {
+      const slide = state.activeSlides[index];
+      if (!slide) return;
+      if (slide.id === 'slide-0' && chartInstances.taxType) chartInstances.taxType.resize();
+      else if (slide.id === 'slide-1' && chartInstances.monthlyTrend) chartInstances.monthlyTrend.resize();
+      else if (slide.id === 'slide-2' && chartInstances.branchVolume) chartInstances.branchVolume.resize();
+      else if (slide.id === 'slide-3' && chartInstances.yoyTrend) chartInstances.yoyTrend.resize();
+      else if (slide.id === 'slide-4' && chartInstances.dailyTrend) chartInstances.dailyTrend.resize();
     }
 
     // Helper to format Ethiopian date string (yyyy-MM-dd) to readable localized header
@@ -3004,6 +3055,11 @@
       if (index < 0 || index >= state.slideCount) return;
       state.currentSlide = index;
 
+      // INSTANT RENDER: If slide data is already preloaded, render it synchronously before visibility transition!
+      if (state.activeSlideData && state.activeSlideData[index]) {
+        renderActiveSlideChart(index, state.activeSlideData[index]);
+      }
+
       // Update slide visibility
       state.activeSlides.forEach((slideConfig, idx) => {
         const slide = document.getElementById(slideConfig.id);
@@ -3038,10 +3094,15 @@
       // Reset progress timer
       state.timerProgress = 0;
 
-      // CRITICAL: Refresh dynamic active metric while slide is visible to trigger entry animation
-      requestAnimationFrame(async () => {
-        await refreshActiveSlideMetric(index);
+      // Ensure chart dimensions perfectly match visible layout after transition
+      requestAnimationFrame(() => {
+        resizeActiveSlideChart(index);
       });
+
+      // If data was not preloaded yet, fetch and render immediately
+      if (!state.activeSlideData || !state.activeSlideData[index]) {
+        refreshActiveSlideMetric(index);
+      }
     }
 
     function nextSlide() {
@@ -4186,11 +4247,12 @@
       // 2. Start progress timer loop IMMEDIATELY so UI progress bar runs without delay
       startTimerLoop();
 
-      // 3. Immediately render slide 0 and load cards + filter options in parallel
+      // 3. Immediately render slide 0 and load cards + filter options + preload all slides in parallel
       goToSlide(0);
       initETDatePickers();
       loadTopCards().catch(err => console.error("Top cards error:", err));
       loadFilterDropdowns().catch(err => console.error("Filter options error:", err));
+      preloadAllSlides().catch(err => console.error("Preload slides error:", err));
 
       // Window resize event handler
       window.addEventListener('resize', () => {
