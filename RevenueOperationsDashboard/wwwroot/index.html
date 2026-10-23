@@ -51,6 +51,7 @@
     .calendars-popup {
       z-index: 100000 !important;
     }
+
     body {
       background-color: #0b1120;
       color: #f8fafc;
@@ -164,11 +165,11 @@
       cursor: pointer;
       opacity: 0;
       transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                  background 0.25s,
-                  border-color 0.25s,
-                  box-shadow 0.25s,
-                  color 0.25s;
+        transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        background 0.25s,
+        border-color 0.25s,
+        box-shadow 0.25s,
+        color 0.25s;
       pointer-events: none;
     }
 
@@ -210,10 +211,19 @@
 
     /* Executive Briefing Loading Shimmer Animation */
     @keyframes pulseHorizontal {
-      0% { transform: translateX(-100%); }
-      50% { transform: translateX(100%); }
-      100% { transform: translateX(300%); }
+      0% {
+        transform: translateX(-100%);
+      }
+
+      50% {
+        transform: translateX(100%);
+      }
+
+      100% {
+        transform: translateX(300%);
+      }
     }
+
     .animate-shimmer-bar {
       animation: pulseHorizontal 1.8s infinite cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -223,11 +233,13 @@
       body * {
         visibility: hidden !important;
       }
+
       #weeklyReportModal,
       #weeklyReportContainer,
       #weeklyReportContainer * {
         visibility: visible !important;
       }
+
       #weeklyReportModal {
         position: absolute !important;
         left: 0 !important;
@@ -239,6 +251,7 @@
         margin: 0 !important;
         display: block !important;
       }
+
       #weeklyReportContainer {
         border: none !important;
         box-shadow: none !important;
@@ -247,6 +260,7 @@
         background: white !important;
         color: #0f172a !important;
       }
+
       #weeklyReportContainer h2,
       #weeklyReportContainer h3,
       #weeklyReportContainer h4,
@@ -256,6 +270,7 @@
       #weeklyReportContainer td {
         color: #0f172a !important;
       }
+
       #weeklyReportContainer .bg-slate-800,
       #weeklyReportContainer .bg-slate-800\/60,
       #weeklyReportContainer .bg-slate-800\/40,
@@ -265,11 +280,13 @@
         background: #f8fafc !important;
         border-color: #cbd5e1 !important;
       }
+
       #weeklyReportContainer .border-slate-800,
       #weeklyReportContainer .border-slate-700,
       #weeklyReportContainer .border-slate-700\/60 {
         border-color: #cbd5e1 !important;
       }
+
       .print-hidden,
       .print\:hidden {
         display: none !important;
@@ -313,7 +330,8 @@
       <!-- Filter Form Elements -->
       <div class="space-y-4">
         <div>
-          <label id="lblFiscalYear" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የበጀት ዓመት</label>
+          <label id="lblFiscalYear"
+            class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የበጀት ዓመት</label>
           <select id="filterFiscalYear" onchange="applyFilters()"
             class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
             <option value="2018">2018 (በጀት ዓመት)</option>
@@ -322,7 +340,8 @@
 
         <!-- KPI Calculation Mode (To-Date Target vs Full Year Target) -->
         <div>
-          <label id="lblCalcMode" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የዕቅድ ማነጻጸሪያ ዘዴ</label>
+          <label id="lblCalcMode" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የዕቅድ
+            ማነጻጸሪያ ዘዴ</label>
           <div class="grid grid-cols-2 gap-2">
             <button type="button" onclick="setCalculationMode('ToDateTarget')" id="mode_ToDateTarget"
               class="calc-mode-btn px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 bg-blue-600 text-white border border-blue-500">
@@ -339,28 +358,43 @@
 
         <!-- Time Period Flexibility Controls -->
         <div>
-          <label id="lblTimePeriod" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የጊዜ ክልል</label>
+          <label id="lblTimePeriod" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የጊዜ
+            ክልል</label>
           <div class="grid grid-cols-4 sm:grid-cols-7 gap-1.5 mb-3">
-            <button type="button" onclick="setTimePreset('ALL')" id="preset_ALL" class="time-preset-btn active-preset px-2 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white border border-blue-500">ሙሉ ዓመት</button>
-            <button type="button" onclick="setTimePreset('WEEKLY_REPORT')" id="preset_WEEKLY_REPORT" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700 flex items-center justify-center gap-1">
+            <button type="button" onclick="setTimePreset('ALL')" id="preset_ALL"
+              class="time-preset-btn active-preset px-2 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white border border-blue-500">ሙሉ
+              ዓመት</button>
+            <button type="button" onclick="setTimePreset('WEEKLY_REPORT')" id="preset_WEEKLY_REPORT"
+              class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700 flex items-center justify-center gap-1">
               <i class="fa-solid fa-calendar-week text-[10px] text-indigo-400"></i>
               <span id="lblPresetWeekly">ሳምንታዊ</span>
             </button>
-            <button type="button" onclick="setTimePreset('Q1')" id="preset_Q1" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">1ኛ ሩብ</button>
-            <button type="button" onclick="setTimePreset('Q2')" id="preset_Q2" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">2ኛ ሩብ</button>
-            <button type="button" onclick="setTimePreset('Q3')" id="preset_Q3" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">3ኛ ሩብ</button>
-            <button type="button" onclick="setTimePreset('Q4')" id="preset_Q4" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">4ኛ ሩብ</button>
-            <button type="button" onclick="setTimePreset('CUSTOM')" id="preset_CUSTOM" class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">ከ..እስከ</button>
+            <button type="button" onclick="setTimePreset('Q1')" id="preset_Q1"
+              class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">1ኛ
+              ሩብ</button>
+            <button type="button" onclick="setTimePreset('Q2')" id="preset_Q2"
+              class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">2ኛ
+              ሩብ</button>
+            <button type="button" onclick="setTimePreset('Q3')" id="preset_Q3"
+              class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">3ኛ
+              ሩብ</button>
+            <button type="button" onclick="setTimePreset('Q4')" id="preset_Q4"
+              class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">4ኛ
+              ሩብ</button>
+            <button type="button" onclick="setTimePreset('CUSTOM')" id="preset_CUSTOM"
+              class="time-preset-btn px-2 py-1.5 rounded-lg text-xs font-medium transition bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700">ከ..እስከ</button>
           </div>
 
           <!-- Ethiopian Custom Date Range Inputs -->
-          <div id="customDateRangeBox" class="grid grid-cols-2 gap-3 p-3 bg-slate-800/60 rounded-xl border border-slate-700/80">
+          <div id="customDateRangeBox"
+            class="grid grid-cols-2 gap-3 p-3 bg-slate-800/60 rounded-xl border border-slate-700/80">
             <div>
               <label id="lblStartDate" class="block text-[11px] font-medium text-slate-400 mb-1">የመጀመሪያ ቀን (ዓ.ም)</label>
               <div class="relative">
                 <input type="text" id="filterStartDate" placeholder="yyyy-MM-dd"
                   class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 cursor-pointer" />
-                <i class="fa-solid fa-calendar-days absolute right-3 top-2.5 text-slate-400 pointer-events-none text-xs"></i>
+                <i
+                  class="fa-solid fa-calendar-days absolute right-3 top-2.5 text-slate-400 pointer-events-none text-xs"></i>
               </div>
             </div>
             <div>
@@ -368,14 +402,16 @@
               <div class="relative">
                 <input type="text" id="filterEndDate" placeholder="yyyy-MM-dd"
                   class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 cursor-pointer" />
-                <i class="fa-solid fa-calendar-days absolute right-3 top-2.5 text-slate-400 pointer-events-none text-xs"></i>
+                <i
+                  class="fa-solid fa-calendar-days absolute right-3 top-2.5 text-slate-400 pointer-events-none text-xs"></i>
               </div>
             </div>
           </div>
         </div>
 
         <div>
-          <label id="lblParentBranch" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የቅርንጫፍ መ/ቤት</label>
+          <label id="lblParentBranch"
+            class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የቅርንጫፍ መ/ቤት</label>
           <select id="filterParent" onchange="applyFilters()"
             class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
             <option value="ALL">ሁሉም ቅርንጫፎች</option>
@@ -383,7 +419,8 @@
         </div>
 
         <div>
-          <label id="lblPlanTaxItem" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የእቅድ / የታክስ አይነት</label>
+          <label id="lblPlanTaxItem"
+            class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">የእቅድ / የታክስ አይነት</label>
           <select id="filterPlanItem" onchange="applyFilters()"
             class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
             <option value="ALL">ሁሉም የታክስ አይነቶች</option>
@@ -409,16 +446,19 @@
     class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center hidden transition-opacity overflow-y-auto p-3 sm:p-6 print:p-0 print:static print:bg-white print:overflow-visible">
     <div id="weeklyReportContainer"
       class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-6xl xl:max-w-7xl p-5 sm:p-7 shadow-2xl space-y-5 text-slate-100 relative my-auto max-h-[92vh] overflow-y-auto print:max-h-none print:shadow-none print:border-none print:p-4 print:text-black print:bg-white min-h-[500px]">
-      
+
       <!-- EXECUTIVE BRIEFING LOADING OVERLAY -->
       <div id="weeklyReportLoadingOverlay"
         class="absolute inset-0 bg-slate-900/92 backdrop-blur-md z-40 rounded-3xl flex flex-col items-center justify-center p-8 transition-all duration-300 print:hidden hidden min-h-[480px]">
-        
+
         <!-- Loading Spinner Box -->
         <div id="weeklyReportLoadingSpinnerBox" class="flex flex-col items-center text-center max-w-md space-y-4">
           <div class="relative flex items-center justify-center">
-            <div class="w-20 h-20 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 border-r-cyan-400 animate-spin"></div>
-            <div class="absolute w-12 h-12 rounded-2xl bg-indigo-600/20 flex items-center justify-center border border-indigo-500/30 shadow-lg shadow-indigo-500/20">
+            <div
+              class="w-20 h-20 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 border-r-cyan-400 animate-spin">
+            </div>
+            <div
+              class="absolute w-12 h-12 rounded-2xl bg-indigo-600/20 flex items-center justify-center border border-indigo-500/30 shadow-lg shadow-indigo-500/20">
               <i class="fa-solid fa-file-invoice text-cyan-400 text-xl animate-pulse"></i>
             </div>
           </div>
@@ -431,14 +471,18 @@
             </p>
           </div>
           <!-- Shimmer Bar -->
-          <div class="w-64 h-1.5 bg-slate-800/80 rounded-full overflow-hidden mx-auto mt-2 border border-slate-700/50 relative">
-            <div class="absolute h-full w-2/5 bg-gradient-to-r from-indigo-500 via-cyan-400 to-indigo-500 rounded-full animate-shimmer-bar"></div>
+          <div
+            class="w-64 h-1.5 bg-slate-800/80 rounded-full overflow-hidden mx-auto mt-2 border border-slate-700/50 relative">
+            <div
+              class="absolute h-full w-2/5 bg-gradient-to-r from-indigo-500 via-cyan-400 to-indigo-500 rounded-full animate-shimmer-bar">
+            </div>
           </div>
         </div>
 
         <!-- Error State Box (hidden by default) -->
         <div id="weeklyReportLoadingError" class="hidden flex flex-col items-center text-center max-w-md space-y-3">
-          <div class="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 text-2xl shadow-lg shadow-rose-500/20">
+          <div
+            class="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 text-2xl shadow-lg shadow-rose-500/20">
             <i class="fa-solid fa-triangle-exclamation"></i>
           </div>
           <div class="space-y-1">
@@ -456,15 +500,21 @@
       <!-- Modal Header -->
       <div class="flex items-start justify-between border-b border-slate-800 pb-3 print:border-slate-300">
         <div class="flex items-center gap-3.5">
-          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 flex-shrink-0 print:border print:border-indigo-600">
+          <div
+            class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 flex-shrink-0 print:border print:border-indigo-600">
             <i class="fa-solid fa-file-invoice text-white text-lg"></i>
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h2 id="weeklyReportTitle" class="text-lg sm:text-xl font-black text-white tracking-tight print:text-slate-900">የስራ ክንውን ሳምንታዊ መግለጫ</h2>
-              <span id="weeklyCutoffBadge" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 print:text-slate-700 print:border-slate-300">የ 7 ቀናት ክንውን</span>
+              <h2 id="weeklyReportTitle"
+                class="text-lg sm:text-xl font-black text-white tracking-tight print:text-slate-900">የስራ ክንውን ሳምንታዊ መግለጫ
+              </h2>
+              <span id="weeklyCutoffBadge"
+                class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 print:text-slate-700 print:border-slate-300">የ
+                7 ቀናት ክንውን</span>
             </div>
-            <p id="weeklyReportSubtitle" class="text-xs text-slate-400 mt-0.5 print:text-slate-600">የ 7 ቀናት ተከታታይ የስራ አፈፃፀም፣ የታክስ አይነቶች እና የቅርንጫፎች ደረጃ</p>
+            <p id="weeklyReportSubtitle" class="text-xs text-slate-400 mt-0.5 print:text-slate-600">የ 7 ቀናት ተከታታይ የስራ
+              አፈፃፀም፣ የታክስ አይነቶች እና የቅርንጫፎች ደረጃ</p>
             <div id="weeklyReportPeriod" class="text-xs font-semibold text-cyan-400 mt-1 print:text-indigo-800">
               <i class="fa-regular fa-calendar-check mr-1"></i>
               <span id="weeklyReportPeriodText">የካቲት 26, 2018 - መጋቢት 02, 2018</span>
@@ -515,7 +565,8 @@
       </div>
 
       <!-- Weekly Report Custom Date Filter Bar -->
-      <div class="flex flex-wrap items-center justify-between gap-3 p-2.5 bg-slate-800/40 border border-slate-800 rounded-xl print:hidden">
+      <div
+        class="flex flex-wrap items-center justify-between gap-3 p-2.5 bg-slate-800/40 border border-slate-800 rounded-xl print:hidden">
         <div class="flex items-center gap-2 text-xs text-slate-300 font-medium">
           <i class="fa-regular fa-calendar-days text-indigo-400"></i>
           <span id="lblWeeklyDateRange">የቀን ክልል መምረጫ:</span>
@@ -524,13 +575,15 @@
           <div class="relative w-36 sm:w-40">
             <input type="text" id="weeklyStartDate" placeholder="ከ (YYYY-MM-DD)"
               class="w-full bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 cursor-pointer" />
-            <i class="fa-solid fa-calendar-day absolute right-2.5 top-2 text-slate-400 pointer-events-none text-[10px]"></i>
+            <i
+              class="fa-solid fa-calendar-day absolute right-2.5 top-2 text-slate-400 pointer-events-none text-[10px]"></i>
           </div>
           <span class="text-xs text-slate-500">-</span>
           <div class="relative w-36 sm:w-40">
             <input type="text" id="weeklyEndDate" placeholder="እስከ (YYYY-MM-DD)"
               class="w-full bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 cursor-pointer" />
-            <i class="fa-solid fa-calendar-day absolute right-2.5 top-2 text-slate-400 pointer-events-none text-[10px]"></i>
+            <i
+              class="fa-solid fa-calendar-day absolute right-2.5 top-2 text-slate-400 pointer-events-none text-[10px]"></i>
           </div>
           <button id="btnWeeklyApplyRange" onclick="applyWeeklyCustomDateRange()"
             class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5">
@@ -539,9 +592,9 @@
           </button>
           <button id="btnWeeklyResetRange" onclick="resetWeeklyDateRange()"
             class="px-2.5 py-1.5 rounded-lg bg-slate-700/80 hover:bg-slate-600 text-slate-300 hover:text-white text-xs font-medium transition cursor-pointer flex items-center gap-1"
-            title="ወደ ነባሪ 7 ቀናት መልስ">
+            title="ወደ አሁኑ ሳምንት መልስ">
             <i class="fa-solid fa-arrow-rotate-left"></i>
-            <span class="hidden sm:inline" id="lblWeeklyResetBtn">ነባሪ</span>
+            <span class="hidden sm:inline" id="lblWeeklyResetBtn">የአሁን ሳምንት</span>
           </button>
         </div>
       </div>
@@ -551,30 +604,43 @@
         <!-- KPI Summary Cards Row (4 Metric Cards) -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 print:grid-cols-4">
           <!-- Target -->
-          <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
-            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyTarget">ሳምንታዊ ዕቅድ</div>
-            <div id="weeklyTargetVal" class="text-xl sm:text-2xl font-black text-white mt-1 print:text-slate-900">-</div>
+          <div
+            class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600"
+              id="lblWeeklyTarget">ሳምንታዊ ዕቅድ</div>
+            <div id="weeklyTargetVal" class="text-xl sm:text-2xl font-black text-white mt-1 print:text-slate-900">-
+            </div>
             <div class="text-[10px] text-slate-400 mt-0.5" id="lblWeeklyTargetSub">የ 7 ቀናት ድምር ግብ</div>
           </div>
           <!-- Actual -->
-          <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
-            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyActual">የተሰበሰበ ገቢ</div>
-            <div id="weeklyActualVal" class="text-xl sm:text-2xl font-black text-emerald-400 mt-1 print:text-emerald-700">-</div>
+          <div
+            class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600"
+              id="lblWeeklyActual">የተሰበሰበ ገቢ</div>
+            <div id="weeklyActualVal"
+              class="text-xl sm:text-2xl font-black text-emerald-400 mt-1 print:text-emerald-700">-</div>
             <div class="text-[10px] text-slate-400 mt-0.5" id="lblWeeklyActualSub">በሳምንቱ የገባ ጥሬ ገንዘብ</div>
           </div>
           <!-- Achievement Pct -->
-          <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
-            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyAchievement">የአፈጻጸም ምጣኔ</div>
+          <div
+            class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600"
+              id="lblWeeklyAchievement">የአፈጻጸም ምጣኔ</div>
             <div class="flex items-baseline gap-2 mt-1">
-              <span id="weeklyAchieveVal" class="text-xl sm:text-2xl font-black text-white print:text-slate-900">-</span>
-              <span id="weeklyAchieveStatus" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 print:border-slate-400">መደበኛ</span>
+              <span id="weeklyAchieveVal"
+                class="text-xl sm:text-2xl font-black text-white print:text-slate-900">-</span>
+              <span id="weeklyAchieveStatus"
+                class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 print:border-slate-400">መደበኛ</span>
             </div>
             <div class="text-[10px] text-slate-400 mt-0.5" id="lblWeeklyAchieveSub">ከዕቅድ አንጻር</div>
           </div>
           <!-- Variance & RDR -->
-          <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
-            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600" id="lblWeeklyVariance">ልዩነት እና ዕለታዊ ግብ</div>
-            <div id="weeklyVarianceVal" class="text-xl sm:text-2xl font-black text-rose-400 mt-1 print:text-rose-700">-</div>
+          <div
+            class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 shadow-md print:bg-slate-50 print:border-slate-300">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider print:text-slate-600"
+              id="lblWeeklyVariance">ልዩነት እና ዕለታዊ ግብ</div>
+            <div id="weeklyVarianceVal" class="text-xl sm:text-2xl font-black text-rose-400 mt-1 print:text-rose-700">-
+            </div>
             <div id="weeklyRdrVal" class="text-[10px] font-semibold text-cyan-400 mt-0.5 print:text-indigo-700">-</div>
           </div>
         </div>
@@ -582,13 +648,17 @@
         <!-- Main Section: Tax Streams & Branch League Table -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
           <!-- Tax Streams Breakdown (7 Cols) -->
-          <div class="lg:col-span-7 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-3 print:bg-white print:border-slate-300">
+          <div
+            class="lg:col-span-7 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-3 print:bg-white print:border-slate-300">
             <div class="flex items-center justify-between border-b border-slate-700/50 pb-2 print:border-slate-300">
-              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2 print:text-slate-800" id="lblWeeklyTaxStreamsTitle">
+              <h3
+                class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2 print:text-slate-800"
+                id="lblWeeklyTaxStreamsTitle">
                 <i class="fa-solid fa-layer-group text-indigo-400"></i>
                 ዋና ዋና የታክስ አይነቶች ክንውን
               </h3>
-              <span class="text-[10px] text-slate-400 print:text-slate-600" id="lblWeeklyTaxStreamUnit">ብር (በቢሊዮን)</span>
+              <span class="text-[10px] text-slate-400 print:text-slate-600" id="lblWeeklyTaxStreamUnit">ብር
+                (በቢሊዮን)</span>
             </div>
             <div id="weeklyTaxStreamsList" class="space-y-2.5">
               <!-- Dynamic stream rows -->
@@ -596,12 +666,14 @@
           </div>
 
           <!-- Branch League Table (5 Cols) -->
-          <div class="lg:col-span-5 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-4 print:bg-white print:border-slate-300">
+          <div
+            class="lg:col-span-5 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-4 print:bg-white print:border-slate-300">
             <!-- Top 3 -->
             <div>
               <div class="flex items-center gap-1.5 border-b border-slate-700/50 pb-1.5 mb-2.5 print:border-slate-300">
                 <i class="fa-solid fa-trophy text-amber-400 text-xs"></i>
-                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300 print:text-amber-800" id="lblWeeklyTopBranches">ቀዳሚ 3 ቅርንጫፎች</h3>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300 print:text-amber-800"
+                  id="lblWeeklyTopBranches">ቀዳሚ 3 ቅርንጫፎች</h3>
               </div>
               <div id="weeklyTopBranchesList" class="space-y-2">
                 <!-- Dynamic top branches -->
@@ -612,7 +684,8 @@
             <div>
               <div class="flex items-center gap-1.5 border-b border-slate-700/50 pb-1.5 mb-2.5 print:border-slate-300">
                 <i class="fa-solid fa-triangle-exclamation text-rose-400 text-xs"></i>
-                <h3 class="text-xs font-bold uppercase tracking-wider text-rose-300 print:text-rose-800" id="lblWeeklyLaggingBranches">ትኩረት የሚሹ ቅርንጫፎች</h3>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-rose-300 print:text-rose-800"
+                  id="lblWeeklyLaggingBranches">ትኩረት የሚሹ ቅርንጫፎች</h3>
               </div>
               <div id="weeklyLaggingBranchesList" class="space-y-2">
                 <!-- Dynamic lagging branches -->
@@ -622,13 +695,17 @@
         </div>
 
         <!-- 7-Day Velocity Curve Chart Container -->
-        <div class="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-3 print:bg-white print:border-slate-300">
+        <div
+          class="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-3 print:bg-white print:border-slate-300">
           <div class="flex items-center justify-between border-b border-slate-700/50 pb-2 print:border-slate-300">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2 print:text-slate-800" id="lblWeeklyVelocityTitle">
+            <h3
+              class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2 print:text-slate-800"
+              id="lblWeeklyVelocityTitle">
               <i class="fa-solid fa-chart-simple text-cyan-400"></i>
               የ 7 ቀናት የቀን ገቢ ፍጥነት (Daily Velocity Curve)
             </h3>
-            <span class="text-[10px] text-slate-400 print:text-slate-600" id="lblWeeklyVelocitySub">እለታዊ ክንውን ከዕለቱ ግብ አንጻር (በቢሊዮን)</span>
+            <span class="text-[10px] text-slate-400 print:text-slate-600" id="lblWeeklyVelocitySub">እለታዊ ክንውን ከዕለቱ ግብ
+              አንጻር (በቢሊዮን)</span>
           </div>
           <div id="chartWeeklyVelocity" class="w-full h-48 print:h-40"></div>
         </div>
@@ -636,9 +713,10 @@
 
       <!-- TAB 2: PER-BRANCH REVENUE SOURCE ATTRIBUTION CONTENT -->
       <div id="weeklyTabContentSources" class="space-y-4 hidden">
-        
+
         <!-- Controls Toolbar: Search, Sort, Metrics, Sliding Toggle -->
-        <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-800/50 border border-slate-700/60 rounded-2xl p-3 print:bg-white print:border-slate-300">
+        <div
+          class="flex flex-wrap items-center justify-between gap-3 bg-slate-800/50 border border-slate-700/60 rounded-2xl p-3 print:bg-white print:border-slate-300">
           <div class="flex flex-wrap items-center gap-3">
             <!-- Search -->
             <div class="relative">
@@ -651,7 +729,8 @@
             <!-- Sort Dropdown -->
             <div class="flex items-center gap-1.5 text-xs text-slate-400">
               <i class="fa-solid fa-arrow-down-wide-short text-indigo-400"></i>
-              <label for="selectWeeklyBranchSort" class="hidden sm:inline font-semibold" id="lblSortWeekly">ደርድር:</label>
+              <label for="selectWeeklyBranchSort" class="hidden sm:inline font-semibold"
+                id="lblSortWeekly">ደርድር:</label>
               <select id="selectWeeklyBranchSort" onchange="onWeeklyBranchSort(this.value)"
                 class="bg-slate-900/90 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition cursor-pointer">
                 <option value="total">ጠቅላላ ገቢ (Total Collected)</option>
@@ -689,7 +768,9 @@
               <i class="fa-solid fa-bell text-amber-400"></i>
               <span id="lblInsightChipsTitle">ትኩረት የሚሹ ነጥቦች (የቅርንጫፉን ዝርዝር ለመክፈት ይጫኑ)</span>
             </div>
-            <span id="badgeFlaggedCount" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">0 ምልክት ተደርጎባቸዋል</span>
+            <span id="badgeFlaggedCount"
+              class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">0
+              ምልክት ተደርጎባቸዋል</span>
           </div>
           <div id="weeklyInsightChipsContainer" class="flex flex-wrap gap-2">
             <!-- Dynamic insight chips -->
@@ -699,7 +780,8 @@
         <!-- Master-Detail 2-Column Grid -->
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
           <!-- Left Column: Multi-Grid Tiered Stacked Bar Chart (8 Cols) -->
-          <div class="xl:col-span-8 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 flex flex-col justify-between print:bg-white print:border-slate-300">
+          <div
+            class="xl:col-span-8 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 flex flex-col justify-between print:bg-white print:border-slate-300">
             <div>
               <div class="flex flex-wrap items-center justify-between border-b border-slate-700/50 pb-2.5 mb-2">
                 <div>
@@ -712,7 +794,8 @@
                   </p>
                 </div>
                 <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-1 sm:mt-0">
-                  <span class="flex items-center gap-1"><i class="fa-solid fa-hand-pointer text-cyan-400"></i> ለዝርዝር አሞሌውን ይጫኑ</span>
+                  <span class="flex items-center gap-1"><i class="fa-solid fa-hand-pointer text-cyan-400"></i> ለዝርዝር
+                    አሞሌውን ይጫኑ</span>
                 </div>
               </div>
 
@@ -735,7 +818,9 @@
           </div>
 
           <!-- Right Column: Interactive Branch Detail Inspector (4 Cols) -->
-          <div class="xl:col-span-4 bg-slate-800/50 border border-slate-700/60 rounded-2xl p-4 flex flex-col space-y-4 print:bg-white print:border-slate-300" id="weeklyBranchDetailCard">
+          <div
+            class="xl:col-span-4 bg-slate-800/50 border border-slate-700/60 rounded-2xl p-4 flex flex-col space-y-4 print:bg-white print:border-slate-300"
+            id="weeklyBranchDetailCard">
             <!-- Dynamic Inspector Content -->
           </div>
         </div>
@@ -743,7 +828,8 @@
       </div>
 
       <!-- Footer Info -->
-      <div class="flex items-center justify-between border-t border-slate-800 pt-3 text-[11px] text-slate-400 print:border-slate-300 print:text-slate-600">
+      <div
+        class="flex items-center justify-between border-t border-slate-800 pt-3 text-[11px] text-slate-400 print:border-slate-300 print:text-slate-600">
         <div id="weeklyReportFooterMeta">የገቢዎች ቢሮ ኦፕሬሽንስ ዳሽቦርድ - ሳምንታዊ የስራ ኃላፊዎች ማጠቃለያ</div>
         <div id="weeklyReportTimestamp">-</div>
       </div>
@@ -764,10 +850,14 @@
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
         <!-- Floating Metric Mode Toggle Pill -->
-        <div class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
-          <button data-mode="pct" onclick="setChartMetricMode('pct')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
-          <button data-mode="amount" onclick="setChartMetricMode('amount')" class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር</button>
-          <button data-mode="both" onclick="setChartMetricMode('both')" class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">ሁለቱም</button>
+        <div
+          class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
+          <button data-mode="pct" onclick="setChartMetricMode('pct')"
+            class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
+          <button data-mode="amount" onclick="setChartMetricMode('amount')"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር</button>
+          <button data-mode="both" onclick="setChartMetricMode('both')"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">ሁለቱም</button>
         </div>
         <div id="chartTaxType" class="w-full flex-1 min-h-[300px]"></div>
       </div>
@@ -778,10 +868,14 @@
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
         <!-- Floating Metric Mode Toggle Pill -->
-        <div class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
-          <button data-mode="pct" onclick="setChartMetricMode('pct')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
-          <button data-mode="amount" onclick="setChartMetricMode('amount')" class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር</button>
-          <button data-mode="both" onclick="setChartMetricMode('both')" class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">ሁለቱም</button>
+        <div
+          class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
+          <button data-mode="pct" onclick="setChartMetricMode('pct')"
+            class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
+          <button data-mode="amount" onclick="setChartMetricMode('amount')"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር</button>
+          <button data-mode="both" onclick="setChartMetricMode('both')"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">ሁለቱም</button>
         </div>
         <div id="chartMonthlyTrend" class="w-full flex-1 min-h-[300px]"></div>
       </div>
@@ -792,10 +886,14 @@
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
         <!-- Floating Metric Mode Toggle Pill -->
-        <div class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
-          <button data-mode="pct" onclick="setChartMetricMode('pct')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
-          <button data-mode="amount" onclick="setChartMetricMode('amount')" class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር</button>
-          <button data-mode="both" onclick="setChartMetricMode('both')" class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">ሁለቱም</button>
+        <div
+          class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
+          <button data-mode="pct" onclick="setChartMetricMode('pct')"
+            class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
+          <button data-mode="amount" onclick="setChartMetricMode('amount')"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር</button>
+          <button data-mode="both" onclick="setChartMetricMode('both')"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">ሁለቱም</button>
         </div>
         <div id="chartBranchVolume" class="w-full flex-1 min-h-[300px]"></div>
       </div>
@@ -806,10 +904,14 @@
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
         <!-- Floating Metric Mode Toggle Pill -->
-        <div class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
-          <button data-mode="pct" onclick="setChartMetricMode('pct')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
-          <button data-mode="amount" onclick="setChartMetricMode('amount')" class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር</button>
-          <button data-mode="both" onclick="setChartMetricMode('both')" class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">ሁለቱም</button>
+        <div
+          class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
+          <button data-mode="pct" onclick="setChartMetricMode('pct')"
+            class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
+          <button data-mode="amount" onclick="setChartMetricMode('amount')"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር</button>
+          <button data-mode="both" onclick="setChartMetricMode('both')"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">ሁለቱም</button>
         </div>
         <div id="chartYoYMonthlyTrend" class="w-full flex-1 min-h-[300px]"></div>
       </div>
@@ -832,75 +934,76 @@
     <footer
       class="w-full relative z-10 flex-shrink-0 bg-cardBg border-t border-borderDark p-3 flex items-center justify-between transition-all duration-300 transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
       <div class="flex items-center gap-4">
-      <button id="playPauseBtn" onclick="toggleCarousel()"
-        class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition">
-        <i id="playPauseIcon" class="fa-solid fa-pause"></i>
-        <span id="playPauseText">Pause</span>
-      </button>
-      <div class="w-32 bg-slate-800 rounded-full h-1.5 overflow-hidden">
-        <div id="carouselProgressBar" class="bg-blue-500 h-full w-0 transition-all duration-100"></div>
+        <button id="playPauseBtn" onclick="toggleCarousel()"
+          class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition">
+          <i id="playPauseIcon" class="fa-solid fa-pause"></i>
+          <span id="playPauseText">Pause</span>
+        </button>
+        <div class="w-32 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+          <div id="carouselProgressBar" class="bg-blue-500 h-full w-0 transition-all duration-100"></div>
+        </div>
+        <span id="slideTitleDisplay" class="text-xs font-medium text-slate-400">Slide 1 of 3: Tax Type Target vs
+          Actual</span>
       </div>
-      <span id="slideTitleDisplay" class="text-xs font-medium text-slate-400">Slide 1 of 3: Tax Type Target vs
-        Actual</span>
-    </div>
 
-    <div class="flex items-center gap-3">
-      <!-- Dot Indicators -->
-      <div id="carouselDots" class="flex items-center gap-1.5 mr-4"></div>
+      <div class="flex items-center gap-3">
+        <!-- Dot Indicators -->
+        <div id="carouselDots" class="flex items-center gap-1.5 mr-4"></div>
 
-      <!-- Calculation Mode Quick Toggle Button -->
-      <button onclick="toggleCalculationMode()" id="quickCalcModeBtn"
-        class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-2 rounded-lg border border-slate-700/50 transition focus:outline-none cursor-pointer"
-        title="የዕስከ ዛሬ ዕቅድ / የሙሉ ዓመት ዕቅድ ቀይር">
-        <i class="fa-solid fa-bullseye text-blue-400"></i>
-        <span id="quickCalcModeText">የዕስከ ዛሬ ዕቅድ</span>
-      </button>
+        <!-- Calculation Mode Quick Toggle Button -->
+        <button onclick="toggleCalculationMode()" id="quickCalcModeBtn"
+          class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-2 rounded-lg border border-slate-700/50 transition focus:outline-none cursor-pointer"
+          title="የዕስከ ዛሬ ዕቅድ / የሙሉ ዓመት ዕቅድ ቀይር">
+          <i class="fa-solid fa-bullseye text-blue-400"></i>
+          <span id="quickCalcModeText">የዕስከ ዛሬ ዕቅድ</span>
+        </button>
 
-      <!-- Metric Display Mode Quick Toggle Button -->
-      <button onclick="cycleChartMetricMode()" id="quickMetricModeBtn"
-        class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-2 rounded-lg border border-slate-700/50 transition focus:outline-none cursor-pointer"
-        title="የመለኪያ አይነት ቀይር (% / በብር / ሁለቱም)">
-        <i class="fa-solid fa-chart-simple text-emerald-400"></i>
-        <span id="quickMetricModeText">በመቶኛ (%)</span>
-      </button>
+        <!-- Metric Display Mode Quick Toggle Button -->
+        <button onclick="cycleChartMetricMode()" id="quickMetricModeBtn"
+          class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-2 rounded-lg border border-slate-700/50 transition focus:outline-none cursor-pointer"
+          title="የመለኪያ አይነት ቀይር (% / በብር / ሁለቱም)">
+          <i class="fa-solid fa-chart-simple text-emerald-400"></i>
+          <span id="quickMetricModeText">በመቶኛ (%)</span>
+        </button>
 
-      <!-- Action Buttons -->
-      <select id="themeSelector" onchange="changeTheme(this.value)" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2 py-2 rounded-lg border border-slate-700/50 transition focus:outline-none cursor-pointer">
-        <option value="ocean">Ocean (Default)</option>
-        <option value="emerald">Deep Emerald Treasury</option>
-        <option value="national">National (Green/Yellow/Red)</option>
-        <option value="forest">Forest</option>
-        <option value="sunset">Sunset</option>
-        <option value="grayscale">Grayscale</option>
-      </select>
+        <!-- Action Buttons -->
+        <select id="themeSelector" onchange="changeTheme(this.value)"
+          class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2 py-2 rounded-lg border border-slate-700/50 transition focus:outline-none cursor-pointer">
+          <option value="ocean">Ocean (Default)</option>
+          <option value="emerald">Deep Emerald Treasury</option>
+          <option value="national">National (Green/Yellow/Red)</option>
+          <option value="forest">Forest</option>
+          <option value="sunset">Sunset</option>
+          <option value="grayscale">Grayscale</option>
+        </select>
 
-      <!-- Weekly Briefing Button -->
-      <button onclick="openWeeklyReportModal()" id="btnWeeklyReport"
-        class="relative flex items-center gap-1.5 bg-indigo-600/80 hover:bg-indigo-600 text-white font-semibold text-xs px-3 py-2 rounded-lg border border-indigo-500/40 transition shadow-lg cursor-pointer"
-        title="ሳምንታዊ የአፈጻጸም ሪፖርት (Weekly Briefing)">
-        <i class="fa-solid fa-file-lines"></i>
-        <span id="lblWeeklyReportBtn">ሳምንታዊ ሪፖርት</span>
-        <span id="weeklyCutoffPulse" class="hidden absolute -top-1 -right-1 flex h-3 w-3">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-        </span>
-      </button>
+        <!-- Weekly Briefing Button -->
+        <button onclick="openWeeklyReportModal()" id="btnWeeklyReport"
+          class="relative flex items-center gap-1.5 bg-indigo-600/80 hover:bg-indigo-600 text-white font-semibold text-xs px-3 py-2 rounded-lg border border-indigo-500/40 transition shadow-lg cursor-pointer"
+          title="ሳምንታዊ የአፈጻጸም ሪፖርት (Weekly Briefing)">
+          <i class="fa-solid fa-file-lines"></i>
+          <span id="lblWeeklyReportBtn">ሳምንታዊ ሪፖርት</span>
+          <span id="weeklyCutoffPulse" class="hidden absolute -top-1 -right-1 flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          </span>
+        </button>
 
-      <button onclick="toggleLanguage()" id="langToggleBtn"
-        class="flex items-center justify-center bg-slate-800/80 hover:bg-slate-700 text-white font-bold text-xs w-9 h-9 rounded-lg border border-slate-700/50 transition shadow-lg">
-        EN
-      </button>
+        <button onclick="toggleLanguage()" id="langToggleBtn"
+          class="flex items-center justify-center bg-slate-800/80 hover:bg-slate-700 text-white font-bold text-xs w-9 h-9 rounded-lg border border-slate-700/50 transition shadow-lg">
+          EN
+        </button>
 
-      <button onclick="toggleFilterModal()"
-        class="flex items-center gap-2 bg-blue-600/80 hover:bg-blue-600 text-white font-semibold text-xs px-4 py-2 rounded-lg border border-blue-500/30 transition shadow-lg">
-        <i class="fa-solid fa-sliders"></i> <span id="lblFiltersBtn">Filters</span>
-      </button>
+        <button onclick="toggleFilterModal()"
+          class="flex items-center gap-2 bg-blue-600/80 hover:bg-blue-600 text-white font-semibold text-xs px-4 py-2 rounded-lg border border-blue-500/30 transition shadow-lg">
+          <i class="fa-solid fa-sliders"></i> <span id="lblFiltersBtn">Filters</span>
+        </button>
 
-      <button onclick="toggleFullscreen()" class="text-slate-400 hover:text-white transition p-1">
-        <i class="fa-solid fa-expand text-sm"></i>
-      </button>
-    </div>
-  </footer>
+        <button onclick="toggleFullscreen()" class="text-slate-400 hover:text-white transition p-1">
+          <i class="fa-solid fa-expand text-sm"></i>
+        </button>
+      </div>
+    </footer>
   </div>
 
   <!-- JASS SCRIPT LOGIC & DYNAMIC INTEGRATION -->
@@ -1103,15 +1206,15 @@
       state.currentLang = state.currentLang === 'en' ? 'am' : 'en';
       document.getElementById('langToggleBtn').innerText = state.currentLang === 'en' ? 'EN' : 'አማ';
       updateUILanguage();
-      
+
       // 1. Instantly update all top KPI card texts and values in place from cached cards
       if (state.cachedCards) {
         updateTopCardValues(state.cachedCards);
       }
-      
+
       // 2. Refresh active slide metrics to retrieve localized formatted currency strings
       refreshActiveSlideMetric(state.currentSlide);
-      
+
       // 3. Update filter dropdown labels in place without losing selection
       updateDropdownLabels();
 
@@ -1157,7 +1260,7 @@
 
       // Update Global CSS Variables / Body
       document.body.style.backgroundColor = theme.bg;
-      
+
       // We manually update card backgrounds that are using tailwind classes
       const cards = document.querySelectorAll('.bg-cardBg, .bg-slate-900\\/95, .bg-slate-900\\/60');
       cards.forEach(card => {
@@ -1206,48 +1309,48 @@
     }
 
     function updateUILanguage() {
-      if(document.getElementById('lblGlobalFilters')) document.getElementById('lblGlobalFilters').innerText = t_ui("Global Dashboard Filters");
-      if(document.getElementById('lblFilterSubtitle')) document.getElementById('lblFilterSubtitle').innerText = t_ui("Refine metrics across all Operations Center slides");
-      if(document.getElementById('lblFiscalYear')) document.getElementById('lblFiscalYear').innerText = t_ui("Fiscal Year");
-      if(document.getElementById('lblTimePeriod')) document.getElementById('lblTimePeriod').innerText = t_ui("Time Period");
-      if(document.getElementById('preset_ALL')) document.getElementById('preset_ALL').innerText = t_ui("Full Year");
-      if(document.getElementById('preset_Q1')) document.getElementById('preset_Q1').innerText = t_ui("1st Quarter");
-      if(document.getElementById('preset_Q2')) document.getElementById('preset_Q2').innerText = t_ui("2nd Quarter");
-      if(document.getElementById('preset_Q3')) document.getElementById('preset_Q3').innerText = t_ui("3rd Quarter");
-      if(document.getElementById('preset_Q4')) document.getElementById('preset_Q4').innerText = t_ui("4th Quarter");
-      if(document.getElementById('preset_CUSTOM')) document.getElementById('preset_CUSTOM').innerText = t_ui("Custom Range");
-      if(document.getElementById('lblStartDate')) document.getElementById('lblStartDate').innerText = t_ui("Start Date (EC)");
-      if(document.getElementById('lblEndDate')) document.getElementById('lblEndDate').innerText = t_ui("End Date (EC)");
-      if(document.getElementById('lblParentBranch')) document.getElementById('lblParentBranch').innerText = t_ui("Parent Branch");
-      if(document.getElementById('lblPlanTaxItem')) document.getElementById('lblPlanTaxItem').innerText = t_ui("Plan / Tax Item");
-      if(document.getElementById('lblClearFilters')) document.getElementById('lblClearFilters').innerText = t_ui("Clear All Filters");
-      if(document.getElementById('lblApplyClose')) document.getElementById('lblApplyClose').innerText = t_ui("Apply & Close");
-      if(document.getElementById('lblFiltersBtn')) document.getElementById('lblFiltersBtn').innerText = t_ui("Filters");
-      if(document.getElementById('lblCalcMode')) document.getElementById('lblCalcMode').innerText = t_ui("Calculation Mode");
-      if(document.getElementById('lblModeToDate')) document.getElementById('lblModeToDate').innerText = t_ui("To-Date Target (To-Date)");
-      if(document.getElementById('lblModeAnnual')) document.getElementById('lblModeAnnual').innerText = t_ui("Full Year Target (Annual)");
-      if(document.getElementById('lblWeeklyReportBtn')) document.getElementById('lblWeeklyReportBtn').innerText = t_ui("Weekly Report");
-      if(document.getElementById('lblPresetWeekly')) document.getElementById('lblPresetWeekly').innerText = t_ui("Weekly");
-      if(document.getElementById('lblPrintBtn')) document.getElementById('lblPrintBtn').innerText = t_ui("Print / PDF");
-      if(document.getElementById('weeklyReportTitle')) document.getElementById('weeklyReportTitle').innerText = t_ui("Weekly Operations Briefing");
-      if(document.getElementById('weeklyCutoffBadge')) document.getElementById('weeklyCutoffBadge').innerText = t_ui("Past 7 Days");
-      if(document.getElementById('weeklyReportSubtitle')) document.getElementById('weeklyReportSubtitle').innerText = t_ui("Past 7 days performance, revenue streams, and branch rankings");
-      if(document.getElementById('lblWeeklyTarget')) document.getElementById('lblWeeklyTarget').innerText = t_ui("Weekly Target");
-      if(document.getElementById('lblWeeklyActual')) document.getElementById('lblWeeklyActual').innerText = t_ui("Collected Revenue");
-      if(document.getElementById('lblWeeklyAchievement')) document.getElementById('lblWeeklyAchievement').innerText = t_ui("Achievement Rate");
-      if(document.getElementById('lblWeeklyVariance')) document.getElementById('lblWeeklyVariance').innerText = t_ui("Variance / Daily Target");
-      if(document.getElementById('lblWeeklyTaxStreamsTitle')) document.getElementById('lblWeeklyTaxStreamsTitle').innerHTML = `<i class="fa-solid fa-layer-group text-indigo-400"></i> ${t_ui("Key Tax Streams Performance")}`;
-      if(document.getElementById('lblWeeklyTopBranches')) document.getElementById('lblWeeklyTopBranches').innerText = t_ui("Top 3 Branches");
-      if(document.getElementById('lblWeeklyLaggingBranches')) document.getElementById('lblWeeklyLaggingBranches').innerText = t_ui("Lagging Branches Needing Focus");
-      if(document.getElementById('lblWeeklyVelocityTitle')) document.getElementById('lblWeeklyVelocityTitle').innerHTML = `<i class="fa-solid fa-chart-simple text-cyan-400"></i> ${t_ui("7-Day Revenue Velocity Curve")}`;
+      if (document.getElementById('lblGlobalFilters')) document.getElementById('lblGlobalFilters').innerText = t_ui("Global Dashboard Filters");
+      if (document.getElementById('lblFilterSubtitle')) document.getElementById('lblFilterSubtitle').innerText = t_ui("Refine metrics across all Operations Center slides");
+      if (document.getElementById('lblFiscalYear')) document.getElementById('lblFiscalYear').innerText = t_ui("Fiscal Year");
+      if (document.getElementById('lblTimePeriod')) document.getElementById('lblTimePeriod').innerText = t_ui("Time Period");
+      if (document.getElementById('preset_ALL')) document.getElementById('preset_ALL').innerText = t_ui("Full Year");
+      if (document.getElementById('preset_Q1')) document.getElementById('preset_Q1').innerText = t_ui("1st Quarter");
+      if (document.getElementById('preset_Q2')) document.getElementById('preset_Q2').innerText = t_ui("2nd Quarter");
+      if (document.getElementById('preset_Q3')) document.getElementById('preset_Q3').innerText = t_ui("3rd Quarter");
+      if (document.getElementById('preset_Q4')) document.getElementById('preset_Q4').innerText = t_ui("4th Quarter");
+      if (document.getElementById('preset_CUSTOM')) document.getElementById('preset_CUSTOM').innerText = t_ui("Custom Range");
+      if (document.getElementById('lblStartDate')) document.getElementById('lblStartDate').innerText = t_ui("Start Date (EC)");
+      if (document.getElementById('lblEndDate')) document.getElementById('lblEndDate').innerText = t_ui("End Date (EC)");
+      if (document.getElementById('lblParentBranch')) document.getElementById('lblParentBranch').innerText = t_ui("Parent Branch");
+      if (document.getElementById('lblPlanTaxItem')) document.getElementById('lblPlanTaxItem').innerText = t_ui("Plan / Tax Item");
+      if (document.getElementById('lblClearFilters')) document.getElementById('lblClearFilters').innerText = t_ui("Clear All Filters");
+      if (document.getElementById('lblApplyClose')) document.getElementById('lblApplyClose').innerText = t_ui("Apply & Close");
+      if (document.getElementById('lblFiltersBtn')) document.getElementById('lblFiltersBtn').innerText = t_ui("Filters");
+      if (document.getElementById('lblCalcMode')) document.getElementById('lblCalcMode').innerText = t_ui("Calculation Mode");
+      if (document.getElementById('lblModeToDate')) document.getElementById('lblModeToDate').innerText = t_ui("To-Date Target (To-Date)");
+      if (document.getElementById('lblModeAnnual')) document.getElementById('lblModeAnnual').innerText = t_ui("Full Year Target (Annual)");
+      if (document.getElementById('lblWeeklyReportBtn')) document.getElementById('lblWeeklyReportBtn').innerText = t_ui("Weekly Report");
+      if (document.getElementById('lblPresetWeekly')) document.getElementById('lblPresetWeekly').innerText = t_ui("Weekly");
+      if (document.getElementById('lblPrintBtn')) document.getElementById('lblPrintBtn').innerText = t_ui("Print / PDF");
+      if (document.getElementById('weeklyReportTitle')) document.getElementById('weeklyReportTitle').innerText = t_ui("Weekly Operations Briefing");
+      if (document.getElementById('weeklyCutoffBadge')) document.getElementById('weeklyCutoffBadge').innerText = t_ui("Past 7 Days");
+      if (document.getElementById('weeklyReportSubtitle')) document.getElementById('weeklyReportSubtitle').innerText = t_ui("Past 7 days performance, revenue streams, and branch rankings");
+      if (document.getElementById('lblWeeklyTarget')) document.getElementById('lblWeeklyTarget').innerText = t_ui("Weekly Target");
+      if (document.getElementById('lblWeeklyActual')) document.getElementById('lblWeeklyActual').innerText = t_ui("Collected Revenue");
+      if (document.getElementById('lblWeeklyAchievement')) document.getElementById('lblWeeklyAchievement').innerText = t_ui("Achievement Rate");
+      if (document.getElementById('lblWeeklyVariance')) document.getElementById('lblWeeklyVariance').innerText = t_ui("Variance / Daily Target");
+      if (document.getElementById('lblWeeklyTaxStreamsTitle')) document.getElementById('lblWeeklyTaxStreamsTitle').innerHTML = `<i class="fa-solid fa-layer-group text-indigo-400"></i> ${t_ui("Key Tax Streams Performance")}`;
+      if (document.getElementById('lblWeeklyTopBranches')) document.getElementById('lblWeeklyTopBranches').innerText = t_ui("Top 3 Branches");
+      if (document.getElementById('lblWeeklyLaggingBranches')) document.getElementById('lblWeeklyLaggingBranches').innerText = t_ui("Lagging Branches Needing Focus");
+      if (document.getElementById('lblWeeklyVelocityTitle')) document.getElementById('lblWeeklyVelocityTitle').innerHTML = `<i class="fa-solid fa-chart-simple text-cyan-400"></i> ${t_ui("7-Day Revenue Velocity Curve")}`;
       updateCalculationModeButtons(state.filters.calculationMode || 'ToDateTarget');
       updatePlayPauseButtonState();
-      
+
       // Update Slide Titles
-      if(state.config && state.config.carousel && state.config.carousel.slides) {
+      if (state.config && state.config.carousel && state.config.carousel.slides) {
         state.config.carousel.slides.forEach(slideConfig => {
           const slideEl = document.getElementById(slideConfig.id);
-          if(slideEl) {
+          if (slideEl) {
             const titleEl = slideEl.querySelector('h2');
             const subEl = slideEl.querySelector('p');
             if (titleEl) titleEl.innerText = state.currentLang === 'am' && slideConfig.titleAm ? slideConfig.titleAm : slideConfig.title;
@@ -1499,7 +1602,7 @@
             todayText: 'ዛሬ',
             clearText: 'አጥፋ',
             closeText: 'ዝጋ',
-            onSelect: function(dates) {
+            onSelect: function (dates) {
               if (dates && dates.length > 0) {
                 state.filters.startDate = $('#filterStartDate').val();
                 state.filters.datePreset = 'CUSTOM';
@@ -1515,7 +1618,7 @@
             todayText: 'ዛሬ',
             clearText: 'አጥፋ',
             closeText: 'ዝጋ',
-            onSelect: function(dates) {
+            onSelect: function (dates) {
               if (dates && dates.length > 0) {
                 state.filters.endDate = $('#filterEndDate').val();
                 state.filters.datePreset = 'CUSTOM';
@@ -1972,9 +2075,9 @@
           data: dates,
           axisLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.3)' } },
           axisTick: { alignWithLabel: true, lineStyle: { color: 'rgba(148, 163, 184, 0.3)' } },
-          axisLabel: { 
-            color: '#cbd5e1', 
-            fontSize: 11, 
+          axisLabel: {
+            color: '#cbd5e1',
+            fontSize: 11,
             rotate: 45,
             interval: dates.length > 50 ? 'auto' : 0,
             formatter: (val) => {
@@ -1992,16 +2095,16 @@
         },
         yAxis: {
           type: 'value',
-          axisLabel: { 
-            color: '#94a3b8', 
+          axisLabel: {
+            color: '#94a3b8',
             fontSize: 11,
-            formatter: (val) => `${curPrefix}${val}${magSuffix}` 
+            formatter: (val) => `${curPrefix}${val}${magSuffix}`
           },
-          splitLine: { 
-            lineStyle: { 
+          splitLine: {
+            lineStyle: {
               color: 'rgba(51, 65, 85, 0.45)',
               type: 'dashed'
-            } 
+            }
           }
         },
         series: [
@@ -2025,8 +2128,8 @@
             },
             data: actuals,
             itemStyle: { color: theme.primary },
-            lineStyle: { 
-              width: 3.2, 
+            lineStyle: {
+              width: 3.2,
               color: theme.primary,
               shadowColor: theme.primary + '66',
               shadowBlur: 10
@@ -2046,9 +2149,9 @@
             symbol: 'none',
             data: targets,
             itemStyle: { color: '#f59e0b' },
-            lineStyle: { 
-              width: 2.2, 
-              type: [6, 4], 
+            lineStyle: {
+              width: 2.2,
+              type: [6, 4],
               color: '#f59e0b',
               shadowColor: 'rgba(245, 158, 11, 0.35)',
               shadowBlur: 6
@@ -2134,7 +2237,7 @@
 
       let modeSubAm = mode === 'pct' ? 'በመቶኛ (%) አፈፃፀም' : (mode === 'amount' ? 'በብር የገቢ መጠን' : 'በመቶኛና በብር ጥምረት');
       let modeSubEn = mode === 'pct' ? 'Achievement Percentage (%)' : (mode === 'amount' ? 'Collection Amount in ETB' : 'Combined % and ETB');
-      
+
       const subTextAm = (isAnnual
         ? 'የዋና ዋና ታክስ ዓይነቶች የዓመታዊ ዕቅድና ክንውን'
         : 'የዋና ዋና ታክስ ዓይነቶች የዕስከ ዛሬ ዕቅድና ክንውን') + ` (${modeSubAm})`;
@@ -2165,8 +2268,8 @@
           textStyle: { color: '#cbd5e1', fontSize: 12 },
           data: [planSeriesName, actualSeriesName]
         },
-        tooltip: { 
-          trigger: 'axis', 
+        tooltip: {
+          trigger: 'axis',
           backgroundColor: 'rgba(15, 23, 42, 0.95)',
           borderColor: theme.border,
           borderWidth: 1,
@@ -2183,7 +2286,7 @@
               : ((targetData[idx] > 0) ? Math.round((actualData[idx] / targetData[idx]) * 100) : 0);
 
             let res = `<div style="font-weight:700;font-size:13px;color:#f8fafc;margin-bottom:6px;border-bottom:1px solid rgba(148,163,184,0.25);padding-bottom:4px;">${catName}</div>`;
-            
+
             if (mode === 'pct') {
               res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${planSeriesName}:</span><b style="color:${theme.primary};">100%</b></div>`;
               res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${actualSeriesName}:</span><b style="color:${theme.secondary};">${pct}%</b></div>`;
@@ -2207,9 +2310,9 @@
         yAxis: {
           type: 'value',
           name: '',
-          axisLabel: { 
-            color: '#94a3b8', 
-            formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}` 
+          axisLabel: {
+            color: '#94a3b8',
+            formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}`
           },
           splitLine: { lineStyle: { color: theme.border } }
         },
@@ -2219,9 +2322,9 @@
             type: 'bar',
             data: targetData,
             itemStyle: { color: theme.primary, borderRadius: [4, 4, 0, 0] },
-            label: { 
-              show: true, 
-              position: 'top', 
+            label: {
+              show: true,
+              position: 'top',
               formatter: (params) => {
                 const idx = params.dataIndex;
                 if (mode === 'pct') return '100%';
@@ -2229,12 +2332,12 @@
                   return taxRes.formattedTargets[idx];
                 }
                 return params.value != null ? `${curPrefix}${Math.round(params.value)}${magSuffix}` : '';
-              }, 
-              color: theme.primary, 
-              fontSize: 14, 
-              fontWeight: '900', 
-              textShadowColor: theme.bg, 
-              textShadowBlur: 4 
+              },
+              color: theme.primary,
+              fontSize: 14,
+              fontWeight: '900',
+              textShadowColor: theme.bg,
+              textShadowBlur: 4
             }
           },
           {
@@ -2242,9 +2345,9 @@
             type: 'bar',
             data: actualData,
             itemStyle: { color: theme.secondary, borderRadius: [4, 4, 0, 0] },
-            label: { 
-              show: true, 
-              position: 'top', 
+            label: {
+              show: true,
+              position: 'top',
               formatter: (params) => {
                 const idx = params.dataIndex;
                 const pct = (taxRes && taxRes.achievementPcts && taxRes.achievementPcts[idx] != null)
@@ -2257,12 +2360,12 @@
                 if (mode === 'pct') return `${pct}%`;
                 if (mode === 'amount') return fmtAct;
                 return `${fmtAct} (${pct}%)`;
-              }, 
-              color: theme.secondary, 
-              fontSize: 14, 
-              fontWeight: '900', 
-              textShadowColor: theme.bg, 
-              textShadowBlur: 4 
+              },
+              color: theme.secondary,
+              fontSize: 14,
+              fontWeight: '900',
+              textShadowColor: theme.bg,
+              textShadowBlur: 4
             }
           }
         ]
@@ -2419,9 +2522,9 @@
         };
         option.yAxis = {
           type: 'value',
-          axisLabel: { 
-            color: '#94a3b8', 
-            formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}` 
+          axisLabel: {
+            color: '#94a3b8',
+            formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}`
           },
           splitLine: { lineStyle: { color: theme.border } }
         };
@@ -2429,12 +2532,12 @@
           name: actualLabel,
           type: 'bar',
           data: actualBillions,
-          itemStyle: { 
+          itemStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
               { offset: 0, color: theme.primary },
               { offset: 1, color: theme.primary + '80' }
             ]),
-            borderRadius: [6, 6, 0, 0] 
+            borderRadius: [6, 6, 0, 0]
           },
           label: {
             show: true,
@@ -2472,9 +2575,9 @@
             type: 'value',
             name: actualLabel,
             nameTextStyle: { color: '#94a3b8', fontSize: 11 },
-            axisLabel: { 
-              color: '#94a3b8', 
-              formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}` 
+            axisLabel: {
+              color: '#94a3b8',
+              formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}`
             },
             splitLine: { lineStyle: { color: theme.border } }
           },
@@ -2494,12 +2597,12 @@
             type: 'bar',
             yAxisIndex: 0,
             data: actualBillions,
-            itemStyle: { 
+            itemStyle: {
               color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                 { offset: 0, color: theme.secondary },
                 { offset: 1, color: theme.secondary + '60' }
               ]),
-              borderRadius: [6, 6, 0, 0] 
+              borderRadius: [6, 6, 0, 0]
             },
             label: {
               show: true,
@@ -2588,9 +2691,9 @@
         currSeriesData = currentBillions;
         yAxisConfig = {
           type: 'value',
-          axisLabel: { 
-            color: '#94a3b8', 
-            formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}` 
+          axisLabel: {
+            color: '#94a3b8',
+            formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}`
           },
           splitLine: { lineStyle: { color: theme.border } }
         };
@@ -2629,8 +2732,8 @@
           textStyle: { color: '#cbd5e1', fontSize: 12 },
           data: [prevLabel, currentLabel]
         },
-        tooltip: { 
-          trigger: 'axis', 
+        tooltip: {
+          trigger: 'axis',
           backgroundColor: 'rgba(15, 23, 42, 0.95)',
           borderColor: theme.border,
           textStyle: { color: '#f8fafc' },
@@ -2671,8 +2774,8 @@
             symbolSize: 8,
             data: prevSeriesData,
             itemStyle: { color: theme.secondary || '#8b5cf6' },
-            lineStyle: { 
-              width: 3, 
+            lineStyle: {
+              width: 3,
               color: theme.secondary || '#8b5cf6',
               shadowColor: 'rgba(139, 92, 246, 0.3)',
               shadowBlur: 10,
@@ -2707,8 +2810,8 @@
             symbolSize: 10,
             data: currSeriesData,
             itemStyle: { color: theme.primary },
-            lineStyle: { 
-              width: 4, 
+            lineStyle: {
+              width: 4,
               color: theme.primary,
               shadowColor: theme.primary,
               shadowBlur: 15,
@@ -2794,7 +2897,7 @@
 
       const branches = paired.map(p => p.branch);
       const isAnnual = state.filters.calculationMode === 'AnnualTarget';
-      
+
       let seriesName = isAnnual
         ? (state.currentLang === 'am' ? 'የዓመታዊ ዕቅድ ድርሻ' : 'Annual Quota Share')
         : (state.currentLang === 'am' ? 'የዕስከ ዛሬ አፈፃፀም' : 'To-Date Achievement');
@@ -2830,9 +2933,9 @@
         }));
         xAxisConfig = {
           type: 'value',
-          axisLabel: { 
-            color: '#94a3b8', 
-            formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}` 
+          axisLabel: {
+            color: '#94a3b8',
+            formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}`
           },
           splitLine: { lineStyle: { color: theme.border, type: 'dashed' } },
           axisLine: { show: false },
@@ -3267,7 +3370,7 @@
       const modal = document.getElementById('weeklyReportModal');
       if (!modal) return;
       modal.classList.remove('hidden');
-      
+
       const container = document.getElementById('weeklyReportContainer');
       if (container) container.scrollTop = 0;
 
@@ -3399,7 +3502,7 @@
       }
 
       if (rdrEl) {
-        rdrEl.innerText = isAm 
+        rdrEl.innerText = isAm
           ? `የሚጠበቅ ዕለታዊ ገቢ: ${curPrefix}${(data.requiredDailyRunRate / 1e9).toFixed(2)}${bSuffix}/ቀን (${data.remainingDaysInMonth} ቀናት ቀሪ)`
           : `Required Daily: ${curPrefix}${(data.requiredDailyRunRate / 1e9).toFixed(2)}${bSuffix}/day (${data.remainingDaysInMonth}d left)`;
       }
@@ -3685,7 +3788,7 @@
 
     function renderWeeklyBranchSources(data) {
       if (!data || !data.branchSources || data.branchSources.length === 0) return;
-      
+
       // Default selection if none selected or selected not present
       if (!state.weeklySelectedBranchId) {
         const firstActive = data.branchSources.find(b => b.totalActual > 0) || data.branchSources[0];
@@ -3717,7 +3820,7 @@
             icon: 'fa-triangle-exclamation',
             color: 'text-amber-400',
             border: 'border-amber-500/40 bg-amber-500/10',
-            label: isAm 
+            label: isAm
               ? `${b.branchNameAmharic.replace(' አነ/ግ/ክ/ቅ/ጽ/ቤት', '').replace(' መ/ ግ/ከ/ቅ/ጽ/ቤት', '').replace(' ግ/ከ/ቅ/ጽ/ቤት', '')}: ${b.flagReasonAmharic}`
               : `${b.branchName}: ${b.flagReason}`
           });
@@ -3788,7 +3891,7 @@
       let filtered = rawSources;
       if (state.weeklySourceSearch.trim()) {
         const q = state.weeklySourceSearch.trim().toLowerCase();
-        filtered = rawSources.filter(b => 
+        filtered = rawSources.filter(b =>
           (b.branchName && b.branchName.toLowerCase().includes(q)) ||
           (b.branchNameAmharic && b.branchNameAmharic.toLowerCase().includes(q))
         );
