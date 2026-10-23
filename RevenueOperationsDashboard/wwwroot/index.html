@@ -2116,7 +2116,7 @@
 
             if (actualVal !== null && targetVal !== null && targetVal > 0) {
               const diff = actualVal - targetVal;
-              const pct = ((actualVal / targetVal) * 100).toFixed(0);
+              const pct = ((actualVal / targetVal) * 100).toFixed(2);
               const isPositive = diff >= 0;
               const diffColor = isPositive ? '#10b981' : '#f43f5e';
               const diffSign = isPositive ? '+' : '';
@@ -2343,13 +2343,14 @@
             const catName = categories[idx] || params[0].name;
             const fmtTgt = (taxRes && taxRes.formattedTargets && taxRes.formattedTargets[idx]) ? taxRes.formattedTargets[idx] : `${curPrefix}${Math.round(targetData[idx] || 0)} ${magSuffix}`;
             const fmtAct = (taxRes && taxRes.formattedActuals && taxRes.formattedActuals[idx]) ? taxRes.formattedActuals[idx] : `${curPrefix}${Math.round(actualData[idx] || 0)} ${magSuffix}`;
-            const pct = (taxRes && taxRes.achievementPcts && taxRes.achievementPcts[idx] != null)
-              ? Math.round(taxRes.achievementPcts[idx])
-              : ((targetData[idx] > 0) ? Math.round((actualData[idx] / targetData[idx]) * 100) : 0);
+            const rawPct = (taxRes && taxRes.achievementPcts && taxRes.achievementPcts[idx] != null)
+              ? Number(taxRes.achievementPcts[idx])
+              : ((targetData[idx] > 0) ? (actualData[idx] / targetData[idx]) * 100 : 0);
+            const pct = rawPct.toFixed(2);
 
             let res = `<div style="font-weight:700;font-size:13px;color:#f8fafc;margin-bottom:6px;border-bottom:1px solid rgba(148,163,184,0.25);padding-bottom:4px;">${catName}</div>`;
             res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${planSeriesName}:</span><b style="color:${theme.primary};">${fmtTgt}</b></div>`;
-            res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${actualSeriesName}:</span><b style="color:${theme.secondary};">${fmtAct} <span style="font-size:11px;color:${pct >= 100 ? '#10b981' : '#f59e0b'};">(${pct}%)</span></b></div>`;
+            res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${actualSeriesName}:</span><b style="color:${theme.secondary};">${fmtAct} <span style="font-size:11px;color:${rawPct >= 100 ? '#10b981' : '#f59e0b'};">(${pct}%)</span></b></div>`;
             return res;
           }
         },
@@ -2429,7 +2430,7 @@
         ? trendRes.months.map(m => t_db(m))
         : ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map(m => t_db(m));
       const achievements = trendRes && trendRes.achievements && trendRes.achievements.length > 0
-        ? trendRes.achievements.map(a => Math.round(a))
+        ? trendRes.achievements.map(a => (a != null ? Number(Number(a).toFixed(2)) : 0))
         : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       const formattedActuals = trendRes && trendRes.formattedActuals ? trendRes.formattedActuals : [];
       const formattedTargets = trendRes && trendRes.formattedTargets ? trendRes.formattedTargets : [];
@@ -2465,7 +2466,7 @@
           formatter: (p) => {
             const val = p.value;
             if (val == null) return '';
-            return val > 0 ? `${val}%` : '0%';
+            return val > 0 ? `${Number(val).toFixed(2)}%` : '0.00%';
           },
           color: theme.primary,
           fontSize: 14,
@@ -2574,7 +2575,7 @@
             if (!params || params.length === 0) return '';
             const idx = params[0].dataIndex;
             const monthName = months[idx] || params[0].name;
-            const pct = achievements[idx] != null ? `${achievements[idx]}%` : '0%';
+            const pct = achievements[idx] != null ? `${Number(achievements[idx]).toFixed(2)}%` : '0.00%';
             const fmtAct = formattedActuals[idx] || '';
             const fmtTgt = formattedTargets[idx] || '';
 
@@ -2615,8 +2616,8 @@
       }
 
       const months = yoyRes && yoyRes.months ? yoyRes.months.map(m => t_db(m)) : [];
-      const currentAchievements = yoyRes && yoyRes.currentYearAchievements ? yoyRes.currentYearAchievements.map(a => Math.round(a)) : [];
-      const prevAchievements = yoyRes && yoyRes.previousYearAchievements ? yoyRes.previousYearAchievements.map(a => Math.round(a)) : [];
+      const currentAchievements = yoyRes && yoyRes.currentYearAchievements ? yoyRes.currentYearAchievements.map(a => (a != null ? Number(Number(a).toFixed(2)) : 0)) : [];
+      const prevAchievements = yoyRes && yoyRes.previousYearAchievements ? yoyRes.previousYearAchievements.map(a => (a != null ? Number(Number(a).toFixed(2)) : 0)) : [];
       const currentFmt = yoyRes && yoyRes.currentYearFormattedActuals ? yoyRes.currentYearFormattedActuals : [];
       const prevFmt = yoyRes && yoyRes.previousYearFormattedActuals ? yoyRes.previousYearFormattedActuals : [];
       const currentLabel = yoyRes && yoyRes.currentYearLabel ? yoyRes.currentYearLabel : 'Current Year';
@@ -2646,7 +2647,7 @@
           position: 'bottom',
           formatter: (p) => {
             const val = p.value;
-            return (val != null && val > 0) ? `${val}%` : '';
+            return (val != null && val > 0) ? `${Number(val).toFixed(2)}%` : '';
           },
           color: '#f8fafc',
           fontSize: 12,
@@ -2687,7 +2688,7 @@
           distance: showWicks ? 8 : 5,
           formatter: (p) => {
             const val = p.value;
-            return (val != null && val > 0) ? `${val}%` : '0%';
+            return (val != null && val > 0) ? `${Number(val).toFixed(2)}%` : '0.00%';
           },
           color: '#ffffff',
           fontSize: 13,
@@ -2798,8 +2799,8 @@
             const idx = params[0].dataIndex;
             const pFmt = prevFmt[idx] || '';
             const cFmt = currentFmt[idx] || '';
-            const pPct = prevAchievements[idx] != null ? `${prevAchievements[idx]}%` : '-';
-            const cPct = currentAchievements[idx] != null ? `${currentAchievements[idx]}%` : '-';
+            const pPct = prevAchievements[idx] != null ? `${Number(prevAchievements[idx]).toFixed(2)}%` : '-';
+            const cPct = currentAchievements[idx] != null ? `${Number(currentAchievements[idx]).toFixed(2)}%` : '-';
 
             let out = `<div style="font-weight:700;font-size:13px;color:#f8fafc;margin-bottom:4px;border-bottom:1px solid rgba(148,163,184,0.25);padding-bottom:3px;">${months[idx]}</div>`;
             out += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:2px;"><span style="color:${theme.secondary || '#8b5cf6'}">${prevLabel}:</span><b>${pPct}</b> ${pFmt ? `<span style="color:#94a3b8;font-size:11px;">(${pFmt})</span>` : ''}</div>`;
@@ -2842,7 +2843,7 @@
       // Pair and sort by percentage score ascending
       const paired = rawBranches.map((b, i) => ({
         branch: b,
-        score: rawScores[i] != null ? Math.round(rawScores[i]) : 0,
+        score: rawScores[i] != null ? Number(Number(rawScores[i]).toFixed(2)) : 0,
         formattedActual: rawFmtActuals[i] || '',
         formattedTarget: rawFmtTargets[i] || ''
       }));
@@ -2902,7 +2903,7 @@
             const info = paired[p.dataIndex];
             if (!info) return '';
             let out = `<div style="font-weight:700;font-size:13px;color:#f8fafc;margin-bottom:4px;border-bottom:1px solid rgba(148,163,184,0.25);padding-bottom:3px;">${info.branch}</div>`;
-            out += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:2px;"><span style="color:#94a3b8;">${seriesName}:</span><b style="color:${info.score >= 100 ? '#10b981' : '#38bdf8'};">${info.score}%</b></div>`;
+            out += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:2px;"><span style="color:#94a3b8;">${seriesName}:</span><b style="color:${info.score >= 100 ? '#10b981' : '#38bdf8'};">${Number(info.score).toFixed(2)}%</b></div>`;
             if (info.formattedActual) {
               out += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#94a3b8;"><span>${state.currentLang === 'am' ? 'የተሰበሰበ' : 'Actual'}:</span><b>${info.formattedActual}</b></div>`;
             }
@@ -2941,7 +2942,7 @@
           label: {
             show: true,
             position: 'right',
-            formatter: (p) => `${p.value}%`,
+            formatter: (p) => `${Number(p.value).toFixed(2)}%`,
             color: '#f1f5f9',
             fontSize: 14,
             fontWeight: 'bold'
@@ -2995,10 +2996,10 @@
       if (bottomSub) bottomSub.innerText = `Lowest ${limit} Performing Branch Offices needing attention`;
 
       const bottomBranches = allBranches.slice(0, limit);
-      const bottomScores = allScores.slice(0, limit);
+      const bottomScores = allScores.slice(0, limit).map(s => (s != null ? Number(Number(s).toFixed(2)) : 0));
 
       const topBranches = allBranches.slice(-limit);
-      const topScores = allScores.slice(-limit);
+      const topScores = allScores.slice(-limit).map(s => (s != null ? Number(Number(s).toFixed(2)) : 0));
 
       const theme = appThemes[state.currentTheme] || appThemes.ocean;
 
@@ -3007,7 +3008,7 @@
         animation: true,
         animationDuration: 2800,
         animationEasing: 'cubicOut',
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}%' },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: (p) => `${p[0]?.name}: ${Number(p[0]?.value).toFixed(2)}%` },
         grid: { left: '20%', right: '10%', bottom: '5%', top: '5%', containLabel: true },
         xAxis: { type: 'value', max: 120, axisLabel: { formatter: '{value}%', color: '#94a3b8' }, splitLine: { lineStyle: { color: theme.border } } },
         yAxis: { type: 'category', data: topBranches, axisLabel: { color: '#f8fafc', fontSize: 14, margin: 16 } },
@@ -3025,7 +3026,7 @@
               ])
             }
           })),
-          label: { show: true, position: 'right', formatter: '{c}%', color: '#fff', fontSize: 16, fontWeight: 'bold' },
+          label: { show: true, position: 'right', formatter: (p) => `${Number(p.value).toFixed(2)}%`, color: '#fff', fontSize: 16, fontWeight: 'bold' },
           animationDelay: function (idx) {
             return idx * 250;
           }
@@ -3037,7 +3038,7 @@
         animation: true,
         animationDuration: 2800,
         animationEasing: 'cubicOut',
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}%' },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: (p) => `${p[0]?.name}: ${Number(p[0]?.value).toFixed(2)}%` },
         grid: { left: '20%', right: '10%', bottom: '5%', top: '5%', containLabel: true },
         xAxis: { type: 'value', max: 120, axisLabel: { formatter: '{value}%', color: '#94a3b8' }, splitLine: { lineStyle: { color: theme.border } } },
         yAxis: { type: 'category', data: bottomBranches, axisLabel: { color: '#f8fafc', fontSize: 14, margin: 16 } },
@@ -3055,7 +3056,7 @@
               ])
             }
           })),
-          label: { show: true, position: 'right', formatter: '{c}%', color: '#fff', fontSize: 16, fontWeight: 'bold' },
+          label: { show: true, position: 'right', formatter: (p) => `${Number(p.value).toFixed(2)}%`, color: '#fff', fontSize: 16, fontWeight: 'bold' },
           animationDelay: function (idx) {
             return idx * 250;
           }

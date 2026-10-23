@@ -396,7 +396,7 @@ namespace RevenueOperationsDashboard.Services
                 decimal ab = (decimal)(r.ActualBillions ?? 0m);
                 decimal tgt = (decimal)(r.TargetAmount ?? 0m);
                 decimal act = (decimal)(r.ActualAmount ?? 0m);
-                decimal pct = tgt > 0m ? Math.Round((act / tgt) * 100m, 1) : 0m;
+                decimal pct = tgt > 0m ? Math.Round((act / tgt) * 100m, 2) : 0m;
 
                 result.TargetBillions.Add(tb);
                 result.ActualBillions.Add(ab);
