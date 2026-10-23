@@ -24,12 +24,21 @@ namespace RevenueOperationsDashboard.Models
         public List<string> Categories { get; set; } = new();  
         public List<decimal> TargetBillions { get; set; } = new();  
         public List<decimal> ActualBillions { get; set; } = new();  
+        public List<decimal> TargetAmounts { get; set; } = new();  
+        public List<decimal> ActualAmounts { get; set; } = new();  
+        public List<decimal> AchievementPcts { get; set; } = new();  
+        public List<string> FormattedTargets { get; set; } = new();  
+        public List<string> FormattedActuals { get; set; } = new();  
     }
 
     public class MonthlyTrendDto  
     {  
         public List<string> Months { get; set; } = new();  
         public List<decimal> Achievements { get; set; } = new();  
+        public List<decimal> ActualAmounts { get; set; } = new();  
+        public List<decimal> TargetAmounts { get; set; } = new();  
+        public List<string> FormattedActuals { get; set; } = new();  
+        public List<string> FormattedTargets { get; set; } = new();  
     }
 
     public class YoYMonthlyTrendDto
@@ -37,6 +46,10 @@ namespace RevenueOperationsDashboard.Models
         public List<string> Months { get; set; } = new();
         public List<decimal> CurrentYearAchievements { get; set; } = new();
         public List<decimal> PreviousYearAchievements { get; set; } = new();
+        public List<decimal> CurrentYearActualAmounts { get; set; } = new();
+        public List<decimal> PreviousYearActualAmounts { get; set; } = new();
+        public List<string> CurrentYearFormattedActuals { get; set; } = new();
+        public List<string> PreviousYearFormattedActuals { get; set; } = new();
         public string CurrentYearLabel { get; set; } = string.Empty;
         public string PreviousYearLabel { get; set; } = string.Empty;
     }
@@ -45,6 +58,10 @@ namespace RevenueOperationsDashboard.Models
     {  
         public List<string> Branches { get; set; } = new();  
         public List<decimal> Scores { get; set; } = new();  
+        public List<decimal> ActualAmounts { get; set; } = new();  
+        public List<decimal> TargetAmounts { get; set; } = new();  
+        public List<string> FormattedActuals { get; set; } = new();  
+        public List<string> FormattedTargets { get; set; } = new();  
     }
 
     public class BranchVolumesDto  

@@ -228,7 +228,9 @@ namespace RevenueOperationsDashboard.Services
                     SELECT   
                         PlanItemName,  
                         ROUND(SUM(TotalTarget) / 1000000000.0, 2) AS TargetBillions,  
-                        ROUND(SUM(TotalActual) / 1000000000.0, 2) AS ActualBillions  
+                        ROUND(SUM(TotalActual) / 1000000000.0, 2) AS ActualBillions,
+                        SUM(TotalTarget) AS TargetAmount,
+                        SUM(TotalActual) AS ActualAmount
                     FROM [ops].[vw_revenue_performance]  
                     WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)  
                       AND (@ParentId IS NULL OR ParentId = @ParentId)  
@@ -259,7 +261,9 @@ namespace RevenueOperationsDashboard.Services
                     SELECT   
                         PlanItemName,  
                         ROUND(SUM(TotalMonthlyTarget) / 1000000000.0, 2) AS TargetBillions,  
-                        ROUND(SUM(DailyActual) / 1000000000.0, 2) AS ActualBillions  
+                        ROUND(SUM(DailyActual) / 1000000000.0, 2) AS ActualBillions,
+                        SUM(TotalMonthlyTarget) AS TargetAmount,
+                        SUM(DailyActual) AS ActualAmount
                     FROM [dbo].[vw_RevenuePerformanceDaily]  
                     WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)  
                       AND (@ParentId IS NULL OR ParentId = @ParentId)  
@@ -360,7 +364,9 @@ namespace RevenueOperationsDashboard.Services
                     SELECT 
                         t.PlanItemName,
                         ROUND(t.Target / 1000000000.0, 2) AS TargetBillions,
-                        ROUND(ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) / 1000000000.0, 2) AS ActualBillions
+                        ROUND(ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) / 1000000000.0, 2) AS ActualBillions,
+                        t.Target AS TargetAmount,
+                        ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) AS ActualAmount
                     FROM Targets t
                     LEFT JOIN DailyAct d ON t.PlanItemName = d.PlanItemName
                     ORDER BY TargetBillions DESC;";
@@ -378,12 +384,27 @@ namespace RevenueOperationsDashboard.Services
 
             var rows = (await conn.QueryAsync<dynamic>(new CommandDefinition(sql, sqlParams, commandTimeout: 120))).ToList();
 
+            var isEnglish = string.Equals(filters.Lang, "en", StringComparison.OrdinalIgnoreCase);
+            var currencyPolicy = isEnglish ? "EnglishCurrencyInt" : "AmharicCurrencyInt";
+            var currencyOptions = HumanNumbersConfig.Instance.GetPolicies().TryGetValue(currencyPolicy, out var cp) ? cp : HumanNumbersConfig.Instance.GlobalOptions;
+
             var result = new TaxTypePerformanceDto();
             foreach (var r in rows)
             {
                 result.Categories.Add((string)r.PlanItemName);
-                result.TargetBillions.Add((decimal)(r.TargetBillions ?? 0m));
-                result.ActualBillions.Add((decimal)(r.ActualBillions ?? 0m));
+                decimal tb = (decimal)(r.TargetBillions ?? 0m);
+                decimal ab = (decimal)(r.ActualBillions ?? 0m);
+                decimal tgt = (decimal)(r.TargetAmount ?? 0m);
+                decimal act = (decimal)(r.ActualAmount ?? 0m);
+                decimal pct = tgt > 0m ? Math.Round((act / tgt) * 100m, 1) : 0m;
+
+                result.TargetBillions.Add(tb);
+                result.ActualBillions.Add(ab);
+                result.TargetAmounts.Add(tgt);
+                result.ActualAmounts.Add(act);
+                result.AchievementPcts.Add(pct);
+                result.FormattedTargets.Add(tgt.ToHumanCurrency(currencyOptions));
+                result.FormattedActuals.Add(act.ToHumanCurrency(currencyOptions));
             }
             return result;
         }
@@ -462,7 +483,9 @@ namespace RevenueOperationsDashboard.Services
                         WHEN t.MonthOrder = @CurMonthOrder AND t.Target > 0 
                             THEN ROUND(ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) / (t.Target * (CAST(@CurDay AS DECIMAL(18,4)) / 30.0)) * 100, 2)
                         ELSE 0 
-                    END AS AchievementPct
+                    END AS AchievementPct,
+                    ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) AS ActualAmount,
+                    t.Target AS TargetAmount
                 FROM MonthlyTargets t
                 LEFT JOIN DailyAct d ON t.MonthId = d.MonthId
                 ORDER BY t.MonthOrder ASC;";
@@ -477,11 +500,23 @@ namespace RevenueOperationsDashboard.Services
                 CurDay = curDay
             }, commandTimeout: 120))).ToList();
 
-            return new MonthlyTrendDto
+            var isEnglish = string.Equals(filters.Lang, "en", StringComparison.OrdinalIgnoreCase);
+            var currencyPolicy = isEnglish ? "EnglishCurrencyInt" : "AmharicCurrencyInt";
+            var currencyOptions = HumanNumbersConfig.Instance.GetPolicies().TryGetValue(currencyPolicy, out var cp) ? cp : HumanNumbersConfig.Instance.GlobalOptions;
+
+            var resultDto = new MonthlyTrendDto();
+            foreach (var r in rows)
             {
-                Months = rows.Select(r => (string)r.MonthName).ToList(),
-                Achievements = rows.Select(r => (decimal)(r.AchievementPct ?? 0m)).ToList()
-            };
+                resultDto.Months.Add((string)r.MonthName);
+                resultDto.Achievements.Add((decimal)(r.AchievementPct ?? 0m));
+                decimal act = (decimal)(r.ActualAmount ?? 0m);
+                decimal tgt = (decimal)(r.TargetAmount ?? 0m);
+                resultDto.ActualAmounts.Add(act);
+                resultDto.TargetAmounts.Add(tgt);
+                resultDto.FormattedActuals.Add(act.ToHumanCurrency(currencyOptions));
+                resultDto.FormattedTargets.Add(tgt.ToHumanCurrency(currencyOptions));
+            }
+            return resultDto;
         }
 
         public async Task<YoYMonthlyTrendDto> GetYoYMonthlyTrendAsync(DashboardFilterDto filters)
@@ -512,7 +547,8 @@ namespace RevenueOperationsDashboard.Services
             {
                 FiscalYearId = prevYearId,
                 ParentId = filters.ParentId,
-                PlanItemId = filters.PlanItemId
+                PlanItemId = filters.PlanItemId,
+                Lang = filters.Lang
             };
             var prevYearTrendTask = GetMonthlyTrendAsync(prevFilters);
 
@@ -525,23 +561,27 @@ namespace RevenueOperationsDashboard.Services
             {
                 Months = currentYearTrend.Months,
                 CurrentYearLabel = currentYearLabel,
-                PreviousYearLabel = prevYearLabel
+                PreviousYearLabel = prevYearLabel,
+                CurrentYearAchievements = currentYearTrend.Achievements,
+                CurrentYearActualAmounts = currentYearTrend.ActualAmounts,
+                CurrentYearFormattedActuals = currentYearTrend.FormattedActuals
             };
 
             for (int i = 0; i < currentYearTrend.Months.Count; i++)
             {
-                result.CurrentYearAchievements.Add(currentYearTrend.Achievements[i]);
-
-                // For previous year, we need to match by month name since arrays might differ (though they shouldn't)
                 var monthName = currentYearTrend.Months[i];
                 var prevIndex = prevYearTrend.Months.IndexOf(monthName);
                 if (prevIndex >= 0)
                 {
                     result.PreviousYearAchievements.Add(prevYearTrend.Achievements[prevIndex]);
+                    result.PreviousYearActualAmounts.Add(prevIndex < prevYearTrend.ActualAmounts.Count ? prevYearTrend.ActualAmounts[prevIndex] : 0m);
+                    result.PreviousYearFormattedActuals.Add(prevIndex < prevYearTrend.FormattedActuals.Count ? prevYearTrend.FormattedActuals[prevIndex] : "");
                 }
                 else
                 {
                     result.PreviousYearAchievements.Add(0m);
+                    result.PreviousYearActualAmounts.Add(0m);
+                    result.PreviousYearFormattedActuals.Add("");
                 }
             }
 
@@ -563,6 +603,10 @@ namespace RevenueOperationsDashboard.Services
 
             using var conn = await GetConnectionAsync();
 
+            var isEnglish = string.Equals(filters.Lang, "en", StringComparison.OrdinalIgnoreCase);
+            var currencyPolicy = isEnglish ? "EnglishCurrencyInt" : "AmharicCurrencyInt";
+            var currencyOptions = HumanNumbersConfig.Instance.GetPolicies().TryGetValue(currencyPolicy, out var cp) ? cp : HumanNumbersConfig.Instance.GlobalOptions;
+
             if (quarter != null)
             {
                 const string sqlQuarter = @"
@@ -572,7 +616,9 @@ namespace RevenueOperationsDashboard.Services
                             WHEN SUM(SelectedTarget) > 0
                             THEN ROUND(SUM(SelectedActual) / SUM(SelectedTarget) * 100, 2)
                             ELSE 0
-                        END AS AchievementPct
+                        END AS AchievementPct,
+                        SUM(SelectedActual) AS ActualAmount,
+                        SUM(SelectedTarget) AS TargetAmount
                     FROM [ops].[vw_revenue_performance]
                     WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
                       AND Quarter = @Quarter
@@ -586,11 +632,19 @@ namespace RevenueOperationsDashboard.Services
                     Quarter = quarter
                 }, commandTimeout: 120))).ToList();
 
-                return new BranchRankingDto
+                var qDto = new BranchRankingDto();
+                foreach (var r in qRows)
                 {
-                    Branches = qRows.Select(r => (string)r.BranchName).ToList(),
-                    Scores = qRows.Select(r => (decimal)(r.AchievementPct ?? 0m)).ToList()
-                };
+                    qDto.Branches.Add((string)r.BranchName);
+                    qDto.Scores.Add((decimal)(r.AchievementPct ?? 0m));
+                    decimal act = (decimal)(r.ActualAmount ?? 0m);
+                    decimal tgt = (decimal)(r.TargetAmount ?? 0m);
+                    qDto.ActualAmounts.Add(act);
+                    qDto.TargetAmounts.Add(tgt);
+                    qDto.FormattedActuals.Add(act.ToHumanCurrency(currencyOptions));
+                    qDto.FormattedTargets.Add(tgt.ToHumanCurrency(currencyOptions));
+                }
+                return qDto;
             }
 
             bool isCurFy = (fy == "2019");
@@ -651,7 +705,9 @@ namespace RevenueOperationsDashboard.Services
                         WHEN t.Target > 0 
                         THEN ROUND(ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) / t.Target * 100, 2)
                         ELSE 0 
-                    END AS AchievementPct
+                    END AS AchievementPct,
+                    ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) AS ActualAmount,
+                    t.Target AS TargetAmount
                 FROM Targets t
                 LEFT JOIN DailyAct d ON t.ParentId = d.ParentId
                 WHERE t.Target > 0 AND t.ParentId <> 1
@@ -665,11 +721,19 @@ namespace RevenueOperationsDashboard.Services
                 CurDay = curDay
             }, commandTimeout: 120))).ToList();
 
-            return new BranchRankingDto
+            var dto = new BranchRankingDto();
+            foreach (var r in rows)
             {
-                Branches = rows.Select(r => (string)r.BranchName).ToList(),
-                Scores = rows.Select(r => (decimal)(r.AchievementPct ?? 0m)).ToList()
-            };
+                dto.Branches.Add((string)r.BranchName);
+                dto.Scores.Add((decimal)(r.AchievementPct ?? 0m));
+                decimal act = (decimal)(r.ActualAmount ?? 0m);
+                decimal tgt = (decimal)(r.TargetAmount ?? 0m);
+                dto.ActualAmounts.Add(act);
+                dto.TargetAmounts.Add(tgt);
+                dto.FormattedActuals.Add(act.ToHumanCurrency(currencyOptions));
+                dto.FormattedTargets.Add(tgt.ToHumanCurrency(currencyOptions));
+            }
+            return dto;
         }
 
         // 4. Dynamic Filter Dropdown Options  

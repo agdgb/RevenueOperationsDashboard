@@ -31,7 +31,7 @@ namespace RevenueOperationsDashboard.Controllers
         [HttpGet("tax-type-performance")]  
         public async Task<IActionResult> GetTaxTypePerformance([FromQuery] DashboardFilterDto filters)  
         {
-            string cacheKey = $"tax_type_perf_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}_{filters.CalculationMode}";
+            string cacheKey = $"tax_type_perf_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}_{filters.CalculationMode}_{filters.Lang ?? "am"}";
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
@@ -43,7 +43,7 @@ namespace RevenueOperationsDashboard.Controllers
         [HttpGet("monthly-trend")]  
         public async Task<IActionResult> GetMonthlyTrend([FromQuery] DashboardFilterDto filters)  
         {
-            string cacheKey = $"monthly_trend_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}";
+            string cacheKey = $"monthly_trend_{filters.FiscalYearId}_{filters.ParentId}_{filters.PlanItemId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}_{filters.Lang ?? "am"}";
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
@@ -97,7 +97,7 @@ namespace RevenueOperationsDashboard.Controllers
         [HttpGet("branch-ranking")]  
         public async Task<IActionResult> GetBranchRanking([FromQuery] DashboardFilterDto filters)  
         {
-            string cacheKey = $"branch_ranking_{filters.FiscalYearId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}_{filters.CalculationMode}";
+            string cacheKey = $"branch_ranking_{filters.FiscalYearId}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}_{filters.CalculationMode}_{filters.Lang ?? "am"}";
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);

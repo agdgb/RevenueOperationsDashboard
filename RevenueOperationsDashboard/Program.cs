@@ -54,6 +54,24 @@ HumanNumbersConfig.Instance.AddPolicy("EnglishCount", new HumanNumberFormatOptio
     CachedCustomSuffixes = StandardSuffixSets.Default
 });
 
+HumanNumbersConfig.Instance.AddPolicy("AmharicCurrencyInt", new HumanNumberFormatOptions
+{
+    Culture = amharicCulture,
+    CurrencySymbol = "ብር",
+    CurrencyPosition = CurrencyPosition.BeforeWithSpace,
+    DecimalPlaces = 0,
+    CachedCustomSuffixes = amharicSuffixes
+});
+
+HumanNumbersConfig.Instance.AddPolicy("EnglishCurrencyInt", new HumanNumberFormatOptions
+{
+    Culture = new CultureInfo("en-US"),
+    CurrencySymbol = "ETB",
+    CurrencyPosition = CurrencyPosition.BeforeWithSpace,
+    DecimalPlaces = 0,
+    CachedCustomSuffixes = StandardSuffixSets.Default
+});
+
 HumanNumber.Configure(config =>
 {
     config.GlobalOptions.CurrencyPosition = CurrencyPosition.BeforeWithSpace;
