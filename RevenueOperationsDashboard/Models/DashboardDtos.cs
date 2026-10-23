@@ -87,9 +87,7 @@ namespace RevenueOperationsDashboard.Models
     public class WeeklyReportSettingsDto
     {
         public bool Enabled { get; set; } = true;
-        public string CutoffDayOfWeek { get; set; } = "Wednesday";
         public int PeriodDays { get; set; } = 7;
-        public bool AutoShowOnCutoffDay { get; set; } = false;
         public string TitleAm { get; set; } = "ሳምንታዊ የገቢ አፈፃፀም ሪፖርት";
         public string TitleEn { get; set; } = "Executive Weekly Performance Report";
         public string SubtitleAm { get; set; } = "የ 7 ቀናት ተከታታይ የስራ አፈፃፀም፣ የታክስ አይነቶች እና የቅርንጫፎች ደረጃ";
@@ -128,14 +126,12 @@ namespace RevenueOperationsDashboard.Models
     public class SlideConfigDto
     {
         public string Id { get; set; } = string.Empty;
-        public bool Visible { get; set; }
+        public bool Visible { get; set; } = true;
         public string Title { get; set; } = string.Empty;
         public string TitleAm { get; set; } = string.Empty;
         public string Subtitle { get; set; } = string.Empty;
         public string SubtitleAm { get; set; } = string.Empty;
         public string ApiEndpoint { get; set; } = string.Empty;
-        public string ComparisonMode { get; set; } = string.Empty; // YoY, YTD, None
-        public string ChartType { get; set; } = string.Empty; // bar-grouped, line-smooth, leaderboard-split, etc.
         public int? DurationMs { get; set; }
     }
 

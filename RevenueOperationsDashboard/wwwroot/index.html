@@ -1300,17 +1300,13 @@
         }
         updateCalculationModeButtons(state.filters.calculationMode || 'ToDateTarget');
 
-        // Check Weekly Report cutoff pulse
-        if (config.weeklyReport && config.weeklyReport.enabled) {
-          const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-          const todayName = days[new Date().getDay()];
-          const pulseEl = document.getElementById('weeklyCutoffPulse');
-          if (pulseEl) {
-            if (config.weeklyReport.cutoffDayOfWeek && todayName.toLowerCase() === config.weeklyReport.cutoffDayOfWeek.toLowerCase()) {
-              pulseEl.classList.remove('hidden');
-            } else {
-              pulseEl.classList.add('hidden');
-            }
+        // Toggle Weekly Report button visibility based on config
+        const btnWeeklyReport = document.getElementById('btnWeeklyReport');
+        if (btnWeeklyReport && config.weeklyReport) {
+          if (config.weeklyReport.enabled === false) {
+            btnWeeklyReport.classList.add('hidden');
+          } else {
+            btnWeeklyReport.classList.remove('hidden');
           }
         }
 
