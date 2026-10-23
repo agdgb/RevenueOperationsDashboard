@@ -849,16 +849,6 @@
     <div id="slide-0" class="slide-container slide-visible h-full w-full flex-col gap-3 min-h-0">
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
-        <!-- Floating Metric Mode Toggle Pill -->
-        <div
-          class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
-          <button data-mode="pct" onclick="setChartMetricMode('pct')"
-            class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
-          <button data-mode="amount" onclick="setChartMetricMode('amount')"
-            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር</button>
-          <button data-mode="both" onclick="setChartMetricMode('both')"
-            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">ሁለቱም</button>
-        </div>
         <div id="chartTaxType" class="w-full flex-1 min-h-[300px]"></div>
       </div>
     </div>
@@ -867,15 +857,13 @@
     <div id="slide-1" class="slide-container slide-hidden h-full w-full flex-col gap-3 min-h-0">
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
-        <!-- Floating Metric Mode Toggle Pill -->
-        <div
+        <!-- Floating Metric Mode Toggle Pill for Monthly Trend -->
+        <div id="monthlyTrendToggleGroup"
           class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
-          <button data-mode="pct" onclick="setChartMetricMode('pct')"
+          <button data-mode="pct" onclick="setSlideChartMetricMode('monthlyTrend', 'pct')"
             class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
-          <button data-mode="amount" onclick="setChartMetricMode('amount')"
-            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር</button>
-          <button data-mode="both" onclick="setChartMetricMode('both')"
-            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">ሁለቱም</button>
+          <button data-mode="wicks" onclick="setSlideChartMetricMode('monthlyTrend', 'wicks')"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር (Wicks)</button>
         </div>
         <div id="chartMonthlyTrend" class="w-full flex-1 min-h-[300px]"></div>
       </div>
@@ -885,16 +873,6 @@
     <div id="slide-2" class="slide-container slide-hidden h-full w-full flex-col gap-3 min-h-0">
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
-        <!-- Floating Metric Mode Toggle Pill -->
-        <div
-          class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
-          <button data-mode="pct" onclick="setChartMetricMode('pct')"
-            class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
-          <button data-mode="amount" onclick="setChartMetricMode('amount')"
-            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር</button>
-          <button data-mode="both" onclick="setChartMetricMode('both')"
-            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">ሁለቱም</button>
-        </div>
         <div id="chartBranchVolume" class="w-full flex-1 min-h-[300px]"></div>
       </div>
     </div>
@@ -903,15 +881,13 @@
     <div id="slide-3" class="slide-container slide-hidden h-full w-full flex-col gap-3 min-h-0">
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
-        <!-- Floating Metric Mode Toggle Pill -->
-        <div
+        <!-- Floating Metric Mode Toggle Pill for YoY Trend -->
+        <div id="yoyTrendToggleGroup"
           class="absolute top-3 right-4 z-20 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-xl p-1 shadow-md metric-toggle-group">
-          <button data-mode="pct" onclick="setChartMetricMode('pct')"
+          <button data-mode="pct" onclick="setSlideChartMetricMode('yoyTrend', 'pct')"
             class="px-2.5 py-1 rounded-lg text-xs font-bold transition">በመቶኛ (%)</button>
-          <button data-mode="amount" onclick="setChartMetricMode('amount')"
-            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር</button>
-          <button data-mode="both" onclick="setChartMetricMode('both')"
-            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">ሁለቱም</button>
+          <button data-mode="wicks" onclick="setSlideChartMetricMode('yoyTrend', 'wicks')"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white">በብር (Wicks)</button>
         </div>
         <div id="chartYoYMonthlyTrend" class="w-full flex-1 min-h-[300px]"></div>
       </div>
@@ -956,14 +932,6 @@
           title="የዕስከ ዛሬ ዕቅድ / የሙሉ ዓመት ዕቅድ ቀይር">
           <i class="fa-solid fa-bullseye text-blue-400"></i>
           <span id="quickCalcModeText">የዕስከ ዛሬ ዕቅድ</span>
-        </button>
-
-        <!-- Metric Display Mode Quick Toggle Button -->
-        <button onclick="cycleChartMetricMode()" id="quickMetricModeBtn"
-          class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-2 rounded-lg border border-slate-700/50 transition focus:outline-none cursor-pointer"
-          title="የመለኪያ አይነት ቀይር (% / በብር / ሁለቱም)">
-          <i class="fa-solid fa-chart-simple text-emerald-400"></i>
-          <span id="quickMetricModeText">በመቶኛ (%)</span>
         </button>
 
         <!-- Action Buttons -->
@@ -1012,7 +980,11 @@
     const state = {
       currentLang: 'en', // 'en' or 'am'
       currentTheme: localStorage.getItem('dashboard_theme') || 'ocean',
-      chartMetricMode: localStorage.getItem('dashboard_chart_metric_mode') || 'pct', // 'pct' | 'amount' | 'both'
+      chartMetricMode: localStorage.getItem('dashboard_chart_metric_mode') || 'pct', // fallback
+      chartMetricModes: {
+        monthlyTrend: localStorage.getItem('dashboard_metric_monthlyTrend') || 'pct',
+        yoyTrend: localStorage.getItem('dashboard_metric_yoyTrend') || 'pct'
+      },
       currentSlide: 0,
       slideCount: 0,
       activeSlides: [],
@@ -1383,11 +1355,17 @@
           if (themeSelector) themeSelector.value = config.defaultTheme;
         }
 
-        // Apply default chart metric mode (pct, amount, both)
+        // Apply default chart metric mode
         if (config.defaultChartMetricMode) {
           state.chartMetricMode = config.defaultChartMetricMode;
-          updateMetricToggleUI();
+          if (!localStorage.getItem('dashboard_metric_monthlyTrend')) {
+            state.chartMetricModes.monthlyTrend = config.defaultChartMetricMode;
+          }
+          if (!localStorage.getItem('dashboard_metric_yoyTrend')) {
+            state.chartMetricModes.yoyTrend = config.defaultChartMetricMode;
+          }
         }
+        updateAllMetricTogglesUI();
 
         // Set default filters
         if (config.defaultFilters) {
@@ -1517,50 +1495,65 @@
       }
     }
 
-    function setChartMetricMode(mode) {
-      state.chartMetricMode = mode;
-      localStorage.setItem('dashboard_chart_metric_mode', mode);
-      updateMetricToggleUI();
+    function setSlideChartMetricMode(chartKey, mode) {
+      if (!state.chartMetricModes) state.chartMetricModes = {};
+      state.chartMetricModes[chartKey] = mode;
+      localStorage.setItem('dashboard_metric_' + chartKey, mode);
+      updateSlideMetricToggleUI(chartKey);
       if (state.activeSlideData && state.activeSlideData[state.currentSlide]) {
         renderActiveSlideChart(state.currentSlide, state.activeSlideData[state.currentSlide]);
       }
     }
 
-    function cycleChartMetricMode() {
-      const modes = ['pct', 'amount', 'both'];
-      const currentIndex = modes.indexOf(state.chartMetricMode);
-      const nextMode = modes[(currentIndex + 1) % modes.length];
-      setChartMetricMode(nextMode);
+    function setChartMetricMode(mode) {
+      state.chartMetricMode = mode;
+      localStorage.setItem('dashboard_chart_metric_mode', mode);
+      if (state.chartMetricModes) {
+        state.chartMetricModes.monthlyTrend = mode;
+        state.chartMetricModes.yoyTrend = mode;
+      }
+      updateAllMetricTogglesUI();
+      if (state.activeSlideData && state.activeSlideData[state.currentSlide]) {
+        renderActiveSlideChart(state.currentSlide, state.activeSlideData[state.currentSlide]);
+      }
     }
 
-    function updateMetricToggleUI() {
-      const mode = state.chartMetricMode || 'pct';
+    function updateSlideMetricToggleUI(chartKey) {
+      const mode = (state.chartMetricModes && state.chartMetricModes[chartKey]) || 'pct';
       const isAm = state.currentLang === 'am';
+      const containerId = chartKey === 'monthlyTrend' ? 'monthlyTrendToggleGroup' : (chartKey === 'yoyTrend' ? 'yoyTrendToggleGroup' : null);
+      if (!containerId) return;
+      const container = document.getElementById(containerId);
+      if (!container) return;
 
       const labels = {
         pct: isAm ? 'በመቶኛ (%)' : 'Percent (%)',
-        amount: isAm ? 'በብር' : 'Currency (ETB)',
-        both: isAm ? 'ሁለቱም' : 'Both (% & ETB)'
+        wicks: isAm ? 'በብር (Wicks)' : 'Currency (Wicks)',
+        amount: isAm ? 'በብር (Wicks)' : 'Currency (Wicks)',
+        both: isAm ? 'በብር (Wicks)' : 'Currency (Wicks)'
       };
 
-      const quickText = document.getElementById('quickMetricModeText');
-      if (quickText) {
-        quickText.innerText = labels[mode] || labels.pct;
-      }
-
-      document.querySelectorAll('.metric-toggle-group').forEach(group => {
-        group.querySelectorAll('button').forEach(btn => {
-          const btnMode = btn.getAttribute('data-mode');
-          if (btnMode) {
-            btn.innerText = labels[btnMode];
-            if (btnMode === mode) {
-              btn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm';
-            } else {
-              btn.className = 'px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white hover:bg-slate-800/60';
-            }
+      container.querySelectorAll('button').forEach(btn => {
+        const btnMode = btn.getAttribute('data-mode');
+        if (btnMode) {
+          btn.innerText = labels[btnMode] || btnMode;
+          const isSelected = (btnMode === mode) || ((mode === 'amount' || mode === 'both' || mode === 'wicks') && btnMode === 'wicks') || (mode === 'pct' && btnMode === 'pct');
+          if (isSelected) {
+            btn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm';
+          } else {
+            btn.className = 'px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white hover:bg-slate-800/60';
           }
-        });
+        }
       });
+    }
+
+    function updateAllMetricTogglesUI() {
+      updateSlideMetricToggleUI('monthlyTrend');
+      updateSlideMetricToggleUI('yoyTrend');
+    }
+
+    function updateMetricToggleUI() {
+      updateAllMetricTogglesUI();
     }
 
     function setTimePreset(preset) {
@@ -2227,7 +2220,6 @@
       const theme = appThemes[state.currentTheme] || appThemes.ocean;
       const curPrefix = state.currentLang === 'am' ? 'ብር ' : 'ETB ';
       const magSuffix = state.currentLang === 'am' ? 'ቢ' : 'B';
-      const mode = state.chartMetricMode || 'pct';
 
       const isAnnual = state.filters.calculationMode === 'AnnualTarget';
       const planSeriesName = isAnnual
@@ -2235,15 +2227,12 @@
         : (state.currentLang === 'am' ? 'የዕስከ ዛሬ ዕቅድ' : 'To-Date Target');
       const actualSeriesName = state.currentLang === 'am' ? 'ክንውን' : 'Actual';
 
-      let modeSubAm = mode === 'pct' ? 'በመቶኛ (%) አፈፃፀም' : (mode === 'amount' ? 'በብር የገቢ መጠን' : 'በመቶኛና በብር ጥምረት');
-      let modeSubEn = mode === 'pct' ? 'Achievement Percentage (%)' : (mode === 'amount' ? 'Collection Amount in ETB' : 'Combined % and ETB');
-
-      const subTextAm = (isAnnual
-        ? 'የዋና ዋና ታክስ ዓይነቶች የዓመታዊ ዕቅድና ክንውን'
-        : 'የዋና ዋና ታክስ ዓይነቶች የዕስከ ዛሬ ዕቅድና ክንውን') + ` (${modeSubAm})`;
-      const subTextEn = (isAnnual
+      const subTextAm = isAnnual
+        ? 'የዋና ዋና ታክስ ዓይነቶች የዓመታዊ ዕቅድና ክንውን (የዓመቱ ሙሉ ግብ)'
+        : 'የዋና ዋና ታክስ ዓይነቶች የዕስከ ዛሬ ዕቅድና ክንውን (የዕስከ ዛሬ ድምር)';
+      const subTextEn = isAnnual
         ? 'Major tax categories annual quota vs. actual collections'
-        : 'Major tax categories to-date target vs. actual collections') + ` (${modeSubEn})`;
+        : 'Major tax categories to-date target vs. actual collections';
 
       const option = {
         backgroundColor: 'transparent',
@@ -2286,18 +2275,8 @@
               : ((targetData[idx] > 0) ? Math.round((actualData[idx] / targetData[idx]) * 100) : 0);
 
             let res = `<div style="font-weight:700;font-size:13px;color:#f8fafc;margin-bottom:6px;border-bottom:1px solid rgba(148,163,184,0.25);padding-bottom:4px;">${catName}</div>`;
-
-            if (mode === 'pct') {
-              res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${planSeriesName}:</span><b style="color:${theme.primary};">100%</b></div>`;
-              res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${actualSeriesName}:</span><b style="color:${theme.secondary};">${pct}%</b></div>`;
-              res += `<div style="font-size:11px;color:#64748b;margin-top:4px;">(${fmtAct} / ${fmtTgt})</div>`;
-            } else if (mode === 'amount') {
-              res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${planSeriesName}:</span><b style="color:${theme.primary};">${fmtTgt}</b></div>`;
-              res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${actualSeriesName}:</span><b style="color:${theme.secondary};">${fmtAct}</b></div>`;
-            } else { // both
-              res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${planSeriesName}:</span><b style="color:${theme.primary};">${fmtTgt} (100%)</b></div>`;
-              res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${actualSeriesName}:</span><b style="color:${theme.secondary};">${fmtAct} (${pct}%)</b></div>`;
-            }
+            res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${planSeriesName}:</span><b style="color:${theme.primary};">${fmtTgt}</b></div>`;
+            res += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:3px;"><span style="color:#94a3b8;">${actualSeriesName}:</span><b style="color:${theme.secondary};">${fmtAct} <span style="font-size:11px;color:${pct >= 100 ? '#10b981' : '#f59e0b'};">(${pct}%)</span></b></div>`;
             return res;
           }
         },
@@ -2327,7 +2306,6 @@
               position: 'top',
               formatter: (params) => {
                 const idx = params.dataIndex;
-                if (mode === 'pct') return '100%';
                 if (taxRes && taxRes.formattedTargets && taxRes.formattedTargets[idx]) {
                   return taxRes.formattedTargets[idx];
                 }
@@ -2350,16 +2328,10 @@
               position: 'top',
               formatter: (params) => {
                 const idx = params.dataIndex;
-                const pct = (taxRes && taxRes.achievementPcts && taxRes.achievementPcts[idx] != null)
-                  ? Math.round(taxRes.achievementPcts[idx])
-                  : ((targetData[idx] > 0) ? Math.round((actualData[idx] / targetData[idx]) * 100) : 0);
-                const fmtAct = (taxRes && taxRes.formattedActuals && taxRes.formattedActuals[idx])
-                  ? taxRes.formattedActuals[idx]
-                  : `${curPrefix}${Math.round(params.value || 0)}${magSuffix}`;
-
-                if (mode === 'pct') return `${pct}%`;
-                if (mode === 'amount') return fmtAct;
-                return `${fmtAct} (${pct}%)`;
+                if (taxRes && taxRes.formattedActuals && taxRes.formattedActuals[idx]) {
+                  return taxRes.formattedActuals[idx];
+                }
+                return (params.value != null && params.value !== '') ? `${curPrefix}${Math.round(params.value)}${magSuffix}` : '';
               },
               color: theme.secondary,
               fontSize: 14,
@@ -2386,24 +2358,119 @@
       const achievements = trendRes && trendRes.achievements && trendRes.achievements.length > 0
         ? trendRes.achievements.map(a => Math.round(a))
         : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      const actualAmounts = trendRes && trendRes.actualAmounts ? trendRes.actualAmounts : [];
-      const targetAmounts = trendRes && trendRes.targetAmounts ? trendRes.targetAmounts : [];
-      const actualBillions = actualAmounts.map(a => Number(a) / 1000000000.0);
-      const targetBillions = targetAmounts.map(t => Number(t) / 1000000000.0);
       const formattedActuals = trendRes && trendRes.formattedActuals ? trendRes.formattedActuals : [];
       const formattedTargets = trendRes && trendRes.formattedTargets ? trendRes.formattedTargets : [];
 
       const theme = appThemes[state.currentTheme] || appThemes.ocean;
-      const curPrefix = state.currentLang === 'am' ? 'ብር ' : 'ETB ';
-      const magSuffix = state.currentLang === 'am' ? 'ቢ' : 'B';
-      const mode = state.chartMetricMode || 'pct';
+      const mode = (state.chartMetricModes && state.chartMetricModes.monthlyTrend) || state.chartMetricMode || 'pct';
+      const showWicks = (mode === 'amount' || mode === 'both' || mode === 'wicks');
 
       const pctLabel = state.currentLang === 'am' ? 'የአፈፃፀም መቶኛ (%)' : 'Achievement %';
       const actualLabel = state.currentLang === 'am' ? 'የተሰበሰበ ገቢ (ብር)' : 'Collection Amount';
-      const targetLabel = state.currentLang === 'am' ? 'የወሩ ዕቅድ' : 'Monthly Target';
       const baselineLabel = state.currentLang === 'am' ? '100% የዕቅድ መነሻ' : '100% Target Baseline';
 
-      let option = {
+      const lineSeries = {
+        name: pctLabel,
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 9,
+        z: 5,
+        data: achievements,
+        itemStyle: { color: theme.primary },
+        lineStyle: { width: 4, color: theme.primary },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: theme.primary + '73' },
+            { offset: 1, color: theme.primary + '00' }
+          ])
+        },
+        label: {
+          show: true,
+          position: showWicks ? 'bottom' : 'top',
+          distance: showWicks ? 8 : 5,
+          formatter: (p) => {
+            const val = p.value;
+            if (val == null) return '';
+            return val > 0 ? `${val}%` : '0%';
+          },
+          color: theme.primary,
+          fontSize: 14,
+          fontWeight: '900',
+          textShadowColor: theme.bg,
+          textShadowBlur: 4
+        },
+        markLine: {
+          symbol: ['none', 'none'],
+          label: {
+            show: true,
+            position: 'end',
+            formatter: baselineLabel,
+            color: theme.warning,
+            fontSize: 11,
+            fontWeight: 'bold'
+          },
+          lineStyle: {
+            type: 'dashed',
+            color: theme.warning,
+            width: 2
+          },
+          data: [{ yAxis: 100 }]
+        }
+      };
+
+      const seriesList = [lineSeries];
+
+      if (showWicks) {
+        // Base spacer bar (invisible) rising to the line point
+        seriesList.push({
+          name: 'WickBase',
+          type: 'bar',
+          stack: 'monthlyWickStack',
+          barWidth: 2,
+          z: 2,
+          silent: true,
+          data: achievements.map((v, i) => (v > 0 && formattedActuals[i]) ? v : null),
+          itemStyle: { opacity: 0 }
+        });
+
+        // Slender 2px luminous wick rising 15% above the point with currency badge
+        seriesList.push({
+          name: actualLabel,
+          type: 'bar',
+          stack: 'monthlyWickStack',
+          barWidth: 2,
+          z: 3,
+          data: achievements.map((v, i) => (v > 0 && formattedActuals[i]) ? 15 : null),
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#38bdf8' },
+              { offset: 1, color: 'rgba(56, 189, 248, 0.25)' }
+            ]),
+            shadowColor: 'rgba(56, 189, 248, 0.8)',
+            shadowBlur: 6,
+            borderRadius: [2, 2, 0, 0]
+          },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            formatter: (p) => formattedActuals[p.dataIndex] || '',
+            color: '#ffffff',
+            fontSize: 12,
+            fontWeight: 'bold',
+            backgroundColor: 'rgba(15, 23, 42, 0.92)',
+            borderColor: 'rgba(56, 189, 248, 0.6)',
+            borderWidth: 1,
+            borderRadius: 6,
+            padding: [3, 7],
+            shadowColor: 'rgba(0,0,0,0.7)',
+            shadowBlur: 8
+          }
+        });
+      }
+
+      const option = {
         backgroundColor: 'transparent',
         animation: true,
         animationDuration: 1200,
@@ -2418,243 +2485,52 @@
           textStyle: { color: '#f8fafc', fontSize: 18, fontWeight: 'bold' },
           subtextStyle: { color: '#94a3b8', fontSize: 12 }
         },
-        grid: { left: '4%', right: mode === 'both' ? '5%' : '4%', bottom: '50px', top: '75px', containLabel: true },
+        legend: {
+          show: true,
+          bottom: 5,
+          left: 'center',
+          icon: 'circle',
+          textStyle: { color: '#cbd5e1', fontSize: 12 },
+          data: showWicks ? [pctLabel, actualLabel] : [pctLabel]
+        },
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          borderColor: theme.border,
+          formatter: (params) => {
+            if (!params || params.length === 0) return '';
+            const idx = params[0].dataIndex;
+            const monthName = months[idx] || params[0].name;
+            const pct = achievements[idx] != null ? `${achievements[idx]}%` : '0%';
+            const fmtAct = formattedActuals[idx] || '';
+            const fmtTgt = formattedTargets[idx] || '';
+
+            let out = `<div style="font-weight:700;font-size:13px;color:#f8fafc;margin-bottom:4px;border-bottom:1px solid rgba(148,163,184,0.25);padding-bottom:3px;">${monthName}</div>`;
+            out += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:2px;"><span style="color:#94a3b8;">${pctLabel}:</span><b style="color:${theme.primary};">${pct}</b></div>`;
+            if (fmtAct) {
+              out += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:2px;"><span style="color:#94a3b8;">${actualLabel}:</span><b style="color:#38bdf8;">${fmtAct}</b></div>`;
+            }
+            if (fmtTgt) {
+              out += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#64748b;">(ዕቅድ: ${fmtTgt})</div>`;
+            }
+            return out;
+          }
+        },
+        grid: { left: '4%', right: '4%', bottom: '50px', top: '75px', containLabel: true },
         xAxis: {
           type: 'category',
           data: months,
           axisLabel: { color: '#f8fafc', fontSize: 12, fontWeight: 'bold' }
-        }
-      };
-
-      if (mode === 'pct') {
-        option.legend = {
-          show: true,
-          bottom: 5,
-          left: 'center',
-          icon: 'circle',
-          textStyle: { color: '#cbd5e1', fontSize: 12 },
-          data: [pctLabel]
-        };
-        option.tooltip = {
-          trigger: 'axis',
-          backgroundColor: 'rgba(15, 23, 42, 0.95)',
-          borderColor: theme.border,
-          formatter: (params) => {
-            const idx = params[0].dataIndex;
-            const fmtAct = formattedActuals[idx] || '';
-            const fmtTgt = formattedTargets[idx] || '';
-            let out = `<b>${months[idx]}</b><br/>${pctLabel}: <b>${achievements[idx]}%</b>`;
-            if (fmtAct || fmtTgt) {
-              out += `<br/><span style="color:#94a3b8;font-size:11px;">(${fmtAct} / ${fmtTgt})</span>`;
-            }
-            return out;
-          }
-        };
-        option.yAxis = {
+        },
+        yAxis: {
           type: 'value',
           min: 0,
-          max: 140,
+          max: (val) => Math.max(145, Math.ceil(val.max / 10) * 10),
           axisLabel: { color: '#94a3b8', formatter: (val) => `${Math.round(val)}%` },
           splitLine: { lineStyle: { color: theme.border } }
-        };
-        option.series = [{
-          name: pctLabel,
-          type: 'line',
-          smooth: true,
-          symbol: 'circle',
-          symbolSize: 9,
-          data: achievements,
-          itemStyle: { color: theme.primary },
-          lineStyle: { width: 4, color: theme.primary },
-          areaStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: theme.primary + '73' },
-              { offset: 1, color: theme.primary + '00' }
-            ])
-          },
-          label: {
-            show: true,
-            position: 'top',
-            formatter: (p) => `${Math.round(p.value)}%`,
-            color: theme.primary,
-            fontSize: 15,
-            fontWeight: '900',
-            textShadowColor: theme.bg,
-            textShadowBlur: 4
-          },
-          markLine: {
-            symbol: ['none', 'none'],
-            label: {
-              show: true,
-              position: 'end',
-              formatter: baselineLabel,
-              color: theme.warning,
-              fontSize: 12,
-              fontWeight: 'bold'
-            },
-            lineStyle: {
-              type: 'dashed',
-              color: theme.warning,
-              width: 2
-            },
-            data: [{ yAxis: 100 }]
-          }
-        }];
-      } else if (mode === 'amount') {
-        option.legend = {
-          show: true,
-          bottom: 5,
-          left: 'center',
-          icon: 'circle',
-          textStyle: { color: '#cbd5e1', fontSize: 12 },
-          data: [actualLabel]
-        };
-        option.tooltip = {
-          trigger: 'axis',
-          backgroundColor: 'rgba(15, 23, 42, 0.95)',
-          borderColor: theme.border,
-          formatter: (params) => {
-            const idx = params[0].dataIndex;
-            const fmtAct = formattedActuals[idx] || '';
-            const fmtTgt = formattedTargets[idx] || '';
-            return `<b>${months[idx]}</b><br/>${actualLabel}: <b>${fmtAct}</b><br/><span style="color:#94a3b8;font-size:11px;">(${targetLabel}: ${fmtTgt} | ${achievements[idx]}%)</span>`;
-          }
-        };
-        option.yAxis = {
-          type: 'value',
-          axisLabel: {
-            color: '#94a3b8',
-            formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}`
-          },
-          splitLine: { lineStyle: { color: theme.border } }
-        };
-        option.series = [{
-          name: actualLabel,
-          type: 'bar',
-          data: actualBillions,
-          itemStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: theme.primary },
-              { offset: 1, color: theme.primary + '80' }
-            ]),
-            borderRadius: [6, 6, 0, 0]
-          },
-          label: {
-            show: true,
-            position: 'top',
-            formatter: (p) => formattedActuals[p.dataIndex] || `${curPrefix}${Math.round(p.value)}${magSuffix}`,
-            color: theme.primary,
-            fontSize: 14,
-            fontWeight: '900',
-            textShadowColor: theme.bg,
-            textShadowBlur: 4
-          }
-        }];
-      } else { // both: Dual-Axis!
-        option.legend = {
-          show: true,
-          bottom: 5,
-          left: 'center',
-          icon: 'circle',
-          textStyle: { color: '#cbd5e1', fontSize: 12 },
-          data: [actualLabel, pctLabel]
-        };
-        option.tooltip = {
-          trigger: 'axis',
-          backgroundColor: 'rgba(15, 23, 42, 0.95)',
-          borderColor: theme.border,
-          formatter: (params) => {
-            const idx = params[0].dataIndex;
-            const fmtAct = formattedActuals[idx] || '';
-            const fmtTgt = formattedTargets[idx] || '';
-            return `<b>${months[idx]}</b><br/>${actualLabel}: <b>${fmtAct}</b> (ዕቅድ: ${fmtTgt})<br/>${pctLabel}: <b style="color:${theme.primary};">${achievements[idx]}%</b>`;
-          }
-        };
-        option.yAxis = [
-          {
-            type: 'value',
-            name: actualLabel,
-            nameTextStyle: { color: '#94a3b8', fontSize: 11 },
-            axisLabel: {
-              color: '#94a3b8',
-              formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}`
-            },
-            splitLine: { lineStyle: { color: theme.border } }
-          },
-          {
-            type: 'value',
-            name: pctLabel,
-            nameTextStyle: { color: '#94a3b8', fontSize: 11 },
-            min: 0,
-            max: 140,
-            axisLabel: { color: '#94a3b8', formatter: (val) => `${Math.round(val)}%` },
-            splitLine: { show: false }
-          }
-        ];
-        option.series = [
-          {
-            name: actualLabel,
-            type: 'bar',
-            yAxisIndex: 0,
-            data: actualBillions,
-            itemStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: theme.secondary },
-                { offset: 1, color: theme.secondary + '60' }
-              ]),
-              borderRadius: [6, 6, 0, 0]
-            },
-            label: {
-              show: true,
-              position: 'insideTop',
-              formatter: (p) => formattedActuals[p.dataIndex] || `${curPrefix}${Math.round(p.value)}${magSuffix}`,
-              color: '#ffffff',
-              fontSize: 12,
-              fontWeight: 'bold',
-              textShadowColor: 'rgba(0,0,0,0.8)',
-              textShadowBlur: 4
-            }
-          },
-          {
-            name: pctLabel,
-            type: 'line',
-            yAxisIndex: 1,
-            smooth: true,
-            symbol: 'circle',
-            symbolSize: 8,
-            data: achievements,
-            itemStyle: { color: theme.primary },
-            lineStyle: { width: 3.5, color: theme.primary },
-            label: {
-              show: true,
-              position: 'top',
-              formatter: (p) => `${Math.round(p.value)}%`,
-              color: theme.primary,
-              fontSize: 14,
-              fontWeight: '900',
-              textShadowColor: theme.bg,
-              textShadowBlur: 4
-            },
-            markLine: {
-              symbol: ['none', 'none'],
-              label: {
-                show: true,
-                position: 'end',
-                formatter: '100%',
-                color: theme.warning,
-                fontSize: 11,
-                fontWeight: 'bold'
-              },
-              lineStyle: {
-                type: 'dashed',
-                color: theme.warning,
-                width: 1.5
-              },
-              data: [{ yAxis: 100 }]
-            }
-          }
-        ];
-      }
+        },
+        series: seriesList
+      };
 
       chartInstances.monthlyTrend.setOption(option, { notMerge: true });
     }
@@ -2668,45 +2544,152 @@
       const months = yoyRes && yoyRes.months ? yoyRes.months.map(m => t_db(m)) : [];
       const currentAchievements = yoyRes && yoyRes.currentYearAchievements ? yoyRes.currentYearAchievements.map(a => Math.round(a)) : [];
       const prevAchievements = yoyRes && yoyRes.previousYearAchievements ? yoyRes.previousYearAchievements.map(a => Math.round(a)) : [];
-      const currentActuals = yoyRes && yoyRes.currentYearActualAmounts ? yoyRes.currentYearActualAmounts : [];
-      const prevActuals = yoyRes && yoyRes.previousYearActualAmounts ? yoyRes.previousYearActualAmounts : [];
-      const currentBillions = currentActuals.map(a => Number(a) / 1000000000.0);
-      const prevBillions = prevActuals.map(a => Number(a) / 1000000000.0);
       const currentFmt = yoyRes && yoyRes.currentYearFormattedActuals ? yoyRes.currentYearFormattedActuals : [];
       const prevFmt = yoyRes && yoyRes.previousYearFormattedActuals ? yoyRes.previousYearFormattedActuals : [];
       const currentLabel = yoyRes && yoyRes.currentYearLabel ? yoyRes.currentYearLabel : 'Current Year';
       const prevLabel = yoyRes && yoyRes.previousYearLabel ? yoyRes.previousYearLabel : 'Previous Year';
 
-      const mode = state.chartMetricMode || 'pct';
       const theme = appThemes[state.currentTheme] || appThemes.ocean;
-      const curPrefix = state.currentLang === 'am' ? 'ብር ' : 'ETB ';
-      const magSuffix = state.currentLang === 'am' ? 'ቢ' : 'B';
+      const mode = (state.chartMetricModes && state.chartMetricModes.yoyTrend) || state.chartMetricMode || 'pct';
+      const showWicks = (mode === 'amount' || mode === 'both' || mode === 'wicks');
 
-      let yAxisConfig;
-      let prevSeriesData;
-      let currSeriesData;
-
-      if (mode === 'amount') {
-        prevSeriesData = prevBillions;
-        currSeriesData = currentBillions;
-        yAxisConfig = {
-          type: 'value',
-          axisLabel: {
-            color: '#94a3b8',
-            formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}`
+      const prevSeries = {
+        name: prevLabel,
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 8,
+        data: prevAchievements,
+        itemStyle: { color: theme.secondary || '#8b5cf6' },
+        lineStyle: {
+          width: 3,
+          color: theme.secondary || '#8b5cf6',
+          shadowColor: 'rgba(139, 92, 246, 0.3)',
+          shadowBlur: 10,
+          shadowOffsetY: 4
+        },
+        label: {
+          show: true,
+          position: 'bottom',
+          formatter: (p) => {
+            const val = p.value;
+            return (val != null && val > 0) ? `${val}%` : '';
           },
-          splitLine: { lineStyle: { color: theme.border } }
-        };
-      } else {
-        prevSeriesData = prevAchievements;
-        currSeriesData = currentAchievements;
-        yAxisConfig = {
-          type: 'value',
-          min: 0,
-          max: (val) => Math.max(140, Math.ceil(val.max / 10) * 10),
-          axisLabel: { color: '#94a3b8', formatter: (val) => `${Math.round(val)}%` },
-          splitLine: { lineStyle: { color: theme.border } }
-        };
+          color: '#f8fafc',
+          fontSize: 12,
+          fontWeight: 'bold',
+          backgroundColor: 'rgba(15, 23, 42, 0.8)',
+          borderColor: theme.secondary || '#8b5cf6',
+          borderWidth: 1,
+          borderRadius: 4,
+          padding: [2, 4]
+        }
+      };
+
+      const currSeries = {
+        name: currentLabel,
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 10,
+        z: 5,
+        data: currentAchievements,
+        itemStyle: { color: theme.primary },
+        lineStyle: {
+          width: 4,
+          color: theme.primary,
+          shadowColor: theme.primary,
+          shadowBlur: 15,
+          shadowOffsetY: 5
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: theme.primary + '80' },
+            { offset: 1, color: theme.primary + '00' }
+          ])
+        },
+        label: {
+          show: true,
+          position: showWicks ? 'bottom' : 'top',
+          distance: showWicks ? 8 : 5,
+          formatter: (p) => {
+            const val = p.value;
+            return (val != null && val > 0) ? `${val}%` : '0%';
+          },
+          color: '#ffffff',
+          fontSize: 13,
+          fontWeight: 'bold',
+          backgroundColor: showWicks ? 'transparent' : theme.primary,
+          borderColor: showWicks ? 'transparent' : theme.primary,
+          borderWidth: showWicks ? 0 : 1,
+          borderRadius: 4,
+          padding: [2, 6],
+          shadowColor: 'rgba(0,0,0,0.5)',
+          shadowBlur: 4,
+          textShadowColor: showWicks ? theme.bg : 'transparent',
+          textShadowBlur: showWicks ? 4 : 0
+        },
+        markLine: {
+          symbol: ['none', 'none'],
+          label: { show: false },
+          lineStyle: {
+            type: 'dashed',
+            color: theme.warning,
+            width: 2
+          },
+          data: [{ yAxis: 100 }]
+        }
+      };
+
+      const seriesList = [prevSeries, currSeries];
+
+      if (showWicks) {
+        // Invisible base spacer
+        seriesList.push({
+          name: 'YoYWickBase',
+          type: 'bar',
+          stack: 'yoyWickStack',
+          barWidth: 2,
+          z: 2,
+          silent: true,
+          data: currentAchievements.map((v, i) => (v > 0 && currentFmt[i]) ? v : null),
+          itemStyle: { opacity: 0 }
+        });
+
+        // Slender 2px luminous wick stem
+        seriesList.push({
+          name: currentLabel + (state.currentLang === 'am' ? ' (በብር)' : ' (ETB)'),
+          type: 'bar',
+          stack: 'yoyWickStack',
+          barWidth: 2,
+          z: 3,
+          data: currentAchievements.map((v, i) => (v > 0 && currentFmt[i]) ? 15 : null),
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: theme.primary },
+              { offset: 1, color: theme.primary + '33' }
+            ]),
+            shadowColor: theme.primary,
+            shadowBlur: 6,
+            borderRadius: [2, 2, 0, 0]
+          },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            formatter: (p) => currentFmt[p.dataIndex] || '',
+            color: '#ffffff',
+            fontSize: 12,
+            fontWeight: 'bold',
+            backgroundColor: 'rgba(15, 23, 42, 0.92)',
+            borderColor: theme.primary,
+            borderWidth: 1,
+            borderRadius: 6,
+            padding: [3, 7],
+            shadowColor: 'rgba(0,0,0,0.7)',
+            shadowBlur: 8
+          }
+        });
       }
 
       const option = {
@@ -2738,23 +2721,16 @@
           borderColor: theme.border,
           textStyle: { color: '#f8fafc' },
           formatter: (params) => {
+            if (!params || params.length === 0) return '';
             const idx = params[0].dataIndex;
             const pFmt = prevFmt[idx] || '';
             const cFmt = currentFmt[idx] || '';
             const pPct = prevAchievements[idx] != null ? `${prevAchievements[idx]}%` : '-';
             const cPct = currentAchievements[idx] != null ? `${currentAchievements[idx]}%` : '-';
 
-            let out = `<b>${months[idx]}</b><br/>`;
-            if (mode === 'pct') {
-              out += `<span style="color:${theme.secondary || '#8b5cf6'}">${prevLabel}:</span> <b>${pPct}</b> <span style="color:#94a3b8;font-size:11px;">(${pFmt})</span><br/>`;
-              out += `<span style="color:${theme.primary}">${currentLabel}:</span> <b>${cPct}</b> <span style="color:#94a3b8;font-size:11px;">(${cFmt})</span>`;
-            } else if (mode === 'amount') {
-              out += `<span style="color:${theme.secondary || '#8b5cf6'}">${prevLabel}:</span> <b>${pFmt}</b> <span style="color:#94a3b8;font-size:11px;">(${pPct})</span><br/>`;
-              out += `<span style="color:${theme.primary}">${currentLabel}:</span> <b>${cFmt}</b> <span style="color:#94a3b8;font-size:11px;">(${cPct})</span>`;
-            } else {
-              out += `<span style="color:${theme.secondary || '#8b5cf6'}">${prevLabel}:</span> <b>${pPct} (${pFmt})</b><br/>`;
-              out += `<span style="color:${theme.primary}">${currentLabel}:</span> <b>${cPct} (${cFmt})</b>`;
-            }
+            let out = `<div style="font-weight:700;font-size:13px;color:#f8fafc;margin-bottom:4px;border-bottom:1px solid rgba(148,163,184,0.25);padding-bottom:3px;">${months[idx]}</div>`;
+            out += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:2px;"><span style="color:${theme.secondary || '#8b5cf6'}">${prevLabel}:</span><b>${pPct}</b> ${pFmt ? `<span style="color:#94a3b8;font-size:11px;">(${pFmt})</span>` : ''}</div>`;
+            out += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:2px;"><span style="color:${theme.primary}">${currentLabel}:</span><b>${cPct}</b> ${cFmt ? `<span style="color:#38bdf8;font-size:11px;">(${cFmt})</span>` : ''}</div>`;
             return out;
           }
         },
@@ -2764,97 +2740,14 @@
           data: months,
           axisLabel: { color: '#f8fafc', fontSize: 12, fontWeight: 'bold' }
         },
-        yAxis: yAxisConfig,
-        series: [
-          {
-            name: prevLabel,
-            type: 'line',
-            smooth: true,
-            symbol: 'circle',
-            symbolSize: 8,
-            data: prevSeriesData,
-            itemStyle: { color: theme.secondary || '#8b5cf6' },
-            lineStyle: {
-              width: 3,
-              color: theme.secondary || '#8b5cf6',
-              shadowColor: 'rgba(139, 92, 246, 0.3)',
-              shadowBlur: 10,
-              shadowOffsetY: 4
-            },
-            label: {
-              show: true,
-              position: 'bottom',
-              formatter: (p) => {
-                const idx = p.dataIndex;
-                const pF = prevFmt[idx] || '';
-                const pP = prevAchievements[idx] != null ? `${prevAchievements[idx]}%` : '';
-                if (mode === 'pct') return pP;
-                if (mode === 'amount') return pF || `${curPrefix}${Math.round(p.value)}${magSuffix}`;
-                return `${pP} (${pF})`;
-              },
-              color: '#f8fafc',
-              fontSize: 12,
-              fontWeight: 'bold',
-              backgroundColor: 'rgba(15, 23, 42, 0.8)',
-              borderColor: theme.secondary || '#8b5cf6',
-              borderWidth: 1,
-              borderRadius: 4,
-              padding: [2, 4]
-            }
-          },
-          {
-            name: currentLabel,
-            type: 'line',
-            smooth: true,
-            symbol: 'circle',
-            symbolSize: 10,
-            data: currSeriesData,
-            itemStyle: { color: theme.primary },
-            lineStyle: {
-              width: 4,
-              color: theme.primary,
-              shadowColor: theme.primary,
-              shadowBlur: 15,
-              shadowOffsetY: 5
-            },
-            areaStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: theme.primary + '80' },
-                { offset: 1, color: theme.primary + '00' }
-              ])
-            },
-            label: {
-              show: true,
-              position: 'top',
-              formatter: (p) => {
-                const idx = p.dataIndex;
-                const cF = currentFmt[idx] || '';
-                const cP = currentAchievements[idx] != null ? `${currentAchievements[idx]}%` : '';
-                if (mode === 'pct') return cP;
-                if (mode === 'amount') return cF || `${curPrefix}${Math.round(p.value)}${magSuffix}`;
-                return `${cP} (${cF})`;
-              },
-              color: '#ffffff',
-              fontSize: 13,
-              fontWeight: 'bold',
-              backgroundColor: theme.primary,
-              borderRadius: 4,
-              padding: [2, 6],
-              shadowColor: 'rgba(0,0,0,0.5)',
-              shadowBlur: 4
-            },
-            markLine: mode === 'amount' ? undefined : {
-              symbol: ['none', 'none'],
-              label: { show: false },
-              lineStyle: {
-                type: 'dashed',
-                color: theme.warning,
-                width: 2
-              },
-              data: [{ yAxis: 100 }]
-            }
-          }
-        ]
+        yAxis: {
+          type: 'value',
+          min: 0,
+          max: (val) => Math.max(145, Math.ceil(val.max / 10) * 10),
+          axisLabel: { color: '#94a3b8', formatter: (val) => `${Math.round(val)}%` },
+          splitLine: { lineStyle: { color: theme.border } }
+        },
+        series: seriesList
       };
 
       chartInstances.yoyTrend.setOption(option, { notMerge: true });
@@ -2868,98 +2761,40 @@
 
       const rawBranches = branchRes && branchRes.branches ? branchRes.branches.map(b => t_db(b)) : [];
       const rawScores = branchRes && branchRes.scores ? branchRes.scores : [];
-      const rawActuals = branchRes && branchRes.actualAmounts ? branchRes.actualAmounts : [];
-      const rawTargets = branchRes && branchRes.targetAmounts ? branchRes.targetAmounts : [];
       const rawFmtActuals = branchRes && branchRes.formattedActuals ? branchRes.formattedActuals : [];
       const rawFmtTargets = branchRes && branchRes.formattedTargets ? branchRes.formattedTargets : [];
 
-      const mode = state.chartMetricMode || 'pct';
       const theme = appThemes[state.currentTheme] || appThemes.ocean;
-      const curPrefix = state.currentLang === 'am' ? 'ብር ' : 'ETB ';
-      const magSuffix = state.currentLang === 'am' ? 'ቢ' : 'B';
 
-      // Pair and sort
+      // Pair and sort by percentage score ascending
       const paired = rawBranches.map((b, i) => ({
         branch: b,
         score: rawScores[i] != null ? Math.round(rawScores[i]) : 0,
-        actualAmount: rawActuals[i] != null ? Number(rawActuals[i]) : 0,
-        targetAmount: rawTargets[i] != null ? Number(rawTargets[i]) : 0,
-        actualBillions: rawActuals[i] != null ? (Number(rawActuals[i]) / 1000000000.0) : 0,
         formattedActual: rawFmtActuals[i] || '',
         formattedTarget: rawFmtTargets[i] || ''
       }));
 
-      if (mode === 'amount') {
-        paired.sort((a, b) => a.actualAmount - b.actualAmount);
-      } else {
-        paired.sort((a, b) => a.score - b.score);
-      }
+      paired.sort((a, b) => a.score - b.score);
 
       const branches = paired.map(p => p.branch);
       const isAnnual = state.filters.calculationMode === 'AnnualTarget';
 
-      let seriesName = isAnnual
-        ? (state.currentLang === 'am' ? 'የዓመታዊ ዕቅድ ድርሻ' : 'Annual Quota Share')
-        : (state.currentLang === 'am' ? 'የዕስከ ዛሬ አፈፃፀም' : 'To-Date Achievement');
-
-      if (mode === 'pct') {
-        seriesName += ' (%)';
-      } else if (mode === 'amount') {
-        seriesName = state.currentLang === 'am' ? 'የተሰበሰበ ገቢ (በብር)' : 'Collection Amount (ETB)';
-      } else {
-        seriesName += ' (% & በብር)';
-      }
+      const seriesName = isAnnual
+        ? (state.currentLang === 'am' ? 'የዓመታዊ ዕቅድ ድርሻ (%)' : 'Annual Quota Share (%)')
+        : (state.currentLang === 'am' ? 'የዕስከ ዛሬ አፈፃፀም (%)' : 'To-Date Achievement (%)');
 
       const markLineText = isAnnual
         ? (state.currentLang === 'am' ? '100% (ዓመታዊ ግብ)' : '100% (Annual Target)')
         : (state.currentLang === 'am' ? '100% (የዕስከ ዛሬ ዕቅድ)' : '100% (To-Date Target)');
 
-      function barColor(item) {
-        if (mode === 'amount') return theme.primary;
-        return item.score >= 100 ? theme.primary : theme.secondary;
-      }
-
-      let seriesData;
-      let xAxisConfig;
-
-      if (mode === 'amount') {
-        seriesData = paired.map(p => ({
-          value: p.actualBillions,
-          itemStyle: {
-            color: barColor(p),
-            borderRadius: [0, 8, 8, 0]
-          },
-          pairedInfo: p
-        }));
-        xAxisConfig = {
-          type: 'value',
-          axisLabel: {
-            color: '#94a3b8',
-            formatter: (val) => `${curPrefix}${Math.round(val)}${magSuffix}`
-          },
-          splitLine: { lineStyle: { color: theme.border, type: 'dashed' } },
-          axisLine: { show: false },
-          axisTick: { show: false }
-        };
-      } else {
-        seriesData = paired.map(p => ({
-          value: p.score,
-          itemStyle: {
-            color: barColor(p),
-            borderRadius: [0, 8, 8, 0]
-          },
-          pairedInfo: p
-        }));
-        xAxisConfig = {
-          type: 'value',
-          min: 0,
-          max: (val) => Math.max(120, Math.ceil(val.max / 10) * 10),
-          axisLabel: { color: '#94a3b8', formatter: (val) => `${Math.round(val)}%` },
-          splitLine: { lineStyle: { color: theme.border, type: 'dashed' } },
-          axisLine: { show: false },
-          axisTick: { show: false }
-        };
-      }
+      const seriesData = paired.map(p => ({
+        value: p.score,
+        itemStyle: {
+          color: p.score >= 100 ? theme.primary : theme.secondary,
+          borderRadius: [0, 8, 8, 0]
+        },
+        pairedInfo: p
+      }));
 
       const option = {
         backgroundColor: 'transparent',
@@ -2993,19 +2828,27 @@
             const p = params[0];
             const info = paired[p.dataIndex];
             if (!info) return '';
-            let out = `<b>${info.branch}</b><br/>`;
-            if (mode === 'pct') {
-              out += `<b>${info.score}%</b><br/><span style="color:#94a3b8;font-size:11px;">(${info.formattedActual} / ${info.formattedTarget})</span>`;
-            } else if (mode === 'amount') {
-              out += `<b>${info.formattedActual}</b><br/><span style="color:#94a3b8;font-size:11px;">(ዕቅድ: ${info.formattedTarget} | ${info.score}%)</span>`;
-            } else {
-              out += `<b>${info.score}%</b> | <b>${info.formattedActual}</b><br/><span style="color:#94a3b8;font-size:11px;">(ዕቅድ: ${info.formattedTarget})</span>`;
+            let out = `<div style="font-weight:700;font-size:13px;color:#f8fafc;margin-bottom:4px;border-bottom:1px solid rgba(148,163,184,0.25);padding-bottom:3px;">${info.branch}</div>`;
+            out += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:2px;"><span style="color:#94a3b8;">${seriesName}:</span><b style="color:${info.score >= 100 ? '#10b981' : '#38bdf8'};">${info.score}%</b></div>`;
+            if (info.formattedActual) {
+              out += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#94a3b8;"><span>${state.currentLang === 'am' ? 'የተሰበሰበ' : 'Actual'}:</span><b>${info.formattedActual}</b></div>`;
+            }
+            if (info.formattedTarget) {
+              out += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#64748b;"><span>${state.currentLang === 'am' ? 'ዕቅድ' : 'Target'}:</span><b>${info.formattedTarget}</b></div>`;
             }
             return out;
           }
         },
         grid: { left: '20%', right: '12%', bottom: '50px', top: '75px', containLabel: true },
-        xAxis: xAxisConfig,
+        xAxis: {
+          type: 'value',
+          min: 0,
+          max: (val) => Math.max(120, Math.ceil(val.max / 10) * 10),
+          axisLabel: { color: '#94a3b8', formatter: (val) => `${Math.round(val)}%` },
+          splitLine: { lineStyle: { color: theme.border, type: 'dashed' } },
+          axisLine: { show: false },
+          axisTick: { show: false }
+        },
         yAxis: {
           type: 'category',
           data: branches,
@@ -3025,23 +2868,17 @@
           label: {
             show: true,
             position: 'right',
-            formatter: (p) => {
-              const info = paired[p.dataIndex];
-              if (!info) return '';
-              if (mode === 'pct') return `${info.score}%`;
-              if (mode === 'amount') return info.formattedActual || `${curPrefix}${Math.round(p.value)}${magSuffix}`;
-              return `${info.score}% (${info.formattedActual})`;
-            },
+            formatter: (p) => `${p.value}%`,
             color: '#f1f5f9',
             fontSize: 14,
             fontWeight: 'bold'
           },
-          markLine: mode === 'amount' ? undefined : {
+          markLine: {
             silent: true,
-            symbol: 'none',
+            symbol: ['none', 'none'],
             lineStyle: {
-              color: theme.warning,
               type: 'dashed',
+              color: theme.warning,
               width: 2
             },
             label: {

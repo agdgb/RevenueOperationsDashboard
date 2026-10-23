@@ -122,7 +122,7 @@ Here is the complete and cleaned schema currently supported:
 | :--- | :--- | :--- | :--- |
 | `DefaultLanguage` | string | `"am"`, `"en"` | Primary language loaded on page startup. |
 | `KpiCalculationMode` | string | `"ToDateTarget"`, `"AnnualTarget"` | Primary calculation baseline for top KPI cards and chart targets. |
-| `DefaultChartMetricMode` | string | `"pct"`, `"amount"`, `"both"` | Default metric display mode for charts: percentage (%), ETB amount, or both combined. |
+| `DefaultChartMetricMode` | string | `"pct"`, `"wicks"` | Default metric display mode for the time-series curves (Slide 1 Monthly Trend & Slide 3 YoY Comparison). |
 | `DefaultTheme` | string | `"ocean"`, `"emerald"`, `"national"`, `"forest"`, `"sunset"`, `"grayscale"` | Visual color theme for backgrounds, bars, curves, and cards. |
 
 #### Calculation Mode Detail
@@ -130,9 +130,11 @@ Here is the complete and cleaned schema currently supported:
 - `"AnnualTarget"`: Evaluates current actual collections against the full 12-month annual quota (የሙሉ ዓመት ዕቅድ).
 
 #### Chart Metric Mode Detail
-- `"pct"`: Shows whole percentages (e.g. `104%`), with 100% target baseline lines.
-- `"amount"`: Formatted whole ETB amounts with HumanNumbers (e.g. `ብር 25ቢ`, `ብር 700ሚ`, `ETB 25B`).
-- `"both"`: Combined display (e.g. `ብር 25ቢ (104%)`, or dual-axis bars and lines).
+- Slide 0 (**Tax Type Performance**) natively renders side-by-side Plan vs Actual comparison bars in **Currency (ETB)** formatted with 0-decimal HumanNumbers (e.g., `ብር 25ቢ`).
+- Slide 2 (**Branch Office Achievement**) natively renders horizontal branch ranking bars in **Achievement Percentage (%)** sorted against the 100% target dashed baseline.
+- Slides 1 & 3 (**Monthly Trend** and **YoY Monthly Trend**) are founded on the smooth **Achievement Percentage (%)** curve and extend with optional **Wicks**:
+  - `"pct"`: Clean percentage curve (`0% - 140%` scale) with 100% target baseline line and achievement labels above markers.
+  - `"wicks"` (or `"amount"` / `"both"`): Retains the smooth percentage curve while sprouting slender luminous vertical wicks rising 15 units above active data points, capped with dark glassmorphic badges displaying formatted ETB collection values (`ብር ...`). Line percentage labels shift cleanly below markers to prevent overlap.
 
 ---
 
@@ -198,14 +200,14 @@ Each entry in `Slides` has the following properties:
 
 ## 4. Practical Configuration Recipes
 
-### Recipe 1: Boardroom Executive Review (Full Year Quota & Both Metrics)
-To display annual targets with both currency amounts and achievement percentages in the Emerald theme:
+### Recipe 1: Boardroom Executive Review (Full Year Quota & Wicks Display)
+To display annual targets with luminous currency wicks extending above achievement percentage curves in the Emerald theme:
 
 ```json
   "DashboardSettings": {
     "DefaultLanguage": "am",
     "KpiCalculationMode": "AnnualTarget",
-    "DefaultChartMetricMode": "both",
+    "DefaultChartMetricMode": "wicks",
     "DefaultTheme": "emerald",
     "Carousel": {
       "AutoPlay": true,
@@ -214,14 +216,14 @@ To display annual targets with both currency amounts and achievement percentages
   }
 ```
 
-### Recipe 2: Daily Operations Center (To-Date Targets & Pure Currency)
-To track daily progress against elapsed days with actual ETB revenue amounts:
+### Recipe 2: Daily Operations Center (To-Date Targets & Pure Percentage Curves)
+To track to-date quotas with clean percentage curves and 100% baseline:
 
 ```json
   "DashboardSettings": {
     "DefaultLanguage": "am",
     "KpiCalculationMode": "ToDateTarget",
-    "DefaultChartMetricMode": "amount",
+    "DefaultChartMetricMode": "pct",
     "DefaultTheme": "ocean",
     "Carousel": {
       "AutoPlay": true,
