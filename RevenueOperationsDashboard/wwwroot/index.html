@@ -89,8 +89,8 @@
       grid-area: 1 / 1;
       opacity: 0;
       visibility: hidden;
-      transform: scale(0.98);
-      transition: opacity 0.5s ease-in-out, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+      transform: scale(0.99);
+      transition: opacity 0.18s ease-out, transform 0.22s cubic-bezier(0.2, 0, 0, 1), visibility 0.18s;
       pointer-events: none;
       display: flex !important;
     }
@@ -105,7 +105,7 @@
     .slide-hidden {
       opacity: 0 !important;
       visibility: hidden !important;
-      transform: scale(0.98) !important;
+      transform: scale(0.99) !important;
       pointer-events: none !important;
     }
 
@@ -1943,11 +1943,12 @@
       if (slide.id === 'slide-0') {
         const taxDom = document.getElementById('chartTaxType');
         if (taxDom) {
+          if (replayAnimation && chartInstances.taxType) {
+            chartInstances.taxType.dispose();
+            chartInstances.taxType = null;
+          }
           if (!chartInstances.taxType) {
             chartInstances.taxType = echarts.init(taxDom, 'dark');
-          }
-          if (replayAnimation) {
-            chartInstances.taxType.clear();
           }
           chartInstances.taxType.resize();
           renderTaxTypeChart(resData, slide);
@@ -1955,11 +1956,12 @@
       } else if (slide.id === 'slide-1') {
         const trendDom = document.getElementById('chartMonthlyTrend');
         if (trendDom) {
+          if (replayAnimation && chartInstances.monthlyTrend) {
+            chartInstances.monthlyTrend.dispose();
+            chartInstances.monthlyTrend = null;
+          }
           if (!chartInstances.monthlyTrend) {
             chartInstances.monthlyTrend = echarts.init(trendDom, 'dark');
-          }
-          if (replayAnimation) {
-            chartInstances.monthlyTrend.clear();
           }
           chartInstances.monthlyTrend.resize();
           renderMonthlyTrendChart(resData, slide);
@@ -1967,11 +1969,12 @@
       } else if (slide.id === 'slide-2') {
         const branchDom = document.getElementById('chartBranchVolume');
         if (branchDom) {
+          if (replayAnimation && chartInstances.branchVolume) {
+            chartInstances.branchVolume.dispose();
+            chartInstances.branchVolume = null;
+          }
           if (!chartInstances.branchVolume) {
             chartInstances.branchVolume = echarts.init(branchDom, 'dark');
-          }
-          if (replayAnimation) {
-            chartInstances.branchVolume.clear();
           }
           chartInstances.branchVolume.resize();
           renderBranchVolumeChart(resData, slide);
@@ -1979,11 +1982,12 @@
       } else if (slide.id === 'slide-3') {
         const yoyDom = document.getElementById('chartYoYMonthlyTrend');
         if (yoyDom) {
+          if (replayAnimation && chartInstances.yoyTrend) {
+            chartInstances.yoyTrend.dispose();
+            chartInstances.yoyTrend = null;
+          }
           if (!chartInstances.yoyTrend) {
             chartInstances.yoyTrend = echarts.init(yoyDom, 'dark');
-          }
-          if (replayAnimation) {
-            chartInstances.yoyTrend.clear();
           }
           chartInstances.yoyTrend.resize();
           renderYoYMonthlyTrendChart(resData, slide);
@@ -1991,11 +1995,12 @@
       } else if (slide.id === 'slide-4') {
         const dailyDom = document.getElementById('chartDailyTrend');
         if (dailyDom) {
+          if (replayAnimation && chartInstances.dailyTrend) {
+            chartInstances.dailyTrend.dispose();
+            chartInstances.dailyTrend = null;
+          }
           if (!chartInstances.dailyTrend) {
             chartInstances.dailyTrend = echarts.init(dailyDom, 'dark');
-          }
-          if (replayAnimation) {
-            chartInstances.dailyTrend.clear();
           }
           chartInstances.dailyTrend.resize();
           renderDailyTrendChart(resData, slide);
@@ -2047,8 +2052,10 @@
       const option = {
         backgroundColor: 'transparent',
         animation: true,
-        animationDuration: 1000,
+        animationDuration: 850,
+        animationDurationUpdate: 850,
         animationEasing: 'cubicOut',
+        animationEasingUpdate: 'cubicOut',
         title: {
           text: state.currentLang === 'am' && slideConfig && slideConfig.titleAm ? slideConfig.titleAm : (slideConfig && slideConfig.title ? slideConfig.title : t_ui('Daily Revenue Trend')),
           subtext: state.currentLang === 'am' && slideConfig && slideConfig.subtitleAm ? slideConfig.subtitleAm : (slideConfig && slideConfig.subtitle ? slideConfig.subtitle : t_ui('Daily revenue performance trajectory')),
@@ -2181,6 +2188,9 @@
             symbol: 'circle',
             symbolSize: 6,
             showSymbol: dates.length <= 40,
+            animationDelay: function (idx) {
+              return idx * 25;
+            },
             emphasis: {
               focus: 'series',
               scale: 1.5,
@@ -2213,6 +2223,9 @@
             type: 'line',
             smooth: false,
             symbol: 'none',
+            animationDelay: function (idx) {
+              return idx * 25;
+            },
             data: targets,
             itemStyle: { color: '#f59e0b' },
             lineStyle: {
@@ -2310,8 +2323,8 @@
       const option = {
         backgroundColor: 'transparent',
         animation: true,
-        animationDuration: 1200,
-        animationDurationUpdate: 1200,
+        animationDuration: 850,
+        animationDurationUpdate: 850,
         animationEasing: 'cubicOut',
         animationEasingUpdate: 'cubicOut',
         title: {
@@ -2374,6 +2387,9 @@
             name: planSeriesName,
             type: 'bar',
             data: targetData,
+            animationDelay: function (idx) {
+              return idx * 60;
+            },
             itemStyle: { color: theme.primary, borderRadius: [4, 4, 0, 0] },
             label: {
               show: true,
@@ -2396,6 +2412,9 @@
             name: actualSeriesName,
             type: 'bar',
             data: actualData,
+            animationDelay: function (idx) {
+              return idx * 60 + 30;
+            },
             itemStyle: { color: theme.secondary, borderRadius: [4, 4, 0, 0] },
             label: {
               show: true,
@@ -2451,6 +2470,9 @@
         symbolSize: 9,
         z: 5,
         data: achievements,
+        animationDelay: function (idx) {
+          return idx * 75;
+        },
         itemStyle: { color: theme.primary },
         lineStyle: { width: 4, color: theme.primary },
         areaStyle: {
@@ -2504,6 +2526,9 @@
           barWidth: 2,
           z: 2,
           silent: true,
+          animationDelay: function (idx) {
+            return idx * 75 + 100;
+          },
           data: achievements.map((v, i) => (v > 0 && formattedActuals[i]) ? v : null),
           itemStyle: { opacity: 0 }
         });
@@ -2515,6 +2540,9 @@
           stack: 'monthlyWickStack',
           barWidth: 2,
           z: 3,
+          animationDelay: function (idx) {
+            return idx * 75 + 100;
+          },
           data: achievements.map((v, i) => (v > 0 && formattedActuals[i]) ? 15 : null),
           itemStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -2547,8 +2575,8 @@
       const option = {
         backgroundColor: 'transparent',
         animation: true,
-        animationDuration: 1200,
-        animationDurationUpdate: 1200,
+        animationDuration: 850,
+        animationDurationUpdate: 850,
         animationEasing: 'cubicOut',
         animationEasingUpdate: 'cubicOut',
         title: {
@@ -2634,6 +2662,9 @@
         symbol: 'circle',
         symbolSize: 8,
         data: prevAchievements,
+        animationDelay: function (idx) {
+          return idx * 75;
+        },
         itemStyle: { color: theme.secondary || '#8b5cf6' },
         lineStyle: {
           width: 3,
@@ -2668,6 +2699,9 @@
         symbolSize: 10,
         z: 5,
         data: currentAchievements,
+        animationDelay: function (idx) {
+          return idx * 75;
+        },
         itemStyle: { color: theme.primary },
         lineStyle: {
           width: 4,
@@ -2726,6 +2760,9 @@
           barWidth: 2,
           z: 2,
           silent: true,
+          animationDelay: function (idx) {
+            return idx * 75 + 100;
+          },
           data: currentAchievements.map((v, i) => (v > 0 && currentFmt[i]) ? v : null),
           itemStyle: { opacity: 0 }
         });
@@ -2737,6 +2774,9 @@
           stack: 'yoyWickStack',
           barWidth: 2,
           z: 3,
+          animationDelay: function (idx) {
+            return idx * 75 + 100;
+          },
           data: currentAchievements.map((v, i) => (v > 0 && currentFmt[i]) ? 15 : null),
           itemStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -2769,8 +2809,8 @@
       const option = {
         backgroundColor: 'transparent',
         animation: true,
-        animationDuration: 1200,
-        animationDurationUpdate: 1200,
+        animationDuration: 850,
+        animationDurationUpdate: 850,
         animationEasing: 'cubicOut',
         animationEasingUpdate: 'cubicOut',
         title: {
@@ -2873,8 +2913,8 @@
       const option = {
         backgroundColor: 'transparent',
         animation: true,
-        animationDuration: 1200,
-        animationDurationUpdate: 1200,
+        animationDuration: 850,
+        animationDurationUpdate: 850,
         animationEasing: 'cubicOut',
         animationEasingUpdate: 'cubicOut',
         title: {
@@ -2938,6 +2978,9 @@
           name: seriesName,
           type: 'bar',
           barCategoryGap: '40%',
+          animationDelay: function (idx) {
+            return idx * 45;
+          },
           data: seriesData,
           label: {
             show: true,
