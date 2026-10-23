@@ -1509,7 +1509,7 @@
       localStorage.setItem('dashboard_metric_' + chartKey, mode);
       updateSlideMetricToggleUI(chartKey);
       if (state.activeSlideData && state.activeSlideData[state.currentSlide]) {
-        renderActiveSlideChart(state.currentSlide, state.activeSlideData[state.currentSlide]);
+        renderActiveSlideChart(state.currentSlide, state.activeSlideData[state.currentSlide], false);
       }
     }
 
@@ -1522,7 +1522,7 @@
       }
       updateAllMetricTogglesUI();
       if (state.activeSlideData && state.activeSlideData[state.currentSlide]) {
-        renderActiveSlideChart(state.currentSlide, state.activeSlideData[state.currentSlide]);
+        renderActiveSlideChart(state.currentSlide, state.activeSlideData[state.currentSlide], false);
       }
     }
 
@@ -1883,7 +1883,7 @@
       await applyFilters();
     }
 
-    // Eagerly preload and pre-render all slides to eliminate black empty container delays
+    // Eagerly preload slide data in background to eliminate black empty container delays
     async function preloadAllSlides() {
       if (!state.activeSlides || state.activeSlides.length === 0) return;
       const query = buildSlideQuery();
@@ -1895,8 +1895,9 @@
             const resData = await fetch(`${slide.apiEndpoint}?${query}`).then(r => r.json());
             state.activeSlideData[idx] = resData;
           }
-          // Pre-render into DOM container so it is fully drawn before slide transition!
-          renderActiveSlideChart(idx, state.activeSlideData[idx]);
+          // Note: We deliberately do NOT call renderActiveSlideChart here.
+          // Pre-rendering in the dark causes ECharts to finish its entrance animation invisibly.
+          // Keeping the data in memory ensures 0ms instant render with full entrance animation on slide arrival.
         } catch (err) {
           console.warn(`Failed to preload slide ${idx} (${slide.id}):`, err);
         }
@@ -1911,9 +1912,9 @@
         const slide = state.activeSlides[index];
         if (!slide) return;
 
-        // If already in cache, render synchronously immediately!
+        // If already in cache, render synchronously immediately with animation replay!
         if (state.activeSlideData && state.activeSlideData[index]) {
-          renderActiveSlideChart(index, state.activeSlideData[index]);
+          renderActiveSlideChart(index, state.activeSlideData[index], true);
           return;
         }
 
@@ -1922,7 +1923,7 @@
         if (!state.activeSlideData) state.activeSlideData = {};
         state.activeSlideData[index] = resData;
 
-        renderActiveSlideChart(index, resData);
+        renderActiveSlideChart(index, resData, true);
 
         // Update fiscal year text indicator
         const trendFiscalYearLabel = document.getElementById('trendFiscalYearLabel');
@@ -1935,7 +1936,7 @@
       }
     }
 
-    function renderActiveSlideChart(index, resData) {
+    function renderActiveSlideChart(index, resData, replayAnimation = false) {
       const slide = state.activeSlides[index];
       if (!slide || !resData) return;
 
@@ -1944,6 +1945,9 @@
         if (taxDom) {
           if (!chartInstances.taxType) {
             chartInstances.taxType = echarts.init(taxDom, 'dark');
+          }
+          if (replayAnimation) {
+            chartInstances.taxType.clear();
           }
           chartInstances.taxType.resize();
           renderTaxTypeChart(resData, slide);
@@ -1954,6 +1958,9 @@
           if (!chartInstances.monthlyTrend) {
             chartInstances.monthlyTrend = echarts.init(trendDom, 'dark');
           }
+          if (replayAnimation) {
+            chartInstances.monthlyTrend.clear();
+          }
           chartInstances.monthlyTrend.resize();
           renderMonthlyTrendChart(resData, slide);
         }
@@ -1962,6 +1969,9 @@
         if (branchDom) {
           if (!chartInstances.branchVolume) {
             chartInstances.branchVolume = echarts.init(branchDom, 'dark');
+          }
+          if (replayAnimation) {
+            chartInstances.branchVolume.clear();
           }
           chartInstances.branchVolume.resize();
           renderBranchVolumeChart(resData, slide);
@@ -1972,6 +1982,9 @@
           if (!chartInstances.yoyTrend) {
             chartInstances.yoyTrend = echarts.init(yoyDom, 'dark');
           }
+          if (replayAnimation) {
+            chartInstances.yoyTrend.clear();
+          }
           chartInstances.yoyTrend.resize();
           renderYoYMonthlyTrendChart(resData, slide);
         }
@@ -1980,6 +1993,9 @@
         if (dailyDom) {
           if (!chartInstances.dailyTrend) {
             chartInstances.dailyTrend = echarts.init(dailyDom, 'dark');
+          }
+          if (replayAnimation) {
+            chartInstances.dailyTrend.clear();
           }
           chartInstances.dailyTrend.resize();
           renderDailyTrendChart(resData, slide);
@@ -3055,12 +3071,7 @@
       if (index < 0 || index >= state.slideCount) return;
       state.currentSlide = index;
 
-      // INSTANT RENDER: If slide data is already preloaded, render it synchronously before visibility transition!
-      if (state.activeSlideData && state.activeSlideData[index]) {
-        renderActiveSlideChart(index, state.activeSlideData[index]);
-      }
-
-      // Update slide visibility
+      // 1. Update slide visibility first so the target slide is active and measurable
       state.activeSlides.forEach((slideConfig, idx) => {
         const slide = document.getElementById(slideConfig.id);
         const dot = document.getElementById(`dot-${idx}`);
@@ -3082,27 +3093,30 @@
         }
       });
 
-      // Update Footer Title if element exists
+      // 2. Update Footer Title if element exists
       updateFooterTitle(index);
 
-      // Update slide duration based on custom setting or default interval
+      // 3. Render chart immediately on visible container with full entrance animation!
+      // If data is already in memory (from preloadAllSlides), renders in 0ms without black container delay.
+      if (state.activeSlideData && state.activeSlideData[index]) {
+        renderActiveSlideChart(index, state.activeSlideData[index], true);
+      } else {
+        refreshActiveSlideMetric(index);
+      }
+
+      // 4. Update slide duration based on custom setting or default interval
       if (state.activeSlides[index]) {
         const slideConfig = state.activeSlides[index];
         state.slideDuration = slideConfig.durationMs || state.carouselDefaultDuration || 12000;
       }
 
-      // Reset progress timer
+      // 5. Reset progress timer
       state.timerProgress = 0;
 
-      // Ensure chart dimensions perfectly match visible layout after transition
+      // 6. Ensure chart dimensions perfectly match visible layout after transition
       requestAnimationFrame(() => {
         resizeActiveSlideChart(index);
       });
-
-      // If data was not preloaded yet, fetch and render immediately
-      if (!state.activeSlideData || !state.activeSlideData[index]) {
-        refreshActiveSlideMetric(index);
-      }
     }
 
     function nextSlide() {
