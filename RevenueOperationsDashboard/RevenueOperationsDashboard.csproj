@@ -26,4 +26,8 @@
     <Content Remove="**\*.sql" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="SETTINGS_GUIDE.md" CopyToPublishDirectory="Always" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
