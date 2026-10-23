@@ -98,8 +98,10 @@ namespace RevenueOperationsDashboard.Models
 
     public class DashboardConfigDto
     {
-        public string DefaultLanguage { get; set; } = "en";
+        public string DefaultLanguage { get; set; } = "am";
         public string KpiCalculationMode { get; set; } = "ToDateTarget";
+        public string DefaultChartMetricMode { get; set; } = "pct"; // "pct", "amount", "both"
+        public string DefaultTheme { get; set; } = "ocean";
         public DefaultFiltersDto DefaultFilters { get; set; } = new();
         public WeeklyReportSettingsDto WeeklyReport { get; set; } = new();
         public CarouselConfigDto Carousel { get; set; } = new();

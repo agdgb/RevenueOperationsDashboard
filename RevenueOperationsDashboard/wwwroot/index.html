@@ -1272,10 +1272,26 @@
           updateUILanguage();
         }
 
+        // Apply default theme
+        if (config.defaultTheme) {
+          state.currentTheme = config.defaultTheme;
+          changeTheme(config.defaultTheme, true);
+          const themeSelector = document.getElementById('themeSelector');
+          if (themeSelector) themeSelector.value = config.defaultTheme;
+        }
+
+        // Apply default chart metric mode (pct, amount, both)
+        if (config.defaultChartMetricMode) {
+          state.chartMetricMode = config.defaultChartMetricMode;
+          updateMetricToggleUI();
+        }
+
         // Set default filters
-        state.filters.fiscalYear = config.defaultFilters.fiscalYearId;
-        state.filters.parent = config.defaultFilters.parentId;
-        state.filters.planItem = config.defaultFilters.planItemId;
+        if (config.defaultFilters) {
+          state.filters.fiscalYear = config.defaultFilters.fiscalYearId || state.filters.fiscalYear;
+          state.filters.parent = config.defaultFilters.parentId || state.filters.parent;
+          state.filters.planItem = config.defaultFilters.planItemId || state.filters.planItem;
+        }
         if (config.kpiCalculationMode) {
           state.filters.calculationMode = config.kpiCalculationMode;
         }
