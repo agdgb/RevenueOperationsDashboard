@@ -3156,11 +3156,6 @@
 
       // 5. Reset progress timer
       state.timerProgress = 0;
-
-      // 6. Ensure chart dimensions perfectly match visible layout after transition
-      requestAnimationFrame(() => {
-        resizeActiveSlideChart(index);
-      });
     }
 
     function nextSlide() {
@@ -4317,11 +4312,14 @@
         Object.values(chartInstances).forEach(chart => chart && chart.resize());
       });
 
-      // Setup ResizeObserver for automatic canvas scaling
-      const observer = new ResizeObserver(() => {
-        Object.values(chartInstances).forEach(chart => chart && chart.resize());
-      });
-      document.querySelectorAll('.slide-container').forEach(el => observer.observe(el));
+      // Setup ResizeObserver for automatic canvas scaling on viewport size changes
+      const mainViewport = document.querySelector('main.slide-viewport');
+      if (mainViewport) {
+        const observer = new ResizeObserver(() => {
+          Object.values(chartInstances).forEach(chart => chart && chart.resize());
+        });
+        observer.observe(mainViewport);
+      }
 
       // User Mouse Activity & Idle State Management (Auto-hide controls on inactivity)
       let idleTimer = null;
