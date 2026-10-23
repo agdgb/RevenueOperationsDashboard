@@ -688,28 +688,17 @@ namespace RevenueOperationsDashboard.Services
                       AND ParentId IN (2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
                       AND MonthId IN (1,2,3,4,5,6,7,8,9,10,11,12)
                     GROUP BY ParentId, ParentName
-                ),
-                DailyAct AS (
-                    SELECT 
-                        ParentId,
-                        CAST(SUM(DailyActual) AS DECIMAL(28,2)) AS DailyActualSum
-                    FROM [dbo].[vw_RevenuePerformanceDaily]
-                    WHERE (@FiscalYearId IS NULL OR FiscalYearId = @FiscalYearId)
-                      AND ParentId IN (2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,68)
-                      AND PlanItemId IN ('EB486830-7C2F-4C28-B2A4-195FDB6641C5', '49352433-53B5-466A-88DA-71D146A60C89', '98664116-7114-421A-82FD-B05865173EDF')
-                    GROUP BY ParentId
                 )
                 SELECT 
                     t.ParentName AS BranchName,
                     CASE 
                         WHEN t.Target > 0 
-                        THEN ROUND(ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) / t.Target * 100, 2)
+                        THEN ROUND(t.OpsActual / t.Target * 100, 2)
                         ELSE 0 
                     END AS AchievementPct,
-                    ISNULL(NULLIF(d.DailyActualSum, 0), t.OpsActual) AS ActualAmount,
+                    t.OpsActual AS ActualAmount,
                     t.Target AS TargetAmount
                 FROM Targets t
-                LEFT JOIN DailyAct d ON t.ParentId = d.ParentId
                 WHERE t.Target > 0 AND t.ParentId <> 1
                 ORDER BY AchievementPct ASC;";
 
@@ -719,7 +708,7 @@ namespace RevenueOperationsDashboard.Services
                 IsAnnual = isAnnual,
                 CurMonthOrder = curMonthOrder,
                 CurDay = curDay
-            }, commandTimeout: 120))).ToList();
+            }, commandTimeout: 30))).ToList();
 
             var dto = new BranchRankingDto();
             foreach (var r in rows)
