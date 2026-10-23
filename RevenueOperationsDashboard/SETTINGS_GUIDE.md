@@ -253,3 +253,22 @@ The following settings were removed because they are no longer used by the activ
 2. **`AutoShowOnCutoffDay`** (WeeklyReport): Replaced by on-demand executive modal access via the header button.
 3. **`ComparisonMode`** (Slides): Replaced by dedicated slide components.
 4. **`ChartType`** (Slides): Replaced by dedicated renderer functions.
+
+---
+
+## 6. Carousel Rendering & Smooth Animation Architecture
+
+### Zero Blank Delay with Full Entrance Animation
+In earlier versions, navigating to an unvisited slide caused a momentary blank black container while the HTTP request fetched data from the server.
+In **v2.2.5**, this is solved through a dual-stage architecture:
+
+1. **Background JSON Preloading (`preloadAllSlides`)**:
+   Immediately after initial dashboard load (or filter application), the client issues background fetches for all configured slides into memory (`state.activeSlideData[idx]`). It does *not* render the canvas in the dark, preserving the initial chart state.
+
+2. **On-Demand Animation Replay (`renderActiveSlideChart(index, data, replayAnimation = true)`)**:
+   When the user or auto-rotator switches to a slide:
+   - The slide container is brought into view (`slide-visible`).
+   - The chart renders immediately from in-memory cache in 0ms (no empty black box or network delay).
+   - ECharts executes its full entrance animation (spline drawing, bar growth, luminous wick ascension) dynamically in front of the viewer.
+   - When switching metric modes via `[በመቶኛ (%)]` and `[በብር (Wicks)]`, `replayAnimation = false` ensures an in-place smooth series transition without clearing the chart.
+
