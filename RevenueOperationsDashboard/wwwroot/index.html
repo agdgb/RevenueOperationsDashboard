@@ -79,6 +79,40 @@
       }
     }
 
+    /* Shimmer Skeleton Animation for Loading States */
+    .skeleton-card {
+      position: relative;
+      overflow: hidden;
+      background: rgba(30, 41, 59, 0.45);
+      border-color: rgba(51, 65, 85, 0.5);
+    }
+
+    .skeleton-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.03) 25%,
+        rgba(255, 255, 255, 0.08) 50%,
+        rgba(255, 255, 255, 0.03) 75%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: shimmerSweep 1.8s infinite cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+
+    @keyframes shimmerSweep {
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
     main.slide-viewport {
       display: grid !important;
       grid-template-columns: 1fr;
@@ -839,7 +873,103 @@
 
   <!-- PERSISTENT TOP KPI CARDS (VISIBLE ON EVERY SLIDE) -->
   <header id="topKpiHeader" class="mb-4 flex-shrink-0 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 z-30">
-    <!-- Rendered dynamically via ECharts -->
+    <!-- 6 Pre-rendered Shimmer Skeleton Cards -->
+    <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+      <div class="flex items-center justify-between gap-2 mb-1.5">
+        <div class="min-w-0 flex-1 space-y-1.5">
+          <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
+          <div class="h-2.5 w-16 bg-slate-800/80 rounded"></div>
+        </div>
+        <div class="h-5 w-12 rounded-lg bg-slate-800/80 border border-slate-700/40 flex-shrink-0"></div>
+      </div>
+      <div class="flex items-center justify-between mt-1">
+        <div class="min-w-0 flex-1 pr-1 xl:pr-2 space-y-1.5">
+          <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
+          <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
+        </div>
+        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+      </div>
+    </div>
+    <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+      <div class="flex items-center justify-between gap-2 mb-1.5">
+        <div class="min-w-0 flex-1 space-y-1.5">
+          <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
+          <div class="h-2.5 w-16 bg-slate-800/80 rounded"></div>
+        </div>
+        <div class="h-5 w-12 rounded-lg bg-slate-800/80 border border-slate-700/40 flex-shrink-0"></div>
+      </div>
+      <div class="flex items-center justify-between mt-1">
+        <div class="min-w-0 flex-1 pr-1 xl:pr-2 space-y-1.5">
+          <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
+          <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
+        </div>
+        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+      </div>
+    </div>
+    <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+      <div class="flex items-center justify-between gap-2 mb-1.5">
+        <div class="min-w-0 flex-1 space-y-1.5">
+          <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
+          <div class="h-2.5 w-16 bg-slate-800/80 rounded"></div>
+        </div>
+        <div class="h-5 w-12 rounded-lg bg-slate-800/80 border border-slate-700/40 flex-shrink-0"></div>
+      </div>
+      <div class="flex items-center justify-between mt-1">
+        <div class="min-w-0 flex-1 pr-1 xl:pr-2 space-y-1.5">
+          <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
+          <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
+        </div>
+        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+      </div>
+    </div>
+    <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+      <div class="flex items-center justify-between gap-2 mb-1.5">
+        <div class="min-w-0 flex-1 space-y-1.5">
+          <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
+          <div class="h-2.5 w-16 bg-slate-800/80 rounded"></div>
+        </div>
+        <div class="h-5 w-12 rounded-lg bg-slate-800/80 border border-slate-700/40 flex-shrink-0"></div>
+      </div>
+      <div class="flex items-center justify-between mt-1">
+        <div class="min-w-0 flex-1 pr-1 xl:pr-2 space-y-1.5">
+          <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
+          <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
+        </div>
+        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+      </div>
+    </div>
+    <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+      <div class="flex items-center justify-between gap-2 mb-1.5">
+        <div class="min-w-0 flex-1 space-y-1.5">
+          <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
+          <div class="h-2.5 w-16 bg-slate-800/80 rounded"></div>
+        </div>
+        <div class="h-5 w-12 rounded-lg bg-slate-800/80 border border-slate-700/40 flex-shrink-0"></div>
+      </div>
+      <div class="flex items-center justify-between mt-1">
+        <div class="min-w-0 flex-1 pr-1 xl:pr-2 space-y-1.5">
+          <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
+          <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
+        </div>
+        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+      </div>
+    </div>
+    <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+      <div class="flex items-center justify-between gap-2 mb-1.5">
+        <div class="min-w-0 flex-1 space-y-1.5">
+          <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
+          <div class="h-2.5 w-16 bg-slate-800/80 rounded"></div>
+        </div>
+        <div class="h-5 w-12 rounded-lg bg-slate-800/80 border border-slate-700/40 flex-shrink-0"></div>
+      </div>
+      <div class="flex items-center justify-between mt-1">
+        <div class="min-w-0 flex-1 pr-1 xl:pr-2 space-y-1.5">
+          <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
+          <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
+        </div>
+        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+      </div>
+    </div>
   </header>
 
   <!-- MAIN SLIDESHOW VIEWPORT -->
@@ -1444,7 +1574,10 @@
     }
 
     // Load and Render Top KPI Cards (Persistent across slides)
-    async function loadTopCards() {
+    async function loadTopCards(showSkeleton = false) {
+      if (showSkeleton) {
+        renderTopCardsSkeleton();
+      }
       try {
         const params = new URLSearchParams({
           fiscalYearId: state.filters.fiscalYear || 'ALL',
@@ -1650,6 +1783,31 @@
       }
     }
 
+    function renderTopCardsSkeleton() {
+      const headerContainer = document.getElementById('topKpiHeader');
+      if (!headerContainer) return;
+      state.cachedCards = null;
+      const skeletonCard = `
+        <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+          <div class="flex items-center justify-between gap-2 mb-1.5">
+            <div class="min-w-0 flex-1 space-y-1.5">
+              <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
+              <div class="h-2.5 w-16 bg-slate-800/80 rounded"></div>
+            </div>
+            <div class="h-5 w-12 rounded-lg bg-slate-800/80 border border-slate-700/40 flex-shrink-0"></div>
+          </div>
+          <div class="flex items-center justify-between mt-1">
+            <div class="min-w-0 flex-1 pr-1 xl:pr-2 space-y-1.5">
+              <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
+              <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
+            </div>
+            <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+          </div>
+        </div>
+      `;
+      headerContainer.innerHTML = Array(6).fill(skeletonCard).join('');
+    }
+
     function renderTopKpiCards(cards) {
       const headerContainer = document.getElementById('topKpiHeader');
       if (!headerContainer || !cards) return;
@@ -1849,7 +2007,7 @@
       state.activeSlideData = {};
 
       await Promise.all([
-        loadTopCards(),
+        loadTopCards(true),
         refreshActiveSlideMetric(state.currentSlide)
       ]);
 
