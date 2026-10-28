@@ -95,14 +95,12 @@
       bottom: 0;
       left: 0;
       transform: translateX(-100%);
-      background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.03) 25%,
-        rgba(255, 255, 255, 0.08) 50%,
-        rgba(255, 255, 255, 0.03) 75%,
-        rgba(255, 255, 255, 0) 100%
-      );
+      background: linear-gradient(90deg,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.03) 25%,
+          rgba(255, 255, 255, 0.08) 50%,
+          rgba(255, 255, 255, 0.03) 75%,
+          rgba(255, 255, 255, 0) 100%);
       animation: shimmerSweep 1.8s infinite cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
     }
@@ -115,10 +113,13 @@
 
     /* Directional Dynamic Equalizer Animations for Chart Skeletons */
     @keyframes skeletonEqualizerUp {
-      0%, 100% {
+
+      0%,
+      100% {
         height: 20%;
         opacity: 0.35;
       }
+
       50% {
         height: 85%;
         opacity: 0.85;
@@ -126,10 +127,13 @@
     }
 
     @keyframes skeletonEqualizerSide {
-      0%, 100% {
+
+      0%,
+      100% {
         width: 20%;
         opacity: 0.35;
       }
+
       50% {
         width: 85%;
         opacity: 0.85;
@@ -176,14 +180,12 @@
       bottom: 0;
       left: 0;
       transform: translateX(-100%);
-      background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.02) 20%,
-        rgba(56, 189, 248, 0.08) 50%,
-        rgba(255, 255, 255, 0.02) 80%,
-        rgba(255, 255, 255, 0) 100%
-      );
+      background: linear-gradient(90deg,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.02) 20%,
+          rgba(56, 189, 248, 0.08) 50%,
+          rgba(255, 255, 255, 0.02) 80%,
+          rgba(255, 255, 255, 0) 100%);
       animation: shimmerSweep 2.2s infinite cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
     }
@@ -555,18 +557,21 @@
     class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center hidden transition-opacity overflow-y-auto p-3 sm:p-6">
     <div
       class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-4xl p-5 sm:p-7 shadow-2xl space-y-5 text-slate-100 relative my-auto max-h-[92vh] overflow-y-auto">
-      
+
       <!-- Modal Header -->
       <div class="flex items-start justify-between border-b border-slate-800 pb-4">
         <div class="space-y-1">
           <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <div
+              class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
               <i class="fa-solid fa-sliders text-base"></i>
             </div>
             <div>
               <h3 class="text-lg font-bold text-white flex items-center gap-2">
                 <span id="txtOverridesModalTitle">የዋና ዋና ካርዶች እሴቶች ማስተካከያ</span>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-amber-400 border border-amber-500/30 font-mono">SQLite Powered</span>
+                <span
+                  class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-amber-400 border border-amber-500/30 font-mono">SQLite
+                  Powered</span>
               </h3>
               <p class="text-xs text-slate-400" id="txtOverridesModalSubtitle">
                 በቀጥታ ከዳታቤዝ ወይም Manual እሴቶችን እንዲሁም የቁጥሮች አቀራረብ (Human vs Exact) ይቆጣጠሩ
@@ -574,7 +579,8 @@
             </div>
           </div>
         </div>
-        <button onclick="closeCardOverridesModal()" class="text-slate-400 hover:text-white transition p-2 rounded-lg hover:bg-slate-800/60 cursor-pointer">
+        <button onclick="closeCardOverridesModal()"
+          class="text-slate-400 hover:text-white transition p-2 rounded-lg hover:bg-slate-800/60 cursor-pointer">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
@@ -611,8 +617,10 @@
       <!-- Cards Configuration Table / List -->
       <div class="space-y-3">
         <div class="flex items-center justify-between px-1">
-          <span class="text-xs font-bold text-slate-300 uppercase tracking-wider" id="lblCardListTitle">የካርዶች ዝርዝር እና እሴቶች</span>
-          <span class="text-[11px] text-slate-400" id="lblCardFiscalYearTag">በጀት ዓመት: <strong id="lblActiveFyModal" class="text-amber-400">2019</strong></span>
+          <span class="text-xs font-bold text-slate-300 uppercase tracking-wider" id="lblCardListTitle">የካርዶች ዝርዝር እና
+            እሴቶች</span>
+          <span class="text-[11px] text-slate-400" id="lblCardFiscalYearTag">በጀት ዓመት: <strong id="lblActiveFyModal"
+              class="text-amber-400">2019</strong></span>
         </div>
 
         <div id="overridesCardsContainer" class="space-y-3 max-h-[46vh] overflow-y-auto pr-1">
@@ -622,11 +630,13 @@
 
       <!-- Modal Footer -->
       <div class="flex items-center justify-between border-t border-slate-800 pt-4">
-        <button type="button" onclick="resetAllOverridesToSql()" class="text-xs text-rose-400 hover:text-rose-300 underline cursor-pointer">
+        <button type="button" onclick="resetAllOverridesToSql()"
+          class="text-xs text-rose-400 hover:text-rose-300 underline cursor-pointer">
           <i class="fa-solid fa-rotate-left mr-1"></i> ሁሉንም ወደ ቀጥታ SQL መልስ
         </button>
         <div class="flex items-center gap-3">
-          <button type="button" onclick="closeCardOverridesModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-slate-800 transition cursor-pointer">
+          <button type="button" onclick="closeCardOverridesModal()"
+            class="px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-slate-800 transition cursor-pointer">
             ተመለስ
           </button>
           <button type="button" onclick="saveCardOverrides()" id="btnSaveCardOverrides"
@@ -637,6 +647,18 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- PRESENTATION BLACKOUT CURTAIN (USB Pointer 'B' / '.' toggle) -->
+  <div id="presentationBlackoutCurtain" onclick="togglePresentationBlackout(false)"
+    class="fixed inset-0 bg-slate-950/98 backdrop-blur-xl z-[60] flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-300 cursor-pointer select-none">
+    <div class="flex flex-col items-center gap-3 text-slate-400 text-center px-4">
+      <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 shadow-xl">
+        <i class="fa-solid fa-moon text-lg"></i>
+      </div>
+      <div class="text-sm font-semibold tracking-wide text-slate-300">የቀረጻ እረፍት / Screen Paused</div>
+      <div class="text-xs text-slate-500">ለመቀጠል ማያ ገጹን ይጫኑ ወይም በሪሞት 'B' ይጫኑ (Click or press 'B' to resume)</div>
     </div>
   </div>
 
@@ -1039,7 +1061,8 @@
   <!-- PERSISTENT TOP KPI CARDS (VISIBLE ON EVERY SLIDE) -->
   <header id="topKpiHeader" class="mb-4 flex-shrink-0 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 z-30">
     <!-- 6 Pre-rendered Shimmer Skeleton Cards -->
-    <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+    <div
+      class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
       <div class="flex items-center justify-between gap-2 mb-1.5">
         <div class="min-w-0 flex-1 space-y-1.5">
           <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
@@ -1052,10 +1075,13 @@
           <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
           <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
         </div>
-        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+        <div
+          class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0">
+        </div>
       </div>
     </div>
-    <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+    <div
+      class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
       <div class="flex items-center justify-between gap-2 mb-1.5">
         <div class="min-w-0 flex-1 space-y-1.5">
           <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
@@ -1068,10 +1094,13 @@
           <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
           <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
         </div>
-        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+        <div
+          class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0">
+        </div>
       </div>
     </div>
-    <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+    <div
+      class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
       <div class="flex items-center justify-between gap-2 mb-1.5">
         <div class="min-w-0 flex-1 space-y-1.5">
           <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
@@ -1084,10 +1113,13 @@
           <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
           <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
         </div>
-        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+        <div
+          class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0">
+        </div>
       </div>
     </div>
-    <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+    <div
+      class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
       <div class="flex items-center justify-between gap-2 mb-1.5">
         <div class="min-w-0 flex-1 space-y-1.5">
           <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
@@ -1100,10 +1132,13 @@
           <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
           <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
         </div>
-        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+        <div
+          class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0">
+        </div>
       </div>
     </div>
-    <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+    <div
+      class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
       <div class="flex items-center justify-between gap-2 mb-1.5">
         <div class="min-w-0 flex-1 space-y-1.5">
           <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
@@ -1116,10 +1151,13 @@
           <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
           <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
         </div>
-        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+        <div
+          class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0">
+        </div>
       </div>
     </div>
-    <div class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
+    <div
+      class="skeleton-card border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative min-h-[120px] backdrop-blur-md">
       <div class="flex items-center justify-between gap-2 mb-1.5">
         <div class="min-w-0 flex-1 space-y-1.5">
           <div class="h-3.5 2xl:h-4 w-24 2xl:w-28 bg-slate-700/60 rounded"></div>
@@ -1132,7 +1170,9 @@
           <div class="h-6 xl:h-7 w-20 2xl:w-24 bg-slate-700/70 rounded"></div>
           <div class="h-3 w-28 bg-slate-800/60 rounded"></div>
         </div>
-        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0"></div>
+        <div
+          class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full border-4 border-slate-800/80 border-t-slate-700/60 flex-shrink-0">
+        </div>
       </div>
     </div>
   </header>
@@ -1145,43 +1185,57 @@
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
         <!-- Slide 0 Neutral Motion Skeleton: Tax Type Target vs Actual (6 Paired Equalizer Columns) -->
-        <div id="slide-0-skeleton" class="chart-skeleton-overlay flex flex-col justify-between p-4 xl:p-6 rounded-2xl select-none">
+        <div id="slide-0-skeleton"
+          class="chart-skeleton-overlay flex flex-col justify-between p-4 xl:p-6 rounded-2xl select-none">
           <!-- Title & Subtitle Placeholder -->
           <div class="text-center space-y-2 mb-2 flex-shrink-0">
             <div class="h-5 xl:h-6 w-48 xl:w-56 bg-slate-700/60 rounded-md mx-auto"></div>
             <div class="h-3 xl:h-3.5 w-64 xl:w-72 bg-slate-800/80 rounded mx-auto"></div>
           </div>
           <!-- Clean Equalizer Bar Motion (6 Paired Columns in Neutral Slate) -->
-          <div class="flex-1 w-full flex items-end justify-around px-4 xl:px-12 pb-6 pt-4 min-h-0 border-b border-slate-800/60">
+          <div
+            class="flex-1 w-full flex items-end justify-around px-4 xl:px-12 pb-6 pt-4 min-h-0 border-b border-slate-800/60">
             <!-- Col 1 -->
             <div class="flex items-end gap-2 h-full justify-center flex-1 max-w-[90px]">
-              <div class="w-5 sm:w-6 xl:w-7 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.0s;"></div>
-              <div class="w-5 sm:w-6 xl:w-7 bg-slate-700/60 border border-slate-600/40 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.3s;"></div>
+              <div class="w-5 sm:w-6 xl:w-7 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+                style="animation-delay: 0.0s;"></div>
+              <div class="w-5 sm:w-6 xl:w-7 bg-slate-700/60 border border-slate-600/40 rounded-t-lg skeleton-eq-bar"
+                style="animation-delay: 0.3s;"></div>
             </div>
             <!-- Col 2 -->
             <div class="flex items-end gap-2 h-full justify-center flex-1 max-w-[90px]">
-              <div class="w-5 sm:w-6 xl:w-7 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.4s;"></div>
-              <div class="w-5 sm:w-6 xl:w-7 bg-slate-700/60 border border-slate-600/40 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.1s;"></div>
+              <div class="w-5 sm:w-6 xl:w-7 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+                style="animation-delay: 0.4s;"></div>
+              <div class="w-5 sm:w-6 xl:w-7 bg-slate-700/60 border border-slate-600/40 rounded-t-lg skeleton-eq-bar"
+                style="animation-delay: 0.1s;"></div>
             </div>
             <!-- Col 3 -->
             <div class="flex items-end gap-2 h-full justify-center flex-1 max-w-[90px]">
-              <div class="w-5 sm:w-6 xl:w-7 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.2s;"></div>
-              <div class="w-5 sm:w-6 xl:w-7 bg-slate-700/60 border border-slate-600/40 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.6s;"></div>
+              <div class="w-5 sm:w-6 xl:w-7 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+                style="animation-delay: 0.2s;"></div>
+              <div class="w-5 sm:w-6 xl:w-7 bg-slate-700/60 border border-slate-600/40 rounded-t-lg skeleton-eq-bar"
+                style="animation-delay: 0.6s;"></div>
             </div>
             <!-- Col 4 -->
             <div class="flex items-end gap-2 h-full justify-center flex-1 max-w-[90px]">
-              <div class="w-5 sm:w-6 xl:w-7 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.5s;"></div>
-              <div class="w-5 sm:w-6 xl:w-7 bg-slate-700/60 border border-slate-600/40 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.25s;"></div>
+              <div class="w-5 sm:w-6 xl:w-7 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+                style="animation-delay: 0.5s;"></div>
+              <div class="w-5 sm:w-6 xl:w-7 bg-slate-700/60 border border-slate-600/40 rounded-t-lg skeleton-eq-bar"
+                style="animation-delay: 0.25s;"></div>
             </div>
             <!-- Col 5 -->
             <div class="flex items-end gap-2 h-full justify-center flex-1 max-w-[90px]">
-              <div class="w-5 sm:w-6 xl:w-7 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.15s;"></div>
-              <div class="w-5 sm:w-6 xl:w-7 bg-slate-700/60 border border-slate-600/40 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.45s;"></div>
+              <div class="w-5 sm:w-6 xl:w-7 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+                style="animation-delay: 0.15s;"></div>
+              <div class="w-5 sm:w-6 xl:w-7 bg-slate-700/60 border border-slate-600/40 rounded-t-lg skeleton-eq-bar"
+                style="animation-delay: 0.45s;"></div>
             </div>
             <!-- Col 6 -->
             <div class="flex items-end gap-2 h-full justify-center flex-1 max-w-[90px]">
-              <div class="w-5 sm:w-6 xl:w-7 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.35s;"></div>
-              <div class="w-5 sm:w-6 xl:w-7 bg-slate-700/60 border border-slate-600/40 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.05s;"></div>
+              <div class="w-5 sm:w-6 xl:w-7 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+                style="animation-delay: 0.35s;"></div>
+              <div class="w-5 sm:w-6 xl:w-7 bg-slate-700/60 border border-slate-600/40 rounded-t-lg skeleton-eq-bar"
+                style="animation-delay: 0.05s;"></div>
             </div>
           </div>
           <!-- Clean Base Labels Line -->
@@ -1203,26 +1257,40 @@
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
         <!-- Slide 1 Neutral Motion Skeleton: Monthly Achievement Trend (12 Undulating Wave Columns) -->
-        <div id="slide-1-skeleton" class="chart-skeleton-overlay hidden-skeleton flex flex-col justify-between p-4 xl:p-6 rounded-2xl select-none">
+        <div id="slide-1-skeleton"
+          class="chart-skeleton-overlay hidden-skeleton flex flex-col justify-between p-4 xl:p-6 rounded-2xl select-none">
           <!-- Title & Subtitle Placeholder -->
           <div class="text-center space-y-2 mb-2 flex-shrink-0">
             <div class="h-5 xl:h-6 w-52 xl:w-60 bg-slate-700/60 rounded-md mx-auto"></div>
             <div class="h-3 xl:h-3.5 w-56 xl:w-64 bg-slate-800/80 rounded mx-auto"></div>
           </div>
           <!-- 12 Undulating Equalizer Columns in Neutral Slate -->
-          <div class="flex-1 w-full flex items-end justify-between px-3 xl:px-8 pb-6 pt-4 min-h-0 border-b border-slate-800/60">
-            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.0s;"></div>
-            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.12s;"></div>
-            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.24s;"></div>
-            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.36s;"></div>
-            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.48s;"></div>
-            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.60s;"></div>
-            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.72s;"></div>
-            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.84s;"></div>
-            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 0.96s;"></div>
-            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 1.08s;"></div>
-            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 1.20s;"></div>
-            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar" style="animation-delay: 1.32s;"></div>
+          <div
+            class="flex-1 w-full flex items-end justify-between px-3 xl:px-8 pb-6 pt-4 min-h-0 border-b border-slate-800/60">
+            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+              style="animation-delay: 0.0s;"></div>
+            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+              style="animation-delay: 0.12s;"></div>
+            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+              style="animation-delay: 0.24s;"></div>
+            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+              style="animation-delay: 0.36s;"></div>
+            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+              style="animation-delay: 0.48s;"></div>
+            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+              style="animation-delay: 0.60s;"></div>
+            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+              style="animation-delay: 0.72s;"></div>
+            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+              style="animation-delay: 0.84s;"></div>
+            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+              style="animation-delay: 0.96s;"></div>
+            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+              style="animation-delay: 1.08s;"></div>
+            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+              style="animation-delay: 1.20s;"></div>
+            <div class="w-4 sm:w-5 xl:w-6 bg-slate-800/80 border border-slate-700/50 rounded-t-lg skeleton-eq-bar"
+              style="animation-delay: 1.32s;"></div>
           </div>
           <!-- Clean Base Labels Line -->
           <div class="flex items-center justify-between px-3 xl:px-8 pt-3 flex-shrink-0">
@@ -1246,7 +1314,8 @@
           <button data-mode="pct" onclick="setSlideChartMetricMode('monthlyTrend', 'pct')"
             class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">በመቶኛ (%)</button>
           <button data-mode="wicks" onclick="setSlideChartMetricMode('monthlyTrend', 'wicks')"
-            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white cursor-pointer">በብር (Wicks)</button>
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white cursor-pointer">በብር
+            (Wicks)</button>
         </div>
         <div id="chartMonthlyTrend" class="w-full flex-1 min-h-[300px]"></div>
       </div>
@@ -1257,66 +1326,76 @@
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
         <!-- Slide 2 Neutral Motion Skeleton: Branch Achievement % by Office (7 Horizontal Breathing Bars) -->
-        <div id="slide-2-skeleton" class="chart-skeleton-overlay hidden-skeleton flex flex-col justify-between p-4 xl:p-6 rounded-2xl select-none">
+        <div id="slide-2-skeleton"
+          class="chart-skeleton-overlay hidden-skeleton flex flex-col justify-between p-4 xl:p-6 rounded-2xl select-none">
           <!-- Title & Subtitle Placeholder -->
           <div class="text-center space-y-2 mb-3 flex-shrink-0">
             <div class="h-5 xl:h-6 w-56 xl:w-64 bg-slate-700/60 rounded-md mx-auto"></div>
             <div class="h-3 xl:h-3.5 w-60 xl:w-72 bg-slate-800/80 rounded mx-auto"></div>
           </div>
           <!-- 7 Horizontal Rows in Neutral Slate -->
-          <div class="flex-1 w-full flex flex-col justify-around px-2 sm:px-6 relative min-h-0 border-l border-slate-800/60">
+          <div
+            class="flex-1 w-full flex flex-col justify-around px-2 sm:px-6 relative min-h-0 border-l border-slate-800/60">
             <!-- Row 1 -->
             <div class="flex items-center gap-3 w-full">
               <div class="w-24 sm:w-32 xl:w-40 h-3 bg-slate-800/80 rounded flex-shrink-0"></div>
               <div class="flex-1 flex items-center">
-                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar" style="animation-delay: 0.0s;"></div>
+                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar"
+                  style="animation-delay: 0.0s;"></div>
               </div>
             </div>
             <!-- Row 2 -->
             <div class="flex items-center gap-3 w-full">
               <div class="w-24 sm:w-32 xl:w-40 h-3 bg-slate-800/80 rounded flex-shrink-0"></div>
               <div class="flex-1 flex items-center">
-                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar" style="animation-delay: 0.35s;"></div>
+                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar"
+                  style="animation-delay: 0.35s;"></div>
               </div>
             </div>
             <!-- Row 3 -->
             <div class="flex items-center gap-3 w-full">
               <div class="w-24 sm:w-32 xl:w-40 h-3 bg-slate-800/80 rounded flex-shrink-0"></div>
               <div class="flex-1 flex items-center">
-                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar" style="animation-delay: 0.15s;"></div>
+                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar"
+                  style="animation-delay: 0.15s;"></div>
               </div>
             </div>
             <!-- Row 4 -->
             <div class="flex items-center gap-3 w-full">
               <div class="w-24 sm:w-32 xl:w-40 h-3 bg-slate-800/80 rounded flex-shrink-0"></div>
               <div class="flex-1 flex items-center">
-                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar" style="animation-delay: 0.5s;"></div>
+                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar"
+                  style="animation-delay: 0.5s;"></div>
               </div>
             </div>
             <!-- Row 5 -->
             <div class="flex items-center gap-3 w-full">
               <div class="w-24 sm:w-32 xl:w-40 h-3 bg-slate-800/80 rounded flex-shrink-0"></div>
               <div class="flex-1 flex items-center">
-                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar" style="animation-delay: 0.25s;"></div>
+                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar"
+                  style="animation-delay: 0.25s;"></div>
               </div>
             </div>
             <!-- Row 6 -->
             <div class="flex items-center gap-3 w-full">
               <div class="w-24 sm:w-32 xl:w-40 h-3 bg-slate-800/80 rounded flex-shrink-0"></div>
               <div class="flex-1 flex items-center">
-                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar" style="animation-delay: 0.6s;"></div>
+                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar"
+                  style="animation-delay: 0.6s;"></div>
               </div>
             </div>
             <!-- Row 7 -->
             <div class="flex items-center gap-3 w-full">
               <div class="w-24 sm:w-32 xl:w-40 h-3 bg-slate-800/80 rounded flex-shrink-0"></div>
               <div class="flex-1 flex items-center">
-                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar" style="animation-delay: 0.1s;"></div>
+                <div class="h-4 xl:h-5 rounded-r-lg bg-slate-800/80 border border-slate-700/50 skeleton-eq-h-bar"
+                  style="animation-delay: 0.1s;"></div>
               </div>
             </div>
           </div>
           <!-- Clean Base Labels Line -->
-          <div class="w-full flex items-center justify-between pl-24 sm:pl-32 xl:pl-40 pr-4 pt-2 border-t border-slate-800/60 flex-shrink-0">
+          <div
+            class="w-full flex items-center justify-between pl-24 sm:pl-32 xl:pl-40 pr-4 pt-2 border-t border-slate-800/60 flex-shrink-0">
             <div class="w-6 h-2 bg-slate-800/80 rounded"></div>
             <div class="w-6 h-2 bg-slate-800/80 rounded"></div>
             <div class="w-6 h-2 bg-slate-800/80 rounded"></div>
@@ -1332,26 +1411,88 @@
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
         <!-- Slide 3 Neutral Motion Skeleton: YoY Monthly Trend Comparison (12 Paired Columns) -->
-        <div id="slide-3-skeleton" class="chart-skeleton-overlay hidden-skeleton flex flex-col justify-between p-4 xl:p-6 rounded-2xl select-none">
+        <div id="slide-3-skeleton"
+          class="chart-skeleton-overlay hidden-skeleton flex flex-col justify-between p-4 xl:p-6 rounded-2xl select-none">
           <!-- Title & Subtitle Placeholder -->
           <div class="text-center space-y-2 mb-2 flex-shrink-0">
             <div class="h-5 xl:h-6 w-56 xl:w-64 bg-slate-700/60 rounded-md mx-auto"></div>
             <div class="h-3 xl:h-3.5 w-64 xl:w-72 bg-slate-800/80 rounded mx-auto"></div>
           </div>
           <!-- 12 Paired Equalizer Columns in Neutral Slate -->
-          <div class="flex-1 w-full flex items-end justify-between px-2 xl:px-6 pb-6 pt-4 min-h-0 border-b border-slate-800/60">
-            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full"><div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.0s;"></div><div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.2s;"></div></div>
-            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full"><div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.15s;"></div><div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.35s;"></div></div>
-            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full"><div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.3s;"></div><div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.5s;"></div></div>
-            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full"><div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.45s;"></div><div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.1s;"></div></div>
-            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full"><div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.6s;"></div><div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.25s;"></div></div>
-            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full"><div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.2s;"></div><div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.4s;"></div></div>
-            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full"><div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.35s;"></div><div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.55s;"></div></div>
-            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full"><div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.5s;"></div><div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.15s;"></div></div>
-            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full"><div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.65s;"></div><div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.3s;"></div></div>
-            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full"><div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.1s;"></div><div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.45s;"></div></div>
-            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full"><div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.4s;"></div><div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.6s;"></div></div>
-            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full"><div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.25s;"></div><div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.5s;"></div></div>
+          <div
+            class="flex-1 w-full flex items-end justify-between px-2 xl:px-6 pb-6 pt-4 min-h-0 border-b border-slate-800/60">
+            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full">
+              <div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.0s;"></div>
+              <div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.2s;"></div>
+            </div>
+            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full">
+              <div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.15s;"></div>
+              <div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.35s;"></div>
+            </div>
+            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full">
+              <div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.3s;"></div>
+              <div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.5s;"></div>
+            </div>
+            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full">
+              <div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.45s;"></div>
+              <div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.1s;"></div>
+            </div>
+            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full">
+              <div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.6s;"></div>
+              <div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.25s;"></div>
+            </div>
+            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full">
+              <div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.2s;"></div>
+              <div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.4s;"></div>
+            </div>
+            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full">
+              <div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.35s;"></div>
+              <div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.55s;"></div>
+            </div>
+            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full">
+              <div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.5s;"></div>
+              <div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.15s;"></div>
+            </div>
+            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full">
+              <div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.65s;"></div>
+              <div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.3s;"></div>
+            </div>
+            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full">
+              <div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.1s;"></div>
+              <div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.45s;"></div>
+            </div>
+            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full">
+              <div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.4s;"></div>
+              <div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.6s;"></div>
+            </div>
+            <div class="flex items-end gap-1 flex-1 justify-center max-w-[65px] h-full">
+              <div class="w-2.5 sm:w-3 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.25s;"></div>
+              <div class="w-2.5 sm:w-3 bg-slate-700/60 border border-slate-600/40 rounded-t-sm skeleton-eq-bar"
+                style="animation-delay: 0.5s;"></div>
+            </div>
           </div>
           <!-- Clean Base Labels Line -->
           <div class="w-full flex justify-between items-center px-2 xl:px-6 pt-3 flex-shrink-0">
@@ -1375,7 +1516,8 @@
           <button data-mode="pct" onclick="setSlideChartMetricMode('yoyTrend', 'pct')"
             class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">በመቶኛ (%)</button>
           <button data-mode="wicks" onclick="setSlideChartMetricMode('yoyTrend', 'wicks')"
-            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white cursor-pointer">በብር (Wicks)</button>
+            class="px-2.5 py-1 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white cursor-pointer">በብር
+            (Wicks)</button>
         </div>
         <div id="chartYoYMonthlyTrend" class="w-full flex-1 min-h-[300px]"></div>
       </div>
@@ -1386,30 +1528,48 @@
       <div
         class="bg-cardBg border border-borderDark rounded-2xl p-4 flex flex-col h-full w-full shadow-xl min-h-0 overflow-hidden relative">
         <!-- Slide 4 Neutral Motion Skeleton: Daily Revenue Trend (16 Frequency Columns) -->
-        <div id="slide-4-skeleton" class="chart-skeleton-overlay hidden-skeleton flex flex-col justify-between p-4 xl:p-6 rounded-2xl select-none">
+        <div id="slide-4-skeleton"
+          class="chart-skeleton-overlay hidden-skeleton flex flex-col justify-between p-4 xl:p-6 rounded-2xl select-none">
           <!-- Title & Subtitle Placeholder -->
           <div class="text-center space-y-2 mb-2 flex-shrink-0">
             <div class="h-5 xl:h-6 w-52 xl:w-60 bg-slate-700/60 rounded-md mx-auto"></div>
             <div class="h-3 xl:h-3.5 w-60 xl:w-68 bg-slate-800/80 rounded mx-auto"></div>
           </div>
           <!-- 16 Frequency Equalizer Columns in Neutral Slate -->
-          <div class="flex-1 w-full flex items-end justify-between px-2 xl:px-6 pb-6 pt-4 min-h-0 border-b border-slate-800/60">
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.0s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.1s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.2s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.3s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.4s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.5s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.6s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.7s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.8s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 0.9s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 1.0s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 1.1s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 1.2s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 1.3s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 1.4s;"></div>
-            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar" style="animation-delay: 1.5s;"></div>
+          <div
+            class="flex-1 w-full flex items-end justify-between px-2 xl:px-6 pb-6 pt-4 min-h-0 border-b border-slate-800/60">
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 0.0s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 0.1s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 0.2s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 0.3s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 0.4s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 0.5s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 0.6s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 0.7s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 0.8s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 0.9s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 1.0s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 1.1s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 1.2s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 1.3s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 1.4s;"></div>
+            <div class="w-2.5 sm:w-3 xl:w-4 bg-slate-800/80 border border-slate-700/50 rounded-t-sm skeleton-eq-bar"
+              style="animation-delay: 1.5s;"></div>
           </div>
           <!-- Clean Base Labels Line -->
           <div class="w-full flex justify-between items-center px-2 xl:px-6 pt-3 flex-shrink-0">
@@ -1834,7 +1994,7 @@
       if (document.getElementById('lblModeToDate')) document.getElementById('lblModeToDate').innerText = t_ui("To-Date Target (To-Date)");
       if (document.getElementById('lblModeAnnual')) document.getElementById('lblModeAnnual').innerText = t_ui("Full Year Target (Annual)");
       if (document.getElementById('lblWeeklyReportBtn')) document.getElementById('lblWeeklyReportBtn').innerText = t_ui("Weekly Report");
-      if (document.getElementById('lblCardOverridesBtn')) document.getElementById('lblCardOverridesBtn').innerText = state.currentLang === 'am' ? 'የካርድ እሴቶች' : 'Card Values';
+      if (document.getElementById('lblCardOverridesBtn')) document.getElementById('lblCardOverridesBtn').innerText = state.currentLang === 'am' ? 'የካርድ ማስተካከያ' : 'Card Settings';
       if (document.getElementById('lblPresetWeekly')) document.getElementById('lblPresetWeekly').innerText = t_ui("Weekly");
       if (document.getElementById('lblPrintBtn')) document.getElementById('lblPrintBtn').innerText = t_ui("Print / PDF");
       if (document.getElementById('weeklyReportTitle')) document.getElementById('weeklyReportTitle').innerText = t_ui("Weekly Operations Briefing");
@@ -3836,6 +3996,38 @@
       }
     }
 
+    // Toggle Presentation Blackout Screen (Triggered by USB pointer 'B' or '.' key)
+    function togglePresentationBlackout(forceState = null) {
+      const curtain = document.getElementById('presentationBlackoutCurtain');
+      if (!curtain) return;
+      const isCurrentlyShown = !curtain.classList.contains('hidden') && curtain.classList.contains('opacity-100');
+      const show = forceState !== null ? forceState : !isCurrentlyShown;
+
+      if (show) {
+        curtain.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          curtain.classList.add('opacity-100');
+          curtain.classList.remove('opacity-0');
+        });
+        if (state.autoRotate) {
+          state.wasRotatingBeforeBlackout = true;
+          state.autoRotate = false;
+          updatePlayPauseButtonState();
+        }
+      } else {
+        curtain.classList.remove('opacity-100');
+        curtain.classList.add('opacity-0');
+        setTimeout(() => {
+          curtain.classList.add('hidden');
+        }, 300);
+        if (state.wasRotatingBeforeBlackout) {
+          state.wasRotatingBeforeBlackout = false;
+          state.autoRotate = true;
+          updatePlayPauseButtonState();
+        }
+      }
+    }
+
     // --- EXECUTIVE WEEKLY REPORT BRIEFING LOGIC ---
     function showWeeklyReportLoading(isLoading, errorMessage = null) {
       const overlay = document.getElementById('weeklyReportLoadingOverlay');
@@ -4052,7 +4244,7 @@
         const meta = CARD_METADATA_MAP[cardId] || { nameAm: cardId, nameEn: cardId, icon: "fa-chart-pie", isCurrency: false };
         const cardTitle = isAm ? meta.nameAm : meta.nameEn;
         const live = liveMap[cardId];
-        
+
         let existingOverride = (currentOverridesState.overrides || []).find(o => o.cardId === cardId);
         if (!existingOverride) {
           existingOverride = {
@@ -5213,16 +5405,50 @@
       });
       resetIdleTimer();
 
-      // Keyboard arrow slide navigation
+      // Keyboard & USB Presentation Clicker navigation
       window.addEventListener('keydown', (e) => {
+        // Ignore keystrokes when typing into input or select elements
         if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
-        if (e.key === 'ArrowRight') {
+
+        // Next Slide: Right Arrow, PageDown (Standard USB Clicker Next), Down Arrow, or 'n' / 'N'
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === 'ArrowDown' || e.key === 'n' || e.key === 'N') {
+          e.preventDefault();
+          const curtain = document.getElementById('presentationBlackoutCurtain');
+          if (curtain && !curtain.classList.contains('hidden')) {
+            togglePresentationBlackout(false);
+          }
           nextSlide();
-        } else if (e.key === 'ArrowLeft') {
+        }
+        // Previous Slide: Left Arrow, PageUp (Standard USB Clicker Prev), Up Arrow, or 'p' / 'P'
+        else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp' || e.key === 'p' || e.key === 'P') {
+          e.preventDefault();
+          const curtain = document.getElementById('presentationBlackoutCurtain');
+          if (curtain && !curtain.classList.contains('hidden')) {
+            togglePresentationBlackout(false);
+          }
           prevSlide();
-        } else if (e.key === ' ' || e.key === 'Spacebar') {
+        }
+        // Play / Pause Auto-rotation: Spacebar
+        else if (e.key === ' ' || e.key === 'Spacebar') {
           e.preventDefault();
           toggleCarousel();
+        }
+        // Blackout / Blank Screen: USB Clicker 'B' or '.' button
+        else if (e.key === 'b' || e.key === 'B' || e.key === '.') {
+          e.preventDefault();
+          togglePresentationBlackout();
+        }
+        // Fullscreen Toggle: USB Clicker F5 or Shift+F5 (Start Slideshow button)
+        else if (e.key === 'F5') {
+          e.preventDefault();
+          toggleFullscreen();
+        }
+        // Escape: Dismiss blackout if currently active
+        else if (e.key === 'Escape') {
+          const curtain = document.getElementById('presentationBlackoutCurtain');
+          if (curtain && !curtain.classList.contains('hidden')) {
+            togglePresentationBlackout(false);
+          }
         }
       });
     });
