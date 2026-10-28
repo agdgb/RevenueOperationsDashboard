@@ -1232,20 +1232,18 @@ namespace RevenueOperationsDashboard.Services
             decimal c7Pct = c7Tgt > 0 ? Math.Round((c7Act / c7Tgt) * 100m, 1) : 0m;
 
             // Apply SQLite Overrides if active
-            bool isAllBranches = string.IsNullOrEmpty(parentId);
             bool allowOverrides = !string.Equals(topCardsMode, "Auto", StringComparison.OrdinalIgnoreCase);
 
             bool ApplyCardOverride(string cardId, ref decimal act, ref decimal tgt, ref decimal pct)
             {
                 if (allowOverrides && overridesMap.TryGetValue(cardId, out var o) && o.IsEnabled)
                 {
-                    if (!o.ApplyOnlyAllBranches || isAllBranches)
-                    {
-                        if (o.Actual.HasValue) act = o.Actual.Value;
-                        if (o.Target.HasValue) tgt = o.Target.Value;
-                        pct = tgt > 0 ? Math.Round((act / tgt) * 100m, 1) : 0m;
-                        return true;
-                    }
+                    // Manual overrides represent full fiscal year operational progress and remain fixed,
+                    // immune to branch, quarter, and custom date range filters.
+                    if (o.Actual.HasValue) act = o.Actual.Value;
+                    if (o.Target.HasValue) tgt = o.Target.Value;
+                    pct = tgt > 0 ? Math.Round((act / tgt) * 100m, 1) : 0m;
+                    return true;
                 }
                 return false;
             }
@@ -1300,8 +1298,9 @@ namespace RevenueOperationsDashboard.Services
             string weeklySubAm = "ሳምንታዊ ድምር";
             string weeklySubEn = "Weekly Total";
 
-            string cardSubtitleAm(string cardId)
+            string cardSubtitleAm(string cardId, bool isOverridden)
             {
+                if (isOverridden) return "የዓመታዊ ዕቅድ ድርሻ";
                 if (preset is "WEEKLY_REPORT" or "THIS_WEEK") return weeklySubAm;
                 if (preset is "Q1") return isAnnualTarget ? "የዓመታዊ ዕቅድ ድርሻ" : "1ኛ ሩብ ዓመት ድምር";
                 if (preset is "Q2") return isAnnualTarget ? "የዓመታዊ ዕቅድ ድርሻ" : "2ኛ ሩብ ዓመት ድምር";
@@ -1313,8 +1312,9 @@ namespace RevenueOperationsDashboard.Services
                 return isAnnualTarget ? annualSubAm : toDateSubAm;
             }
 
-            string cardSubtitleEn(string cardId)
+            string cardSubtitleEn(string cardId, bool isOverridden)
             {
+                if (isOverridden) return "Annual Target Share";
                 if (preset is "WEEKLY_REPORT" or "THIS_WEEK") return weeklySubEn;
                 if (preset is "Q1") return isAnnualTarget ? "Annual Target Share" : "Q1 Total";
                 if (preset is "Q2") return isAnnualTarget ? "Annual Target Share" : "Q2 Total";
@@ -1338,9 +1338,9 @@ namespace RevenueOperationsDashboard.Services
                         Id = "kpi1",
                         TitleAmharic = "ገቢ አፈፃፀም",
                         TitleEnglish = "Revenue Achievement",
-                        SubtitleAmharic = cardSubtitleAm("kpi1"),
-                        SubtitleEnglish = cardSubtitleEn("kpi1"),
-                        CalculationMode = activeMode,
+                        SubtitleAmharic = cardSubtitleAm("kpi1", c1Overridden),
+                        SubtitleEnglish = cardSubtitleEn("kpi1", c1Overridden),
+                        CalculationMode = c1Overridden ? "AnnualTarget" : activeMode,
                         Actual = c1Act,
                         Target = c1Tgt,
                         AchievementPct = c1Pct,
@@ -1355,9 +1355,9 @@ namespace RevenueOperationsDashboard.Services
                         Id = "kpi2",
                         TitleAmharic = "ዓመታዊ ገቢ ማሳወቅ",
                         TitleEnglish = "Annual Filing",
-                        SubtitleAmharic = cardSubtitleAm("kpi2"),
-                        SubtitleEnglish = cardSubtitleEn("kpi2"),
-                        CalculationMode = activeMode,
+                        SubtitleAmharic = cardSubtitleAm("kpi2", c2Overridden),
+                        SubtitleEnglish = cardSubtitleEn("kpi2", c2Overridden),
+                        CalculationMode = c2Overridden ? "AnnualTarget" : activeMode,
                         Actual = c2Act,
                         Target = c2Tgt,
                         AchievementPct = c2Pct,
@@ -1372,9 +1372,9 @@ namespace RevenueOperationsDashboard.Services
                         Id = "kpi3",
                         TitleAmharic = "ማደሻ ክሊራንስ የወሰዱ",
                         TitleEnglish = "Renewal Clearances",
-                        SubtitleAmharic = cardSubtitleAm("kpi3"),
-                        SubtitleEnglish = cardSubtitleEn("kpi3"),
-                        CalculationMode = activeMode,
+                        SubtitleAmharic = cardSubtitleAm("kpi3", c3Overridden),
+                        SubtitleEnglish = cardSubtitleEn("kpi3", c3Overridden),
+                        CalculationMode = c3Overridden ? "AnnualTarget" : activeMode,
                         Actual = c3Act,
                         Target = c3Tgt,
                         AchievementPct = c3Pct,
@@ -1389,9 +1389,9 @@ namespace RevenueOperationsDashboard.Services
                         Id = "kpi4",
                         TitleAmharic = "ቫት ያሳወቁ",
                         TitleEnglish = "VAT Declarations",
-                        SubtitleAmharic = cardSubtitleAm("kpi4"),
-                        SubtitleEnglish = cardSubtitleEn("kpi4"),
-                        CalculationMode = activeMode,
+                        SubtitleAmharic = cardSubtitleAm("kpi4", c4Overridden),
+                        SubtitleEnglish = cardSubtitleEn("kpi4", c4Overridden),
+                        CalculationMode = c4Overridden ? "AnnualTarget" : activeMode,
                         Actual = c4Act,
                         Target = c4Tgt,
                         AchievementPct = c4Pct,
@@ -1406,9 +1406,9 @@ namespace RevenueOperationsDashboard.Services
                         Id = "kpi5",
                         TitleAmharic = "የደመወዝ ገቢ ግብር",
                         TitleEnglish = "Payroll Income Tax",
-                        SubtitleAmharic = cardSubtitleAm("kpi5"),
-                        SubtitleEnglish = cardSubtitleEn("kpi5"),
-                        CalculationMode = activeMode,
+                        SubtitleAmharic = cardSubtitleAm("kpi5", c5Overridden),
+                        SubtitleEnglish = cardSubtitleEn("kpi5", c5Overridden),
+                        CalculationMode = c5Overridden ? "AnnualTarget" : activeMode,
                         Actual = c5Act,
                         Target = c5Tgt,
                         AchievementPct = c5Pct,
@@ -1423,9 +1423,9 @@ namespace RevenueOperationsDashboard.Services
                         Id = "kpi7",
                         TitleAmharic = "ታክስ ኦዲት ያሳወቁ",
                         TitleEnglish = "Tax Audit Performance",
-                        SubtitleAmharic = cardSubtitleAm("kpi7"),
-                        SubtitleEnglish = cardSubtitleEn("kpi7"),
-                        CalculationMode = activeMode,
+                        SubtitleAmharic = cardSubtitleAm("kpi7", c7Overridden),
+                        SubtitleEnglish = cardSubtitleEn("kpi7", c7Overridden),
+                        CalculationMode = c7Overridden ? "AnnualTarget" : activeMode,
                         Actual = c7Act,
                         Target = c7Tgt,
                         AchievementPct = c7Pct,
