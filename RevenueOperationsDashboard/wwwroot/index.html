@@ -569,7 +569,7 @@
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-amber-400 border border-amber-500/30 font-mono">SQLite Powered</span>
               </h3>
               <p class="text-xs text-slate-400" id="txtOverridesModalSubtitle">
-                በቀጥታ ከዳታቤዝ ወይም በእጅ የተስተካከሉ እሴቶችን እንዲሁም የቁጥሮች አቀራረብ (Human vs Exact) ይቆጣጠሩ
+                በቀጥታ ከዳታቤዝ ወይም Manual እሴቶችን እንዲሁም የቁጥሮች አቀራረብ (Human vs Exact) ይቆጣጠሩ
               </p>
             </div>
           </div>
@@ -587,7 +587,7 @@
               ዋና የአሰራር ሁኔታ (Master Mode)
             </label>
             <p class="text-[11px] text-slate-400" id="lblMasterModeDesc">
-              ስርዓቱ እሴቶችን ከቀጥታ SQL ወይም ከእጅ ማስተካከያ እንዴት እንደሚወስድ ይምረጡ
+              ስርዓቱ እሴቶችን ከቀጥታ SQL ወይም ከ Manual እንዴት እንደሚወስድ ይምረጡ
             </p>
           </div>
           <!-- Mode Pills -->
@@ -2232,10 +2232,6 @@
         const badgeBg = `background-color: ${statusColor}1A; color: ${statusColor}; border-color: ${statusColor}80`;
         const cardGlow = `border-color: ${statusColor}80; box-shadow: 0 0 18px ${statusColor}38`;
         const isCurrency = card.id === 'kpi1';
-        const overrideBadge = card.isOverridden
-          ? `<span class="inline-flex items-center text-[9px] px-1.5 py-0.5 rounded font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 ml-1.5" title="Department Manual Override"><i class="fa-solid fa-pen-to-square mr-0.5 text-[8px]"></i>${state.currentLang === 'am' ? 'የተስተካከለ' : 'Adjusted'}</span>`
-          : '';
-
         const actualText = card.formattedActual || (isCurrency ? `${card.achievementPct}%` : formatHumanValue(card.actual, false, state.currentLang));
         const targetText = card.formattedTarget || (isCurrency
           ? `${formatHumanValue(card.actual, true, state.currentLang)} (${formatHumanValue(card.target, true, state.currentLang)})`
@@ -2249,7 +2245,7 @@
               <div class="min-w-0 flex-1">
                 <h4 id="card_title_${card.id}" class="text-xs 2xl:text-sm font-extrabold text-slate-100 whitespace-normal line-clamp-1 inline-flex items-center flex-wrap" title="${titleText}">
                   <span>${titleText}</span>
-                  <span id="card_override_badge_${card.id}">${overrideBadge}</span>
+                  <span id="card_override_badge_${card.id}"></span>
                 </h4>
                 <div id="card_sub_${card.id}" class="text-[9px] 2xl:text-[10px] font-semibold text-cyan-400 tracking-wide truncate mt-0.5">${subText || ''}</div>
               </div>
@@ -2361,9 +2357,7 @@
 
         const overrideBadgeEl = document.getElementById(`card_override_badge_${card.id}`);
         if (overrideBadgeEl) {
-          overrideBadgeEl.innerHTML = card.isOverridden
-            ? `<span class="inline-flex items-center text-[9px] px-1.5 py-0.5 rounded font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 ml-1.5" title="Department Manual Override"><i class="fa-solid fa-pen-to-square mr-0.5 text-[8px]"></i>${state.currentLang === 'am' ? 'የተስተካከለ' : 'Adjusted'}</span>`
-            : '';
+          overrideBadgeEl.innerHTML = '';
         }
 
         if (actualEl) {
@@ -4033,11 +4027,11 @@
       const descEl = document.getElementById('lblMasterModeDesc');
       if (descEl) {
         if (mode === 'Auto') {
-          descEl.innerText = state.currentLang === 'am' ? 'ቀጥታ SQL ብቻ: ሁሉም የካርድ እሴቶች ከዳታቤዝ ይሰላሉ (እጅ ማስተካከያዎች ይታለፋሉ)' : 'Live SQL only: all card numbers calculate live from database (overrides ignored)';
+          descEl.innerText = state.currentLang === 'am' ? 'ቀጥታ SQL ብቻ: ሁሉም የካርድ እሴቶች ከዳታቤዝ ይሰላሉ (Manual እሴቶች ይታለፋሉ)' : 'Live SQL only: all card numbers calculate live from database (Manual overrides ignored)';
         } else if (mode === 'Hybrid') {
-          descEl.innerText = state.currentLang === 'am' ? 'ድብልቅ (Hybrid): የበሩ ካርዶች የእጅ ማስተካከያ ሲጠቀሙ፣ ያልበሩት ከቀጥታ SQL ይሰላሉ' : 'Hybrid: enabled cards use custom overrides, others continue calculating from live SQL';
+          descEl.innerText = state.currentLang === 'am' ? 'ድብልቅ (Hybrid): የበሩ ካርዶች Manual ሲጠቀሙ፣ ያልበሩት ከቀጥታ SQL ይሰላሉ' : 'Hybrid: enabled cards use Manual values, others continue calculating from live SQL';
         } else {
-          descEl.innerText = state.currentLang === 'am' ? 'እጅ ብቻ (Manual): ለሁሉም ካርዶች በእጅ የተሞላ እሴት ብቻ ይጠቀማል' : 'Manual only: strictly requires manual input for all cards';
+          descEl.innerText = state.currentLang === 'am' ? 'Manual ብቻ: ለሁሉም ካርዶች Manual እሴት ብቻ ይጠቀማል' : 'Manual only: strictly requires Manual input for all cards';
         }
       }
     }
@@ -4119,7 +4113,7 @@
                 <button type="button" onclick="toggleCardOverrideRow('${cardId}')" id="btnToggleOverride_${cardId}"
                   class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${isEnabled ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'}">
                   <i class="fa-solid ${isEnabled ? 'fa-toggle-on text-amber-400 text-sm' : 'fa-toggle-off text-slate-500 text-sm'}"></i>
-                  <span>${isEnabled ? (isAm ? 'እጅ ማስተካከያ (On)' : 'Override ON') : (isAm ? 'ቀጥታ SQL (Auto)' : 'Live SQL')}</span>
+                  <span>${isEnabled ? 'Manual (On)' : (isAm ? 'ቀጥታ SQL (Auto)' : 'Live SQL')}</span>
                 </button>
               </div>
             </div>
