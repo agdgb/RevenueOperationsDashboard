@@ -169,18 +169,33 @@ namespace RevenueOperationsDashboard.Controllers
                 return BadRequest("FiscalYearId is required.");
             }
 
-            if (!string.IsNullOrWhiteSpace(request.TopCardsMode))
+            try
             {
-                await _sqliteService.SetTopCardsModeAsync(request.TopCardsMode, "DepartmentAdmin");
-            }
+                if (!string.IsNullOrWhiteSpace(request.TopCardsMode))
+                {
+                    await _sqliteService.SetTopCardsModeAsync(request.TopCardsMode, "DepartmentAdmin");
+                }
 
-            if (request.Overrides != null && request.Overrides.Count > 0)
+                if (request.Overrides != null && request.Overrides.Count > 0)
+                {
+                    await _sqliteService.SaveOverridesAsync(request.FiscalYearId, request.Overrides, "DepartmentAdmin");
+                }
+
+                InvalidateTopCardsCache();
+                return Ok(new { success = true, message = "Overrides saved successfully." });
+            }
+            catch (Exception ex)
             {
-                await _sqliteService.SaveOverridesAsync(request.FiscalYearId, request.Overrides, "DepartmentAdmin");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    error = ex.Message,
+                    inner = ex.InnerException?.Message,
+                    dbPath = _sqliteService.DatabasePath,
+                    processUser = Environment.UserName,
+                    appBase = AppContext.BaseDirectory
+                });
             }
-
-            InvalidateTopCardsCache();
-            return Ok(new { success = true, message = "Overrides saved successfully." });
         }
 
         [HttpPost("top-cards/mode")]

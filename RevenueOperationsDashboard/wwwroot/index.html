@@ -4529,13 +4529,23 @@
           body: JSON.stringify(payload)
         });
 
-        if (!res.ok) throw new Error("Failed to save overrides.");
+        if (!res.ok) {
+          let errMsg = "Failed to save overrides.";
+          try {
+            const errData = await res.json();
+            errMsg = errData.error || errData.message || JSON.stringify(errData);
+          } catch {
+            const errTxt = await res.text();
+            if (errTxt) errMsg = errTxt;
+          }
+          throw new Error(errMsg);
+        }
 
         closeCardOverridesModal();
         await loadTopCards(true);
       } catch (err) {
         console.error("Save overrides failed:", err);
-        alert(state.currentLang === 'am' ? 'እሴቶችን ማስቀመጥ አልተቻለም!' : 'Failed to save card overrides.');
+        alert((state.currentLang === 'am' ? 'እሴቶችን ማስቀመጥ አልተቻለም: ' : 'Failed to save card overrides: ') + (err.message || ''));
       } finally {
         if (btn) btn.disabled = false;
         if (saveText) saveText.innerText = state.currentLang === 'am' ? 'እሴቶችን መዝግብና ተግብር' : 'Save & Apply';

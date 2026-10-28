@@ -15,31 +15,59 @@ namespace RevenueOperationsDashboard.Services
 
         public static readonly string[] KnownCards = new[] { "kpi1", "kpi2", "kpi3", "kpi4", "kpi5", "kpi7" };
 
+        public string DatabasePath { get; }
+
         public SqliteOverrideService(IWebHostEnvironment env, ILogger<SqliteOverrideService> logger)
         {
             _logger = logger;
             string dbPath;
             try
             {
-                var dataDir = Path.Combine(env.ContentRootPath, "App_Data");
-                if (!Directory.Exists(dataDir))
+                // In IIS, AppContext.BaseDirectory is always the actual deployed application directory.
+                // env.ContentRootPath might point to C:\Windows\System32\inetsrv in some IIS configurations.
+                var candidates = new List<string>();
+                if (!string.IsNullOrWhiteSpace(AppContext.BaseDirectory))
+                {
+                    candidates.Add(Path.Combine(AppContext.BaseDirectory, "App_Data"));
+                }
+                if (!string.IsNullOrWhiteSpace(env.ContentRootPath))
+                {
+                    candidates.Add(Path.Combine(env.ContentRootPath, "App_Data"));
+                }
+                candidates.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "RevenueOperationsDashboard", "App_Data"));
+                candidates.Add(Path.Combine(Path.GetTempPath(), "RevenueOperationsDashboard", "App_Data"));
+
+                string? selectedDir = null;
+                foreach (var dir in candidates)
                 {
                     try
                     {
-                        Directory.CreateDirectory(dataDir);
-                    }
-                    catch (Exception dirEx)
-                    {
-                        _logger.LogWarning(dirEx, "Unable to create App_Data in ContentRootPath. Attempting fallback to LocalApplicationData.");
-                        var fallback = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RevenueOperationsDashboard", "App_Data");
-                        if (!Directory.Exists(fallback))
+                        if (!Directory.Exists(dir))
                         {
-                            Directory.CreateDirectory(fallback);
+                            Directory.CreateDirectory(dir);
                         }
-                        dataDir = fallback;
+                        // Test write permission by writing and deleting a tiny probe file
+                        var probeFile = Path.Combine(dir, $".write_test_{Guid.NewGuid():N}");
+                        File.WriteAllText(probeFile, "ok");
+                        File.Delete(probeFile);
+
+                        selectedDir = dir;
+                        _logger.LogInformation("Selected writable SQLite directory: {Dir}", dir);
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Candidate directory {Dir} is not writable.", dir);
                     }
                 }
-                dbPath = Path.Combine(dataDir, "dashboard_overrides.db");
+
+                if (selectedDir == null)
+                {
+                    selectedDir = Path.GetTempPath();
+                    _logger.LogWarning("All candidates failed write test. Falling back to TempPath: {Dir}", selectedDir);
+                }
+
+                dbPath = Path.Combine(selectedDir, "dashboard_overrides.db");
             }
             catch (Exception ex)
             {
@@ -47,7 +75,17 @@ namespace RevenueOperationsDashboard.Services
                 dbPath = Path.Combine(Path.GetTempPath(), "dashboard_overrides.db");
             }
 
-            _connectionString = $"Data Source={dbPath};";
+            DatabasePath = dbPath;
+            
+            // Configure Connection with Shared Cache, ReadWriteCreate mode, and 5s timeout for IIS concurrency
+            var builder = new SqliteConnectionStringBuilder
+            {
+                DataSource = dbPath,
+                Mode = SqliteOpenMode.ReadWriteCreate,
+                Cache = SqliteCacheMode.Shared,
+                DefaultTimeout = 5
+            };
+            _connectionString = builder.ToString();
         }
 
         private async Task EnsureDatabaseInitializedAsync()
@@ -63,6 +101,9 @@ namespace RevenueOperationsDashboard.Services
                 await conn.OpenAsync();
 
                 const string initSql = @"
+                    PRAGMA journal_mode = WAL;
+                    PRAGMA busy_timeout = 5000;
+
                     CREATE TABLE IF NOT EXISTS SystemSettings (
                         SettingKey TEXT PRIMARY KEY,
                         SettingValue TEXT NOT NULL,
@@ -102,13 +143,13 @@ namespace RevenueOperationsDashboard.Services
 
                 _isInitialized = true;
                 _isAvailable = true;
-                _logger.LogInformation("SQLite override database initialized successfully at: {Conn}", _connectionString);
+                _logger.LogInformation("SQLite override database initialized successfully at: {Path}", DatabasePath);
             }
             catch (Exception ex)
             {
                 _isInitialized = true;
                 _isAvailable = false;
-                _logger.LogError(ex, "Failed to initialize SQLite override database. Operating in pure SQL Server fallback mode.");
+                _logger.LogError(ex, "Failed to initialize SQLite override database at {Path}. Operating in pure SQL Server fallback mode.", DatabasePath);
             }
             finally
             {
@@ -129,7 +170,7 @@ namespace RevenueOperationsDashboard.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to open SQLite connection. Operating in fallback mode.");
+                _logger.LogError(ex, "Failed to open SQLite connection to {Path}. Operating in fallback mode.", DatabasePath);
                 return null;
             }
         }
@@ -177,6 +218,7 @@ namespace RevenueOperationsDashboard.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to set TopCardsMode in SQLite.");
+                throw new InvalidOperationException($"Failed to update TopCardsMode in SQLite at '{DatabasePath}': {ex.Message}", ex);
             }
         }
 
@@ -296,7 +338,7 @@ namespace RevenueOperationsDashboard.Services
             using var conn = await GetConnectionAsync();
             if (conn == null)
             {
-                throw new InvalidOperationException("SQLite override storage is currently unavailable on this server (check App_Data directory permissions).");
+                throw new InvalidOperationException($"SQLite storage is not writable at '{DatabasePath}'. Please verify file/folder write permissions for the IIS Application Pool.");
             }
 
             using var tx = conn.BeginTransaction();
@@ -339,9 +381,9 @@ namespace RevenueOperationsDashboard.Services
             }
             catch (Exception ex)
             {
-                tx.Rollback();
-                _logger.LogError(ex, "Failed to save overrides in SQLite for FiscalYearId {FiscalYearId}", fiscalYearId);
-                throw;
+                try { tx.Rollback(); } catch { }
+                _logger.LogError(ex, "Failed to save overrides in SQLite at {Path} for FiscalYearId {FiscalYearId}", DatabasePath, fiscalYearId);
+                throw new InvalidOperationException($"Failed to write overrides to SQLite at '{DatabasePath}': {ex.Message}", ex);
             }
         }
 
