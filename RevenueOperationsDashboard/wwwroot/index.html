@@ -1601,7 +1601,7 @@
         <!-- Slide Transition Timer Setting (30s min, 1m, 3m, 5m) -->
         <div class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 transition" title="የስላይድ ማሳያ ቆይታ (Slide Transition Timer)">
           <i class="fa-solid fa-stopwatch text-amber-400 text-xs"></i>
-          <select id="carouselTimerSelector" onchange="setCarouselInterval(this.value)"
+          <select id="carouselTimerSelector" onchange="setCarouselInterval(this.value)" oninput="setCarouselInterval(this.value)"
             class="bg-transparent text-slate-200 text-xs font-semibold focus:outline-none cursor-pointer">
             <option value="30000" class="bg-slate-900 text-slate-200">30 ሰከንድ (30s)</option>
             <option value="60000" class="bg-slate-900 text-slate-200" selected>1 ደቂቃ (1m)</option>
@@ -1691,7 +1691,10 @@
       slideCount: 0,
       activeSlides: [],
       autoRotate: true,
-      slideDuration: 12000, // 12 seconds per slide
+      slideDuration: parseInt(localStorage.getItem('dashboard_carousel_interval') || '60000', 10),
+      carouselDefaultDuration: parseInt(localStorage.getItem('dashboard_carousel_interval') || '60000', 10),
+      slideElapsedMs: 0,
+      lastTickTime: Date.now(),
       timerProgress: 0,
       timerInterval: null,
       filters: {
@@ -3924,8 +3927,14 @@
       // 4. Update slide duration based on custom user timer setting (30s min, 1m, 3m, 5m)
       state.slideDuration = state.carouselDefaultDuration || 60000;
 
-      // 5. Reset progress timer
+      // 5. Reset slide elapsed time and progress
+      state.slideElapsedMs = 0;
       state.timerProgress = 0;
+      state.lastTickTime = Date.now();
+      const progressBar = document.getElementById('carouselProgressBar');
+      if (progressBar) {
+        progressBar.style.width = '0%';
+      }
     }
 
     function nextSlide() {
@@ -3945,32 +3954,55 @@
       if (isNaN(ms) || ms < 30000) return;
       state.carouselDefaultDuration = ms;
       state.slideDuration = ms;
-      state.timerProgress = 0;
       localStorage.setItem('dashboard_carousel_interval', ms.toString());
       const sel = document.getElementById('carouselTimerSelector');
       if (sel && sel.value !== ms.toString()) {
         sel.value = ms.toString();
       }
-      const progressBar = document.getElementById('carouselProgressBar');
-      if (progressBar) progressBar.style.width = '0%';
+
+      // Live adjust current slide: if already displayed for >= new duration, transition immediately!
+      const currentElapsed = state.slideElapsedMs || 0;
+      if (currentElapsed >= ms) {
+        state.slideElapsedMs = 0;
+        state.timerProgress = 0;
+        state.lastTickTime = Date.now();
+        const progressBar = document.getElementById('carouselProgressBar');
+        if (progressBar) progressBar.style.width = '0%';
+        nextSlide();
+      } else {
+        // Rescale progress immediately to the new duration
+        state.timerProgress = (currentElapsed / ms) * 100;
+        state.lastTickTime = Date.now();
+        const progressBar = document.getElementById('carouselProgressBar');
+        if (progressBar) {
+          progressBar.style.width = `${Math.min(100, Math.max(0, state.timerProgress))}%`;
+        }
+      }
     }
 
     function updateTimerSelectorLabels() {
       const sel = document.getElementById('carouselTimerSelector');
       if (!sel) return;
       const isAm = state.currentLang === 'am';
-      const currentVal = sel.value || (localStorage.getItem('dashboard_carousel_interval') || '60000');
+      const validValues = ['30000', '60000', '180000', '300000'];
+      let activeVal = (state.carouselDefaultDuration || parseInt(localStorage.getItem('dashboard_carousel_interval') || '60000', 10)).toString();
+      if (!validValues.includes(activeVal)) {
+        activeVal = '60000';
+      }
       sel.innerHTML = `
         <option value="30000" class="bg-slate-900 text-slate-200">${isAm ? '30 ሰከንድ (30s)' : '30s (Min)'}</option>
         <option value="60000" class="bg-slate-900 text-slate-200">${isAm ? '1 ደቂቃ (1m)' : '1 Min'}</option>
         <option value="180000" class="bg-slate-900 text-slate-200">${isAm ? '3 ደቂቃ (3m)' : '3 Min'}</option>
         <option value="300000" class="bg-slate-900 text-slate-200">${isAm ? '5 ደቂቃ (5m)' : '5 Min'}</option>
       `;
-      sel.value = currentVal;
+      sel.value = activeVal;
     }
 
     function toggleCarousel() {
       state.autoRotate = !state.autoRotate;
+      if (state.autoRotate) {
+        state.lastTickTime = Date.now();
+      }
       updatePlayPauseButtonState();
     }
 
@@ -3996,18 +4028,31 @@
     }
 
     function startTimerLoop() {
-      setInterval(() => {
+      state.lastTickTime = Date.now();
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+      }
+      state.timerInterval = setInterval(() => {
+        const now = Date.now();
+        const delta = Math.min(Math.max(0, now - (state.lastTickTime || now)), 1000);
+        state.lastTickTime = now;
+
         if (!state.autoRotate || state.slideCount === 0) return;
 
-        state.timerProgress += (100 / (state.slideDuration / 100));
-        if (state.timerProgress >= 100) {
+        state.slideElapsedMs = (state.slideElapsedMs || 0) + delta;
+        const duration = state.slideDuration || state.carouselDefaultDuration || 60000;
+
+        if (state.slideElapsedMs >= duration) {
+          state.slideElapsedMs = 0;
           state.timerProgress = 0;
           nextSlide();
+        } else {
+          state.timerProgress = (state.slideElapsedMs / duration) * 100;
         }
 
         const progressBar = document.getElementById('carouselProgressBar');
         if (progressBar) {
-          progressBar.style.width = `${state.timerProgress}%`;
+          progressBar.style.width = `${Math.min(100, Math.max(0, state.timerProgress))}%`;
         }
       }, 100);
     }
