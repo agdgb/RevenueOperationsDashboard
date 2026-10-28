@@ -21,3 +21,4 @@ scratch/
 **/scratch/
 _untracked_archive/
 **/_untracked_archive/
+.agents/rules/response-style.md
