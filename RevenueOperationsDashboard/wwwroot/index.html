@@ -1591,17 +1591,29 @@
     <div class="absolute bottom-0 left-0 w-full h-16 cursor-pointer z-0"></div>
     <footer
       class="w-full relative z-10 flex-shrink-0 bg-cardBg border-t border-borderDark p-3 flex items-center justify-between transition-all duration-300 transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
         <button id="playPauseBtn" onclick="toggleCarousel()"
-          class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition">
+          class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition cursor-pointer">
           <i id="playPauseIcon" class="fa-solid fa-pause"></i>
           <span id="playPauseText">Pause</span>
         </button>
-        <div class="w-32 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+
+        <!-- Slide Transition Timer Setting (30s min, 1m, 3m, 5m) -->
+        <div class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 transition" title="የስላይድ ማሳያ ቆይታ (Slide Transition Timer)">
+          <i class="fa-solid fa-stopwatch text-amber-400 text-xs"></i>
+          <select id="carouselTimerSelector" onchange="setCarouselInterval(this.value)"
+            class="bg-transparent text-slate-200 text-xs font-semibold focus:outline-none cursor-pointer">
+            <option value="30000" class="bg-slate-900 text-slate-200">30 ሰከንድ (30s)</option>
+            <option value="60000" class="bg-slate-900 text-slate-200" selected>1 ደቂቃ (1m)</option>
+            <option value="180000" class="bg-slate-900 text-slate-200">3 ደቂቃ (3m)</option>
+            <option value="300000" class="bg-slate-900 text-slate-200">5 ደቂቃ (5m)</option>
+          </select>
+        </div>
+
+        <div class="w-24 sm:w-32 bg-slate-800 rounded-full h-1.5 overflow-hidden">
           <div id="carouselProgressBar" class="bg-blue-500 h-full w-0 transition-all duration-100"></div>
         </div>
-        <span id="slideTitleDisplay" class="text-xs font-medium text-slate-400">Slide 1 of 3: Tax Type Target vs
-          Actual</span>
+        <span id="slideTitleDisplay" class="text-xs font-medium text-slate-400 truncate max-w-[260px]">Slide 1 of 5</span>
       </div>
 
       <div class="flex items-center gap-3">
@@ -2010,6 +2022,7 @@
       if (document.getElementById('lblWeeklyVelocityTitle')) document.getElementById('lblWeeklyVelocityTitle').innerHTML = `<i class="fa-solid fa-chart-simple text-cyan-400"></i> ${t_ui("7-Day Revenue Velocity Curve")}`;
       updateCalculationModeButtons(state.filters.calculationMode || 'ToDateTarget');
       updatePlayPauseButtonState();
+      updateTimerSelectorLabels();
 
       // Update Slide Titles
       if (state.config && state.config.carousel && state.config.carousel.slides) {
@@ -2091,9 +2104,11 @@
         }
 
         state.autoRotate = config.carousel.autoPlay;
-        state.carouselDefaultDuration = config.carousel.intervalMs || 12000;
+        const savedInterval = localStorage.getItem('dashboard_carousel_interval');
+        state.carouselDefaultDuration = savedInterval ? parseInt(savedInterval, 10) : (config.carousel.intervalMs && config.carousel.intervalMs >= 30000 ? config.carousel.intervalMs : 60000);
         state.slideDuration = state.carouselDefaultDuration;
         updatePlayPauseButtonState();
+        updateTimerSelectorLabels();
 
         const mainViewport = document.querySelector('main');
         const visibleSlides = [];
@@ -3906,11 +3921,8 @@
         refreshActiveSlideMetric(index);
       }
 
-      // 4. Update slide duration based on custom setting or default interval
-      if (state.activeSlides[index]) {
-        const slideConfig = state.activeSlides[index];
-        state.slideDuration = slideConfig.durationMs || state.carouselDefaultDuration || 12000;
-      }
+      // 4. Update slide duration based on custom user timer setting (30s min, 1m, 3m, 5m)
+      state.slideDuration = state.carouselDefaultDuration || 60000;
 
       // 5. Reset progress timer
       state.timerProgress = 0;
@@ -3926,6 +3938,35 @@
       if (state.slideCount === 0) return;
       const prevIndex = (state.currentSlide - 1 + state.slideCount) % state.slideCount;
       goToSlide(prevIndex);
+    }
+
+    function setCarouselInterval(durationMs) {
+      const ms = parseInt(durationMs, 10);
+      if (isNaN(ms) || ms < 30000) return;
+      state.carouselDefaultDuration = ms;
+      state.slideDuration = ms;
+      state.timerProgress = 0;
+      localStorage.setItem('dashboard_carousel_interval', ms.toString());
+      const sel = document.getElementById('carouselTimerSelector');
+      if (sel && sel.value !== ms.toString()) {
+        sel.value = ms.toString();
+      }
+      const progressBar = document.getElementById('carouselProgressBar');
+      if (progressBar) progressBar.style.width = '0%';
+    }
+
+    function updateTimerSelectorLabels() {
+      const sel = document.getElementById('carouselTimerSelector');
+      if (!sel) return;
+      const isAm = state.currentLang === 'am';
+      const currentVal = sel.value || (localStorage.getItem('dashboard_carousel_interval') || '60000');
+      sel.innerHTML = `
+        <option value="30000" class="bg-slate-900 text-slate-200">${isAm ? '30 ሰከንድ (30s)' : '30s (Min)'}</option>
+        <option value="60000" class="bg-slate-900 text-slate-200">${isAm ? '1 ደቂቃ (1m)' : '1 Min'}</option>
+        <option value="180000" class="bg-slate-900 text-slate-200">${isAm ? '3 ደቂቃ (3m)' : '3 Min'}</option>
+        <option value="300000" class="bg-slate-900 text-slate-200">${isAm ? '5 ደቂቃ (5m)' : '5 Min'}</option>
+      `;
+      sel.value = currentVal;
     }
 
     function toggleCarousel() {
