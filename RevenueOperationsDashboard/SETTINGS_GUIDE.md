@@ -37,7 +37,7 @@ Here is the complete and cleaned schema currently supported:
   "DashboardSettings": {
     "DefaultLanguage": "am",
     "KpiCalculationMode": "ToDateTarget",
-    "DefaultChartMetricMode": "pct",
+    "DefaultChartMetricMode": "wicks",
     "DefaultTheme": "ocean",
     "DefaultFilters": {
       "FiscalYearId": "2019",
@@ -74,7 +74,8 @@ Here is the complete and cleaned schema currently supported:
           "Subtitle": "Monthly Cumulative Achievement Trend % against 100% target baseline",
           "SubtitleAm": "ወርሃዊ ድምር አፈፃፀም ንፅፅር በመቶኛ",
           "ApiEndpoint": "/api/dashboard/monthly-trend",
-          "DurationMs": 20000
+          "DurationMs": 20000,
+          "DefaultMetricMode": "wicks"
         },
         {
           "Id": "slide-3",
@@ -84,7 +85,8 @@ Here is the complete and cleaned schema currently supported:
           "Subtitle": "Monthly Achievement Trend Comparison with Previous Year",
           "SubtitleAm": "ከቀዳሚው ዓመት ጋር የወርሃዊ አፈፃፀም ንፅፅር",
           "ApiEndpoint": "/api/dashboard/yoy-monthly-trend",
-          "DurationMs": 20000
+          "DurationMs": 20000,
+          "DefaultMetricMode": "wicks"
         },
         {
           "Id": "slide-2",
@@ -122,7 +124,7 @@ Here is the complete and cleaned schema currently supported:
 | :--- | :--- | :--- | :--- |
 | `DefaultLanguage` | string | `"am"`, `"en"` | Primary language loaded on page startup. |
 | `KpiCalculationMode` | string | `"ToDateTarget"`, `"AnnualTarget"` | Primary calculation baseline for top KPI cards and chart targets. |
-| `DefaultChartMetricMode` | string | `"pct"`, `"amount"`, `"both"` | Default metric display mode for charts: percentage (%), ETB amount, or both combined. |
+| `DefaultChartMetricMode` | string | `"pct"`, `"wicks"` | Default metric display mode for the time-series curves (Slide 1 Monthly Trend & Slide 3 YoY Comparison). |
 | `DefaultTheme` | string | `"ocean"`, `"emerald"`, `"national"`, `"forest"`, `"sunset"`, `"grayscale"` | Visual color theme for backgrounds, bars, curves, and cards. |
 
 #### Calculation Mode Detail
@@ -130,9 +132,11 @@ Here is the complete and cleaned schema currently supported:
 - `"AnnualTarget"`: Evaluates current actual collections against the full 12-month annual quota (የሙሉ ዓመት ዕቅድ).
 
 #### Chart Metric Mode Detail
-- `"pct"`: Shows whole percentages (e.g. `104%`), with 100% target baseline lines.
-- `"amount"`: Formatted whole ETB amounts with HumanNumbers (e.g. `ብር 25ቢ`, `ብር 700ሚ`, `ETB 25B`).
-- `"both"`: Combined display (e.g. `ብር 25ቢ (104%)`, or dual-axis bars and lines).
+- Slide 0 (**Tax Type Performance**) natively renders side-by-side Plan vs Actual comparison bars in **Currency (ETB)** formatted with 0-decimal HumanNumbers (e.g., `ብር 25ቢ`).
+- Slide 2 (**Branch Office Achievement**) natively renders horizontal branch ranking bars in **Achievement Percentage (%)** sorted against the 100% target dashed baseline.
+- Slides 1 & 3 (**Monthly Trend** and **YoY Monthly Trend**) are founded on the smooth **Achievement Percentage (%)** curve and extend with optional **Wicks**:
+  - `"pct"`: Clean percentage curve (`0% - 140%` scale) with 100% target baseline line and achievement labels above markers.
+  - `"wicks"` (or `"amount"` / `"both"`): Retains the smooth percentage curve while sprouting slender luminous vertical wicks rising 15 units above active data points, capped with dark glassmorphic badges displaying formatted ETB collection values (`ብር ...`). Line percentage labels shift cleanly below markers to prevent overlap.
 
 ---
 
@@ -183,6 +187,7 @@ Each entry in `Slides` has the following properties:
 | `SubtitleAm` | string | Amharic explanatory subtitle. |
 | `ApiEndpoint` | string | Backend controller route providing metrics for this slide. |
 | `DurationMs` | integer | Custom display duration in milliseconds for this specific slide (e.g. `20000`). |
+| `DefaultMetricMode` | string | Optional per-slide metric mode override (`"wicks"` or `"pct"`) for time-series slides. |
 
 #### Available Slide IDs
 
@@ -198,14 +203,14 @@ Each entry in `Slides` has the following properties:
 
 ## 4. Practical Configuration Recipes
 
-### Recipe 1: Boardroom Executive Review (Full Year Quota & Both Metrics)
-To display annual targets with both currency amounts and achievement percentages in the Emerald theme:
+### Recipe 1: Boardroom Executive Review (Full Year Quota & Wicks Display)
+To display annual targets with luminous currency wicks extending above achievement percentage curves in the Emerald theme:
 
 ```json
   "DashboardSettings": {
     "DefaultLanguage": "am",
     "KpiCalculationMode": "AnnualTarget",
-    "DefaultChartMetricMode": "both",
+    "DefaultChartMetricMode": "wicks",
     "DefaultTheme": "emerald",
     "Carousel": {
       "AutoPlay": true,
@@ -214,14 +219,14 @@ To display annual targets with both currency amounts and achievement percentages
   }
 ```
 
-### Recipe 2: Daily Operations Center (To-Date Targets & Pure Currency)
-To track daily progress against elapsed days with actual ETB revenue amounts:
+### Recipe 2: Daily Operations Center (To-Date Targets & Pure Percentage Curves)
+To track to-date quotas with clean percentage curves and 100% baseline:
 
 ```json
   "DashboardSettings": {
     "DefaultLanguage": "am",
     "KpiCalculationMode": "ToDateTarget",
-    "DefaultChartMetricMode": "amount",
+    "DefaultChartMetricMode": "pct",
     "DefaultTheme": "ocean",
     "Carousel": {
       "AutoPlay": true,
@@ -256,19 +261,115 @@ The following settings were removed because they are no longer used by the activ
 
 ---
 
-## 6. Carousel Rendering & Smooth Animation Architecture
+## 6. Interactive Controls & Chart Behaviors
 
-### Zero Blank Delay with Full Entrance Animation
-In earlier versions, navigating to an unvisited slide caused a momentary blank black container while the HTTP request fetched data from the server.
-In **v2.2.5**, this is solved through a dual-stage architecture:
+### 6.1 Time-Series Wicks Extension (Slides 1 & 3)
+- **Visual Design**: The Monthly Achievement Trend and YoY Monthly Trend charts feature a dual-layer visualization:
+  - **Foundation**: A smooth cubic spline representing monthly cumulative achievement percentages (scaled 0% to 140%) anchored by an amber dashed 100% baseline mark line.
+  - **Luminous Wicks**: When set to `"wicks"` (or when the user clicks **በብር (Wicks)**), slender 2px vertical stems rise 15 units above each active month's marker, capped by a dark glassmorphic badge displaying whole formatted ETB collection values (e.g. `ብር 25ቢ`, `ብር 21ቢ`, `ብር 1ቢ`).
+  - **Dynamic Label Positioning**: When wicks are active, percentage labels reposition beneath the marker points to prevent visual overlap. Inactive and future months with 0% collections do not sprout wicks.
+- **In-Slide Floating Pill**: Both Slide 1 and Slide 3 feature floating toggle pills at the top right:
+  - `[በመቶኛ (%)]`: Switches the chart to a pure percentage curve.
+  - `[በብር (Wicks)]`: Sprouts the vertical currency wicks and badges.
+- **Hierarchy of Defaults**:
+  1. Slide-level `DefaultMetricMode` inside `Carousel.Slides` (e.g. `"DefaultMetricMode": "wicks"`).
+  2. Global `DefaultChartMetricMode` inside `DashboardSettings` (e.g. `"DefaultChartMetricMode": "wicks"`).
+  3. Interactive user clicks during an active session immediately override the display mode in real time.
 
-1. **Background JSON Preloading (`preloadAllSlides`)**:
-   Immediately after initial dashboard load (or filter application), the client issues background fetches for all configured slides into memory (`state.activeSlideData[idx]`). It does *not* render the canvas in the dark, preserving the initial chart state.
+### 6.2 Native Non-Toggle Slides (Slides 0 & 2)
+- **Slide 0 (Tax Type Performance)**: Renders side-by-side comparison bars for Plan Target vs Actual Collection in Billions of Birr with 0 decimals. Redundant `100%` target labels were eliminated to preserve financial clarity.
+- **Slide 2 (Branch Office Achievement)**: Renders horizontal bars ranking branch offices by achievement percentage sorted ascending against the 100% dashed baseline.
 
-2. **On-Demand Animation Replay (`renderActiveSlideChart(index, data, replayAnimation = true)`)**:
-   When the user or auto-rotator switches to a slide:
-   - The slide container is brought into view (`slide-visible`).
-   - The chart renders immediately from in-memory cache in 0ms (no empty black box or network delay).
-   - ECharts executes its full entrance animation (spline drawing, bar growth, luminous wick ascension) dynamically in front of the viewer.
-   - When switching metric modes via `[በመቶኛ (%)]` and `[በብር (Wicks)]`, `replayAnimation = false` ensures an in-place smooth series transition without clearing the chart.
+### 6.3 Edge Navigation & Screen Inactivity
+- **Floating Navigation Arrows**: Located at the left and right screen edges, vertically centered at 50% screen height. Hovering within the edge trigger zone smoothly reveals the glassmorphic circular chevron buttons.
+- **Auto-Fade on Inactivity**: When no mouse or keyboard activity occurs for 15 seconds, the dashboard enters executive presentation mode, auto-hiding all navigation chevrons, floating pills, and cursor to provide an uncluttered display. Moving the mouse immediately restores all controls.
+- **Keyboard Shortcuts**:
+  - `Right Arrow` / `Spacebar`: Advance to the next slide.
+  - `Left Arrow`: Return to the previous slide.
+  - `P`: Pause / Resume carousel autoplay.
+  - `Escape`: Close any open modal dialog (Global Filters or Executive Weekly Report).
+
+---
+
+## 7. SQLite Storage, KPI Card Overrides & IIS Configuration
+
+### 7.1 Architecture & Mode Settings
+The dashboard includes an embedded SQLite persistence engine ([SqliteOverrideService.cs](file:///c:/Users/User/source/repos/OperationDashboard%20Project/RevenueOperationsDashboard/Services/SqliteOverrideService.cs)) enabling department administrators to adjust executive target quotas and actual figures on top KPI summary cards in real time without altering the core SQL Server database.
+
+#### Operating Modes (`TopCardsMode`)
+- **`Auto`**: All top KPI summary cards calculate exclusively from live SQL Server database transactions.
+- **`Hybrid`** (Default): Live SQL calculations are displayed by default, but any KPI card with an active manual override uses the customized quota/actual values.
+- **`Manual`**: All enabled override values take precedence.
+
+#### SQLite Concurrency & Resilience
+- **Database File**: `dashboard_overrides.db` stored in `App_Data/`.
+- **WAL Journaling**: `PRAGMA journal_mode = WAL;` enables concurrent read and write operations from multi-threaded IIS worker processes without database lock contention.
+- **Busy Timeout**: `PRAGMA busy_timeout = 5000;` provides a 5-second lock queue before timeout.
+- **Automatic Multi-Path Fallback**: If the site directory permissions restrict writes, the service automatically probes and falls back to `C:\ProgramData\RevenueOperationsDashboard\App_Data\` or `%TEMP%\RevenueOperationsDashboard\App_Data\`, ensuring saves never fail.
+- **Native Driver**: `e_sqlite3.dll` is packaged directly in the application root to eliminate missing dependency errors on IIS hosts.
+
+---
+
+### 7.2 IIS Folder Permissions Configuration
+When hosting the dashboard in Microsoft IIS under an Application Pool identity (such as `RevenueOperations`), SQLite requires write, create, and delete permissions within the `App_Data` directory to generate the database and its supporting write-ahead log files (`.db-wal` and `.db-shm`).
+
+Run the following command in PowerShell on the IIS production server:
+
+```powershell
+# Ensure App_Data folder exists
+if (-not (Test-Path "C:\inetpub\wwwroot\revop\App_Data")) { 
+    New-Item -ItemType Directory -Force -Path "C:\inetpub\wwwroot\revop\App_Data" 
+}
+
+# Grant full rights to the RevenueOperations Application Pool
+icacls "C:\inetpub\wwwroot\revop\App_Data" /grant 'IIS AppPool\RevenueOperations:(OI)(CI)F' /T
+```
+
+> **PowerShell Quoting Rule**: In PowerShell, the permissions argument must be wrapped in single quotes (`'IIS AppPool\RevenueOperations:(OI)(CI)F'`). Without quotes, PowerShell interprets `(OI)` as a command expression and throws an error: `The term 'OI' is not recognized`.
+
+Alternatively, in standard Windows Command Prompt (`cmd.exe`):
+```cmd
+icacls "C:\inetpub\wwwroot\revop\App_Data" /grant "IIS AppPool\RevenueOperations:(OI)(CI)F" /T
+```
+
+#### Meaning of Permission Flags
+- `(OI)`: **Object Inherit** - Sub-files inherit these permissions.
+- `(CI)`: **Container Inherit** - Sub-directories inherit these permissions.
+- `F`: **Full Control** - Enables SQLite to read, write, create, lock, and purge temporary WAL/SHM log files.
+- `/T`: Recursively applies permissions to all existing files inside the folder.
+
+---
+
+## 8. Release & Deployment Packaging
+
+### 8.1 Automated Publishing Script (`publish.ps1`)
+The dashboard includes an automated PowerShell publishing script located at the repository root:
+
+```powershell
+# Publish with interactive version prompt (defaults to next minor release)
+.\publish.ps1
+
+# Publish specific version with automated packaging and Git tagging
+.\publish.ps1 -Version "v2.2.6" -TagGit -CreateZip
+```
+
+### 8.2 Release Artifacts
+Each release generated by `publish.ps1` produces:
+1. **Published Folder** (`./publish/<Version>/`): Standalone ASP.NET Core self-contained or framework-dependent application binaries with static web assets (`wwwroot/`) and configuration files.
+2. **Settings Guide** (`./publish/<Version>/SETTINGS_GUIDE.md`): This documentation file is automatically copied into the root of every published output directory for immediate operational reference.
+3. **Zip Archive** (`./publish/RevenueOperationsDashboard-<Version>.zip`): A compressed distribution package ready for immediate transfer and extraction onto production IIS or Kestrel servers.
+4. **Git Tag**: Automatically tagged (e.g. `v2.2.6`) and pushed to the remote repository.
+
+---
+
+## 9. Version Changelog
+
+| Version | Highlights & Changes |
+| :--- | :--- |
+| **v2.2.6** | Multi-directory SQLite fallback probe (`App_Data` -> `ProgramData` -> `TempPath`), WAL concurrency mode, 5000ms busy timeout, detailed diagnostic 500 error reporting, and native `e_sqlite3.dll` bundling for IIS. |
+| **v2.2.5** | Dual-stage preloading and instant animation replay; non-blocking pause indicators; immediate carousel timing updates. |
+| **v2.2.2** | Configured **በብር (Wicks)** as the default metric mode in `appsettings.json` and `appsettings.Development.json`; added per-slide `DefaultMetricMode` support in DTOs and client engine. |
+| **v2.2.1** | Resolved edge navigation overlay hit-test conflict that intercepted mouse clicks on the top-right metric toggle pill. |
+| **v2.2.0** | Introduced slender luminous **Wicks** extension on time-series charts (Slides 1 & 3) displaying ETB collections above percentage curves; restored pure currency to Tax Types and pure percentage to Branch Rankings. |
+| **v2.1.0** | Executive Weekly Performance Report rolling calculation overhaul; cleanup of obsolete settings; addition of automated `publish.ps1` and `SETTINGS_GUIDE.md`. |
 
