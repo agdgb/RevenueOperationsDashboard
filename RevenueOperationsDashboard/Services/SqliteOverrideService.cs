@@ -7,85 +7,39 @@ namespace RevenueOperationsDashboard.Services
 {
     public class SqliteOverrideService
     {
-        private readonly string _connectionString;
+        private readonly List<string> _candidateDbPaths = new();
         private readonly ILogger<SqliteOverrideService> _logger;
         private static readonly SemaphoreSlim _initLock = new(1, 1);
         private static bool _isInitialized = false;
         private static bool _isAvailable = true;
+        private static string? _lastInitError;
+        private string? _activeDbPath;
+        private string? _activeConnectionString;
 
         public static readonly string[] KnownCards = new[] { "kpi1", "kpi2", "kpi3", "kpi4", "kpi5", "kpi7" };
 
-        public string DatabasePath { get; }
+        public string DatabasePath => _activeDbPath ?? _candidateDbPaths.FirstOrDefault() ?? "Unknown";
 
         public SqliteOverrideService(IWebHostEnvironment env, ILogger<SqliteOverrideService> logger)
         {
             _logger = logger;
-            string dbPath;
-            try
+
+            // In IIS, AppContext.BaseDirectory is the actual deployed application directory.
+            // env.ContentRootPath might point to C:\Windows\System32\inetsrv in some IIS configurations.
+            if (!string.IsNullOrWhiteSpace(AppContext.BaseDirectory))
             {
-                // In IIS, AppContext.BaseDirectory is always the actual deployed application directory.
-                // env.ContentRootPath might point to C:\Windows\System32\inetsrv in some IIS configurations.
-                var candidates = new List<string>();
-                if (!string.IsNullOrWhiteSpace(AppContext.BaseDirectory))
-                {
-                    candidates.Add(Path.Combine(AppContext.BaseDirectory, "App_Data"));
-                }
-                if (!string.IsNullOrWhiteSpace(env.ContentRootPath))
-                {
-                    candidates.Add(Path.Combine(env.ContentRootPath, "App_Data"));
-                }
-                candidates.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "RevenueOperationsDashboard", "App_Data"));
-                candidates.Add(Path.Combine(Path.GetTempPath(), "RevenueOperationsDashboard", "App_Data"));
-
-                string? selectedDir = null;
-                foreach (var dir in candidates)
-                {
-                    try
-                    {
-                        if (!Directory.Exists(dir))
-                        {
-                            Directory.CreateDirectory(dir);
-                        }
-                        // Test write permission by writing and deleting a tiny probe file
-                        var probeFile = Path.Combine(dir, $".write_test_{Guid.NewGuid():N}");
-                        File.WriteAllText(probeFile, "ok");
-                        File.Delete(probeFile);
-
-                        selectedDir = dir;
-                        _logger.LogInformation("Selected writable SQLite directory: {Dir}", dir);
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Candidate directory {Dir} is not writable.", dir);
-                    }
-                }
-
-                if (selectedDir == null)
-                {
-                    selectedDir = Path.GetTempPath();
-                    _logger.LogWarning("All candidates failed write test. Falling back to TempPath: {Dir}", selectedDir);
-                }
-
-                dbPath = Path.Combine(selectedDir, "dashboard_overrides.db");
+                _candidateDbPaths.Add(Path.Combine(AppContext.BaseDirectory, "App_Data", "dashboard_overrides.db"));
             }
-            catch (Exception ex)
+            if (!string.IsNullOrWhiteSpace(env.ContentRootPath))
             {
-                _logger.LogError(ex, "Failed to resolve directory for SQLite. Using fallback temp database.");
-                dbPath = Path.Combine(Path.GetTempPath(), "dashboard_overrides.db");
+                var envPath = Path.Combine(env.ContentRootPath, "App_Data", "dashboard_overrides.db");
+                if (!_candidateDbPaths.Contains(envPath, StringComparer.OrdinalIgnoreCase))
+                {
+                    _candidateDbPaths.Add(envPath);
+                }
             }
-
-            DatabasePath = dbPath;
-            
-            // Configure Connection with Shared Cache, ReadWriteCreate mode, and 5s timeout for IIS concurrency
-            var builder = new SqliteConnectionStringBuilder
-            {
-                DataSource = dbPath,
-                Mode = SqliteOpenMode.ReadWriteCreate,
-                Cache = SqliteCacheMode.Shared,
-                DefaultTimeout = 5
-            };
-            _connectionString = builder.ToString();
+            _candidateDbPaths.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "RevenueOperationsDashboard", "App_Data", "dashboard_overrides.db"));
+            _candidateDbPaths.Add(Path.Combine(Path.GetTempPath(), "RevenueOperationsDashboard", "App_Data", "dashboard_overrides.db"));
         }
 
         private async Task EnsureDatabaseInitializedAsync()
@@ -97,59 +51,102 @@ namespace RevenueOperationsDashboard.Services
             {
                 if (_isInitialized) return;
 
-                using var conn = new SqliteConnection(_connectionString);
-                await conn.OpenAsync();
-
-                const string initSql = @"
-                    PRAGMA journal_mode = WAL;
-                    PRAGMA busy_timeout = 5000;
-
-                    CREATE TABLE IF NOT EXISTS SystemSettings (
-                        SettingKey TEXT PRIMARY KEY,
-                        SettingValue TEXT NOT NULL,
-                        UpdatedAt TEXT NOT NULL,
-                        UpdatedBy TEXT NULL
-                    );
-
-                    CREATE TABLE IF NOT EXISTS TopCardOverrides (
-                        CardId TEXT NOT NULL,
-                        FiscalYearId TEXT NOT NULL,
-                        IsEnabled INTEGER NOT NULL DEFAULT 0,
-                        Actual REAL NULL,
-                        Target REAL NULL,
-                        UseHumanFormat INTEGER NOT NULL DEFAULT 1,
-                        ApplyOnlyAllBranches INTEGER NOT NULL DEFAULT 1,
-                        Notes TEXT NULL,
-                        UpdatedAt TEXT NOT NULL,
-                        UpdatedBy TEXT NULL,
-                        PRIMARY KEY (CardId, FiscalYearId)
-                    );
-
-                    INSERT OR IGNORE INTO SystemSettings (SettingKey, SettingValue, UpdatedAt, UpdatedBy)
-                    VALUES ('TopCardsMode', 'Hybrid', datetime('now'), 'System');
-                ";
-
-                await conn.ExecuteAsync(initSql);
-
-                // Safe migration: check if UseHumanFormat column exists
-                try
+                foreach (var dbPath in _candidateDbPaths)
                 {
-                    await conn.ExecuteAsync("ALTER TABLE TopCardOverrides ADD COLUMN UseHumanFormat INTEGER NOT NULL DEFAULT 1;");
-                }
-                catch
-                {
-                    // Column already exists
+                    try
+                    {
+                        var dir = Path.GetDirectoryName(dbPath);
+                        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                        {
+                            Directory.CreateDirectory(dir);
+                        }
+
+                        // Verify write access to directory
+                        var probeFile = Path.Combine(dir!, $".write_test_{Guid.NewGuid():N}");
+                        File.WriteAllText(probeFile, "ok");
+                        File.Delete(probeFile);
+
+                        var builder = new SqliteConnectionStringBuilder
+                        {
+                            DataSource = dbPath,
+                            Mode = SqliteOpenMode.ReadWriteCreate,
+                            Cache = SqliteCacheMode.Shared,
+                            DefaultTimeout = 5
+                        };
+                        var connStr = builder.ToString();
+
+                        using (var conn = new SqliteConnection(connStr))
+                        {
+                            await conn.OpenAsync();
+
+                            try
+                            {
+                                await conn.ExecuteAsync("PRAGMA journal_mode = WAL;");
+                            }
+                            catch
+                            {
+                                // Fallback to default journal mode if WAL shared memory is restricted by IIS
+                            }
+                            await conn.ExecuteAsync("PRAGMA busy_timeout = 5000;");
+
+                            const string initSql = @"
+                                CREATE TABLE IF NOT EXISTS SystemSettings (
+                                    SettingKey TEXT PRIMARY KEY,
+                                    SettingValue TEXT NOT NULL,
+                                    UpdatedAt TEXT NOT NULL,
+                                    UpdatedBy TEXT NULL
+                                );
+
+                                CREATE TABLE IF NOT EXISTS TopCardOverrides (
+                                    CardId TEXT NOT NULL,
+                                    FiscalYearId TEXT NOT NULL,
+                                    IsEnabled INTEGER NOT NULL DEFAULT 0,
+                                    Actual REAL NULL,
+                                    Target REAL NULL,
+                                    UseHumanFormat INTEGER NOT NULL DEFAULT 1,
+                                    ApplyOnlyAllBranches INTEGER NOT NULL DEFAULT 1,
+                                    Notes TEXT NULL,
+                                    UpdatedAt TEXT NOT NULL,
+                                    UpdatedBy TEXT NULL,
+                                    PRIMARY KEY (CardId, FiscalYearId)
+                                );
+
+                                INSERT OR IGNORE INTO SystemSettings (SettingKey, SettingValue, UpdatedAt, UpdatedBy)
+                                VALUES ('TopCardsMode', 'Hybrid', datetime('now'), 'System');
+                            ";
+
+                            await conn.ExecuteAsync(initSql);
+
+                            // Safe migration: check if UseHumanFormat column exists
+                            try
+                            {
+                                await conn.ExecuteAsync("ALTER TABLE TopCardOverrides ADD COLUMN UseHumanFormat INTEGER NOT NULL DEFAULT 1;");
+                            }
+                            catch
+                            {
+                                // Column already exists
+                            }
+                        }
+
+                        _activeDbPath = dbPath;
+                        _activeConnectionString = connStr;
+                        _isInitialized = true;
+                        _isAvailable = true;
+                        _lastInitError = null;
+                        _logger.LogInformation("SQLite override database initialized successfully at: {Path}", dbPath);
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        _lastInitError = ex.Message;
+                        _logger.LogWarning(ex, "Failed to initialize SQLite at candidate path {Path}. Trying next candidate...", dbPath);
+                    }
                 }
 
-                _isInitialized = true;
-                _isAvailable = true;
-                _logger.LogInformation("SQLite override database initialized successfully at: {Path}", DatabasePath);
-            }
-            catch (Exception ex)
-            {
+                // If all candidates failed
                 _isInitialized = true;
                 _isAvailable = false;
-                _logger.LogError(ex, "Failed to initialize SQLite override database at {Path}. Operating in pure SQL Server fallback mode.", DatabasePath);
+                _logger.LogError("All SQLite candidates failed. Operating in pure SQL Server fallback mode. Last error: {Error}", _lastInitError);
             }
             finally
             {
@@ -160,16 +157,17 @@ namespace RevenueOperationsDashboard.Services
         private async Task<SqliteConnection?> GetConnectionAsync()
         {
             await EnsureDatabaseInitializedAsync();
-            if (!_isAvailable) return null;
+            if (!_isAvailable || string.IsNullOrEmpty(_activeConnectionString)) return null;
 
             try
             {
-                var conn = new SqliteConnection(_connectionString);
+                var conn = new SqliteConnection(_activeConnectionString);
                 await conn.OpenAsync();
                 return conn;
             }
             catch (Exception ex)
             {
+                _lastInitError = ex.Message;
                 _logger.LogError(ex, "Failed to open SQLite connection to {Path}. Operating in fallback mode.", DatabasePath);
                 return null;
             }
@@ -338,7 +336,7 @@ namespace RevenueOperationsDashboard.Services
             using var conn = await GetConnectionAsync();
             if (conn == null)
             {
-                throw new InvalidOperationException($"SQLite storage is not writable at '{DatabasePath}'. Please verify file/folder write permissions for the IIS Application Pool.");
+                throw new InvalidOperationException($"SQLite storage is not writable at '{DatabasePath}'. Reason: {_lastInitError ?? "Could not establish database connection."}");
             }
 
             using var tx = conn.BeginTransaction();
