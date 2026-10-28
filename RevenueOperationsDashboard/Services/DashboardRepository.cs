@@ -12,13 +12,15 @@ namespace RevenueOperationsDashboard.Services
         private readonly IEthiopianDateMapper _dateMapper;
         private readonly IEthiopianClock _clock;
         private readonly IConfiguration _configuration;
+        private readonly SqliteOverrideService _sqliteOverrideService;
 
-        public DashboardRepository(IConfiguration configuration, IEthiopianDateMapper dateMapper, IEthiopianClock clock)
+        public DashboardRepository(IConfiguration configuration, IEthiopianDateMapper dateMapper, IEthiopianClock clock, SqliteOverrideService sqliteOverrideService)
         {
             _configuration = configuration;
             _connectionString = configuration.GetConnectionString("DefaultConnection")!;
             _dateMapper = dateMapper;
             _clock = clock;
+            _sqliteOverrideService = sqliteOverrideService;
         }
 
         private async Task<SqlConnection> GetConnectionAsync()
@@ -852,7 +854,9 @@ namespace RevenueOperationsDashboard.Services
         // 6. Top 7 KPI Cards (Parallelized queries across SQL Views with configurable Run-Rate vs YTD)
         public async Task<TopCardsResponseDto> GetTopCardsAsync(DashboardFilterDto filters)
         {
-            var fy = NormalizeFilter(filters.FiscalYearId) ?? "2018";
+            var fy = NormalizeFilter(filters.FiscalYearId) 
+                ?? _configuration["DashboardSettings:DefaultFilters:FiscalYearId"] 
+                ?? "2019";
             var parentId = NormalizeFilter(filters.ParentId);
             var planItemId = NormalizeFilter(filters.PlanItemId);
             var (startDate, endDate) = ResolveDateRange(filters);
@@ -1130,7 +1134,10 @@ namespace RevenueOperationsDashboard.Services
                 }
             });
 
-            await Task.WhenAll(task1, task2, task3, task4, task5, task6, task7, taskIsCurrentFy);
+            var taskOverrides = _sqliteOverrideService.GetActiveOverridesLookupAsync(fy);
+            var taskMode = _sqliteOverrideService.GetTopCardsModeAsync();
+
+            await Task.WhenAll(task1, task2, task3, task4, task5, task6, task7, taskIsCurrentFy, taskOverrides, taskMode);
 
             var card1Row = await task1;
             var card2Row = await task2;
@@ -1140,6 +1147,8 @@ namespace RevenueOperationsDashboard.Services
             var card6Row = await task6;
             var card7Row = await task7;
             var isCurrentFy = await taskIsCurrentFy;
+            var overridesMap = await taskOverrides;
+            var topCardsMode = await taskMode;
 
             // Card 1: Revenue (Pure operational plan from ops.vw_revenue_performance)
             decimal c1Act = (decimal)(card1Row?.Actual ?? 0m);
@@ -1222,6 +1231,32 @@ namespace RevenueOperationsDashboard.Services
             decimal c7Tgt = (decimal)(card7Row?.Target ?? 0m);
             decimal c7Pct = c7Tgt > 0 ? Math.Round((c7Act / c7Tgt) * 100m, 1) : 0m;
 
+            // Apply SQLite Overrides if active
+            bool isAllBranches = string.IsNullOrEmpty(parentId);
+            bool allowOverrides = !string.Equals(topCardsMode, "Auto", StringComparison.OrdinalIgnoreCase);
+
+            bool ApplyCardOverride(string cardId, ref decimal act, ref decimal tgt, ref decimal pct)
+            {
+                if (allowOverrides && overridesMap.TryGetValue(cardId, out var o) && o.IsEnabled)
+                {
+                    if (!o.ApplyOnlyAllBranches || isAllBranches)
+                    {
+                        if (o.Actual.HasValue) act = o.Actual.Value;
+                        if (o.Target.HasValue) tgt = o.Target.Value;
+                        pct = tgt > 0 ? Math.Round((act / tgt) * 100m, 1) : 0m;
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            bool c1Overridden = ApplyCardOverride("kpi1", ref c1Act, ref c1Tgt, ref c1Pct);
+            bool c2Overridden = ApplyCardOverride("kpi2", ref c2Act, ref c2Tgt, ref c2Pct);
+            bool c3Overridden = ApplyCardOverride("kpi3", ref c3Act, ref c3Tgt, ref c3Pct);
+            bool c4Overridden = ApplyCardOverride("kpi4", ref c4Act, ref c4Tgt, ref c4Pct);
+            bool c5Overridden = ApplyCardOverride("kpi5", ref c5Act, ref c5Tgt, ref c5Pct);
+            bool c7Overridden = ApplyCardOverride("kpi7", ref c7Act, ref c7Tgt, ref c7Pct);
+
             var isEnglish = string.Equals(filters.Lang, "en", StringComparison.OrdinalIgnoreCase);
             var currencyPolicy = isEnglish ? "EnglishCurrency" : "AmharicCurrency";
             var countPolicy = isEnglish ? "EnglishCount" : "AmharicCount";
@@ -1229,9 +1264,33 @@ namespace RevenueOperationsDashboard.Services
             var currencyOptions = HumanNumbersConfig.Instance.GetPolicies().TryGetValue(currencyPolicy, out var cp) ? cp : HumanNumbersConfig.Instance.GlobalOptions;
             var countOptions = HumanNumbersConfig.Instance.GetPolicies().TryGetValue(countPolicy, out var ctp) ? ctp : HumanNumbersConfig.Instance.GlobalOptions;
 
-            string FormatAmount(decimal val, bool isCurrency = true)
+            bool CardUsesHuman(string cardId)
             {
-                return isCurrency ? val.ToHumanCurrency(currencyOptions) : val.ToHuman(countOptions);
+                if (overridesMap.TryGetValue(cardId, out var o))
+                {
+                    return o.UseHumanFormat;
+                }
+                return cardId != "kpi7"; // Tax Audit defaults to exact count
+            }
+
+            string FormatCardAmount(string cardId, decimal val, bool isCurrency = true)
+            {
+                bool useHuman = CardUsesHuman(cardId);
+                if (useHuman)
+                {
+                    return isCurrency ? val.ToHumanCurrency(currencyOptions) : val.ToHuman(countOptions);
+                }
+                else
+                {
+                    if (isCurrency)
+                    {
+                        return isEnglish ? $"ETB {val:N0}" : $"ብር {val:N0}";
+                    }
+                    else
+                    {
+                        return $"{val:N0}";
+                    }
+                }
             }
 
             string toDateSubAm = "የዕስከ ዛሬ ድምር";
@@ -1270,6 +1329,8 @@ namespace RevenueOperationsDashboard.Services
             return new TopCardsResponseDto
             {
                 ActiveCalculationMode = activeMode,
+                TopCardsMode = topCardsMode,
+                HasActiveOverrides = c1Overridden || c2Overridden || c3Overridden || c4Overridden || c5Overridden || c7Overridden,
                 Cards = new List<TopKpiCardItemDto>
                 {
                     new TopKpiCardItemDto
@@ -1285,7 +1346,9 @@ namespace RevenueOperationsDashboard.Services
                         AchievementPct = c1Pct,
                         Unit = "%",
                         FormattedActual = $"{c1Pct}%",
-                        FormattedTarget = $"{FormatAmount(c1Act, true)} ({FormatAmount(c1Tgt, true)})"
+                        FormattedTarget = $"{FormatCardAmount("kpi1", c1Act, true)} ({FormatCardAmount("kpi1", c1Tgt, true)})",
+                        IsOverridden = c1Overridden,
+                        UseHumanFormat = CardUsesHuman("kpi1")
                     },
                     new TopKpiCardItemDto
                     {
@@ -1299,8 +1362,10 @@ namespace RevenueOperationsDashboard.Services
                         Target = c2Tgt,
                         AchievementPct = c2Pct,
                         Unit = "Count",
-                        FormattedActual = FormatAmount(c2Act, false),
-                        FormattedTarget = $"{FormatAmount(c2Tgt, false)}"
+                        FormattedActual = FormatCardAmount("kpi2", c2Act, false),
+                        FormattedTarget = $"{FormatCardAmount("kpi2", c2Tgt, false)}",
+                        IsOverridden = c2Overridden,
+                        UseHumanFormat = CardUsesHuman("kpi2")
                     },
                     new TopKpiCardItemDto
                     {
@@ -1314,8 +1379,10 @@ namespace RevenueOperationsDashboard.Services
                         Target = c3Tgt,
                         AchievementPct = c3Pct,
                         Unit = "Count",
-                        FormattedActual = FormatAmount(c3Act, false),
-                        FormattedTarget = $"{FormatAmount(c3Tgt, false)}"
+                        FormattedActual = FormatCardAmount("kpi3", c3Act, false),
+                        FormattedTarget = $"{FormatCardAmount("kpi3", c3Tgt, false)}",
+                        IsOverridden = c3Overridden,
+                        UseHumanFormat = CardUsesHuman("kpi3")
                     },
                     new TopKpiCardItemDto
                     {
@@ -1329,8 +1396,10 @@ namespace RevenueOperationsDashboard.Services
                         Target = c4Tgt,
                         AchievementPct = c4Pct,
                         Unit = "Count",
-                        FormattedActual = FormatAmount(c4Act, false),
-                        FormattedTarget = $"{FormatAmount(c4Tgt, false)}"
+                        FormattedActual = FormatCardAmount("kpi4", c4Act, false),
+                        FormattedTarget = $"{FormatCardAmount("kpi4", c4Tgt, false)}",
+                        IsOverridden = c4Overridden,
+                        UseHumanFormat = CardUsesHuman("kpi4")
                     },
                     new TopKpiCardItemDto
                     {
@@ -1344,8 +1413,10 @@ namespace RevenueOperationsDashboard.Services
                         Target = c5Tgt,
                         AchievementPct = c5Pct,
                         Unit = "Count",
-                        FormattedActual = FormatAmount(c5Act, false),
-                        FormattedTarget = $"{FormatAmount(c5Tgt, false)}"
+                        FormattedActual = FormatCardAmount("kpi5", c5Act, false),
+                        FormattedTarget = $"{FormatCardAmount("kpi5", c5Tgt, false)}",
+                        IsOverridden = c5Overridden,
+                        UseHumanFormat = CardUsesHuman("kpi5")
                     },
                     new TopKpiCardItemDto
                     {
@@ -1359,8 +1430,10 @@ namespace RevenueOperationsDashboard.Services
                         Target = c7Tgt,
                         AchievementPct = c7Pct,
                         Unit = "Count",
-                        FormattedActual = FormatAmount(c7Act, false),
-                        FormattedTarget = $"{FormatAmount(c7Tgt, false)}"
+                        FormattedActual = FormatCardAmount("kpi7", c7Act, false),
+                        FormattedTarget = $"{FormatCardAmount("kpi7", c7Tgt, false)}",
+                        IsOverridden = c7Overridden,
+                        UseHumanFormat = CardUsesHuman("kpi7")
                     }
                 }
             };

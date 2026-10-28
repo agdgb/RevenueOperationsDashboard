@@ -93,6 +93,9 @@ builder.Services.AddMemoryCache();
 // Register Dapper Repository
 builder.Services.AddScoped<DashboardRepository>();
 
+// Register SQLite Override Service
+builder.Services.AddSingleton<SqliteOverrideService>();
+
 // Register Ethiopian Calendar Time Infrastructure
 builder.Services.AddTimeInfrastructure();
 

@@ -12,12 +12,17 @@ namespace RevenueOperationsDashboard.Controllers
         private readonly DashboardRepository _repo;
         private readonly IConfiguration _config;
         private readonly IMemoryCache _cache;
+        private readonly SqliteOverrideService _sqliteService;
+        private static long _topCardsCacheVersion = 1;
 
-        public OperationsDashboardController(DashboardRepository repo, IConfiguration config, IMemoryCache cache)  
+        public static void InvalidateTopCardsCache() => Interlocked.Increment(ref _topCardsCacheVersion);
+
+        public OperationsDashboardController(DashboardRepository repo, IConfiguration config, IMemoryCache cache, SqliteOverrideService sqliteService)  
         {  
             _repo = repo;  
             _config = config;
             _cache = cache;
+            _sqliteService = sqliteService;
         }
 
         [HttpGet("config")]
@@ -139,13 +144,56 @@ namespace RevenueOperationsDashboard.Controllers
         [HttpGet("top-cards")]
         public async Task<IActionResult> GetTopCards([FromQuery] DashboardFilterDto filters)
         {
-            string cacheKey = $"top_cards_{filters.FiscalYearId}_{filters.ParentId}_{filters.Lang ?? "am"}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}_{filters.CalculationMode}";
+            string cacheKey = $"top_cards_v{_topCardsCacheVersion}_{filters.FiscalYearId}_{filters.ParentId}_{filters.Lang ?? "am"}_{filters.DatePreset}_{filters.StartDate}_{filters.EndDate}_{filters.CalculationMode}";
             var data = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
                 return await _repo.GetTopCardsAsync(filters);
             });
             return Ok(data);
+        }
+
+        [HttpGet("top-cards/settings")]
+        public async Task<IActionResult> GetTopCardSettings([FromQuery] string? fiscalYearId)
+        {
+            var fy = string.IsNullOrWhiteSpace(fiscalYearId) ? "2019" : fiscalYearId.Trim();
+            var state = await _sqliteService.GetFullSettingsStateAsync(fy);
+            return Ok(state);
+        }
+
+        [HttpPost("top-cards/overrides")]
+        public async Task<IActionResult> SaveTopCardOverrides([FromBody] TopCardOverridesSaveRequestDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.FiscalYearId))
+            {
+                return BadRequest("FiscalYearId is required.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.TopCardsMode))
+            {
+                await _sqliteService.SetTopCardsModeAsync(request.TopCardsMode, "DepartmentAdmin");
+            }
+
+            if (request.Overrides != null && request.Overrides.Count > 0)
+            {
+                await _sqliteService.SaveOverridesAsync(request.FiscalYearId, request.Overrides, "DepartmentAdmin");
+            }
+
+            InvalidateTopCardsCache();
+            return Ok(new { success = true, message = "Overrides saved successfully." });
+        }
+
+        [HttpPost("top-cards/mode")]
+        public async Task<IActionResult> SetTopCardsMode([FromBody] SystemSettingUpdateDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Mode))
+            {
+                return BadRequest("Mode is required.");
+            }
+
+            await _sqliteService.SetTopCardsModeAsync(request.Mode, "DepartmentAdmin");
+            InvalidateTopCardsCache();
+            return Ok(new { success = true, mode = request.Mode });
         }
     }  
 }

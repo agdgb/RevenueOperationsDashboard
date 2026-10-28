@@ -150,12 +150,49 @@ namespace RevenueOperationsDashboard.Models
         public string Unit { get; set; } = "ETB";
         public string FormattedActual { get; set; } = string.Empty;
         public string FormattedTarget { get; set; } = string.Empty;
+        public bool IsOverridden { get; set; } = false;
+        public bool UseHumanFormat { get; set; } = true;
     }
 
     public class TopCardsResponseDto
     {
         public string ActiveCalculationMode { get; set; } = "ToDateTarget";
+        public string TopCardsMode { get; set; } = "Hybrid"; // "Auto", "Hybrid", "Manual"
+        public bool HasActiveOverrides { get; set; } = false;
         public List<TopKpiCardItemDto> Cards { get; set; } = new();
+    }
+
+    public class TopCardOverrideDto
+    {
+        public string CardId { get; set; } = string.Empty;
+        public string FiscalYearId { get; set; } = string.Empty;
+        public bool IsEnabled { get; set; } = false;
+        public decimal? Actual { get; set; }
+        public decimal? Target { get; set; }
+        public bool UseHumanFormat { get; set; } = true;
+        public bool ApplyOnlyAllBranches { get; set; } = true;
+        public string? Notes { get; set; }
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public string? UpdatedBy { get; set; }
+    }
+
+    public class TopCardOverridesSaveRequestDto
+    {
+        public string FiscalYearId { get; set; } = string.Empty;
+        public string? TopCardsMode { get; set; } // Optional: to also update master mode
+        public List<TopCardOverrideDto> Overrides { get; set; } = new();
+    }
+
+    public class TopCardSettingsStateDto
+    {
+        public string TopCardsMode { get; set; } = "Hybrid"; // "Auto", "Hybrid", "Manual"
+        public string FiscalYearId { get; set; } = string.Empty;
+        public List<TopCardOverrideDto> Overrides { get; set; } = new();
+    }
+
+    public class SystemSettingUpdateDto
+    {
+        public string Mode { get; set; } = "Hybrid";
     }
 
     public class WeeklyReportDto

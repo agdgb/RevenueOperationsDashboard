@@ -550,6 +550,96 @@
     </div>
   </div>
 
+  <!-- TOP CARD SETTINGS & OVERRIDES MODAL (SQLITE BACKED) -->
+  <div id="cardOverridesModal"
+    class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center hidden transition-opacity overflow-y-auto p-3 sm:p-6">
+    <div
+      class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-4xl p-5 sm:p-7 shadow-2xl space-y-5 text-slate-100 relative my-auto max-h-[92vh] overflow-y-auto">
+      
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between border-b border-slate-800 pb-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <i class="fa-solid fa-sliders text-base"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <span id="txtOverridesModalTitle">የዋና ዋና ካርዶች እሴቶች ማስተካከያ</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-amber-400 border border-amber-500/30 font-mono">SQLite Powered</span>
+              </h3>
+              <p class="text-xs text-slate-400" id="txtOverridesModalSubtitle">
+                በቀጥታ ከዳታቤዝ ወይም በእጅ የተስተካከሉ እሴቶችን እንዲሁም የቁጥሮች አቀራረብ (Human vs Exact) ይቆጣጠሩ
+              </p>
+            </div>
+          </div>
+        </div>
+        <button onclick="closeCardOverridesModal()" class="text-slate-400 hover:text-white transition p-2 rounded-lg hover:bg-slate-800/60 cursor-pointer">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Master Mode Segmented Control -->
+      <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <label class="text-xs font-bold text-slate-200 tracking-wide block uppercase" id="lblMasterModeTitle">
+              ዋና የአሰራር ሁኔታ (Master Mode)
+            </label>
+            <p class="text-[11px] text-slate-400" id="lblMasterModeDesc">
+              ስርዓቱ እሴቶችን ከቀጥታ SQL ወይም ከእጅ ማስተካከያ እንዴት እንደሚወስድ ይምረጡ
+            </p>
+          </div>
+          <!-- Mode Pills -->
+          <div class="inline-flex p-1 bg-slate-900 border border-slate-800 rounded-xl" id="masterModePills">
+            <button type="button" onclick="setMasterModePill('Auto')" id="pillMode_Auto"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-slate-400 hover:text-white">
+              <i class="fa-solid fa-database mr-1 text-[10px]"></i> Live SQL
+            </button>
+            <button type="button" onclick="setMasterModePill('Hybrid')" id="pillMode_Hybrid"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer bg-amber-500 text-slate-950 shadow-md">
+              <i class="fa-solid fa-bolt mr-1 text-[10px]"></i> Hybrid
+            </button>
+            <button type="button" onclick="setMasterModePill('Manual')" id="pillMode_Manual"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-slate-400 hover:text-white">
+              <i class="fa-solid fa-pen mr-1 text-[10px]"></i> Manual Only
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards Configuration Table / List -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-bold text-slate-300 uppercase tracking-wider" id="lblCardListTitle">የካርዶች ዝርዝር እና እሴቶች</span>
+          <span class="text-[11px] text-slate-400" id="lblCardFiscalYearTag">በጀት ዓመት: <strong id="lblActiveFyModal" class="text-amber-400">2019</strong></span>
+        </div>
+
+        <div id="overridesCardsContainer" class="space-y-3 max-h-[46vh] overflow-y-auto pr-1">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-between border-t border-slate-800 pt-4">
+        <button type="button" onclick="resetAllOverridesToSql()" class="text-xs text-rose-400 hover:text-rose-300 underline cursor-pointer">
+          <i class="fa-solid fa-rotate-left mr-1"></i> ሁሉንም ወደ ቀጥታ SQL መልስ
+        </button>
+        <div class="flex items-center gap-3">
+          <button type="button" onclick="closeCardOverridesModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-slate-800 transition cursor-pointer">
+            ተመለስ
+          </button>
+          <button type="button" onclick="saveCardOverrides()" id="btnSaveCardOverrides"
+            class="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30 transition flex items-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-check"></i>
+            <span id="lblSaveOverridesText">እሴቶችን መዝግብና ተግብር</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- EXECUTIVE WEEKLY REPORT BRIEFING MODAL -->
   <div id="weeklyReportModal"
     class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center hidden transition-opacity overflow-y-auto p-3 sm:p-6 print:p-0 print:static print:bg-white print:overflow-visible">
@@ -1366,6 +1456,14 @@
           <span id="quickCalcModeText">የዕስከ ዛሬ ዕቅድ</span>
         </button>
 
+        <!-- Top Cards Overrides Button (SQLite Powered) -->
+        <button onclick="openCardOverridesModal()" id="btnCardOverrides"
+          class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-2 rounded-lg border border-slate-700/50 transition cursor-pointer"
+          title="የዋና ዋና ካርዶች እሴቶች እና የቅርጸት መቆጣጠሪያ (SQLite Overrides)">
+          <i class="fa-solid fa-pen-to-square text-amber-400"></i>
+          <span id="lblCardOverridesBtn">የካርድ እሴቶች</span>
+        </button>
+
         <!-- Action Buttons -->
         <select id="themeSelector" onchange="changeTheme(this.value)"
           class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs px-2 py-2 rounded-lg border border-slate-700/50 transition focus:outline-none cursor-pointer">
@@ -1736,6 +1834,7 @@
       if (document.getElementById('lblModeToDate')) document.getElementById('lblModeToDate').innerText = t_ui("To-Date Target (To-Date)");
       if (document.getElementById('lblModeAnnual')) document.getElementById('lblModeAnnual').innerText = t_ui("Full Year Target (Annual)");
       if (document.getElementById('lblWeeklyReportBtn')) document.getElementById('lblWeeklyReportBtn').innerText = t_ui("Weekly Report");
+      if (document.getElementById('lblCardOverridesBtn')) document.getElementById('lblCardOverridesBtn').innerText = state.currentLang === 'am' ? 'የካርድ እሴቶች' : 'Card Values';
       if (document.getElementById('lblPresetWeekly')) document.getElementById('lblPresetWeekly').innerText = t_ui("Weekly");
       if (document.getElementById('lblPrintBtn')) document.getElementById('lblPrintBtn').innerText = t_ui("Print / PDF");
       if (document.getElementById('weeklyReportTitle')) document.getElementById('weeklyReportTitle').innerText = t_ui("Weekly Operations Briefing");
@@ -2133,11 +2232,14 @@
         const badgeBg = `background-color: ${statusColor}1A; color: ${statusColor}; border-color: ${statusColor}80`;
         const cardGlow = `border-color: ${statusColor}80; box-shadow: 0 0 18px ${statusColor}38`;
         const isCurrency = card.id === 'kpi1';
+        const overrideBadge = card.isOverridden
+          ? `<span class="inline-flex items-center text-[9px] px-1.5 py-0.5 rounded font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 ml-1.5" title="Department Manual Override"><i class="fa-solid fa-pen-to-square mr-0.5 text-[8px]"></i>${state.currentLang === 'am' ? 'የተስተካከለ' : 'Adjusted'}</span>`
+          : '';
 
-        const actualText = isCurrency ? `${card.achievementPct}%` : formatHumanValue(card.actual, false, state.currentLang);
-        const targetText = isCurrency
+        const actualText = card.formattedActual || (isCurrency ? `${card.achievementPct}%` : formatHumanValue(card.actual, false, state.currentLang));
+        const targetText = card.formattedTarget || (isCurrency
           ? `${formatHumanValue(card.actual, true, state.currentLang)} (${formatHumanValue(card.target, true, state.currentLang)})`
-          : formatHumanValue(card.target, false, state.currentLang);
+          : formatHumanValue(card.target, false, state.currentLang));
         const titleText = state.currentLang === 'am' ? card.titleAmharic : card.titleEnglish;
         const subText = state.currentLang === 'am' ? card.subtitleAmharic : card.subtitleEnglish;
 
@@ -2145,7 +2247,10 @@
           <div id="card_box_${card.id}" class="kpi-card-box bg-cardBg border rounded-2xl p-2 xl:p-3 2xl:p-4 flex flex-col justify-between shadow-2xl relative overflow-hidden backdrop-blur-md transition-all hover:scale-[1.03] group min-h-[120px]" style="background-color: ${theme.cardBg}; ${cardGlow}">
             <div class="flex items-center justify-between gap-2 mb-1.5">
               <div class="min-w-0 flex-1">
-                <h4 id="card_title_${card.id}" class="text-xs 2xl:text-sm font-extrabold text-slate-100 whitespace-normal line-clamp-1" title="${titleText}">${titleText}</h4>
+                <h4 id="card_title_${card.id}" class="text-xs 2xl:text-sm font-extrabold text-slate-100 whitespace-normal line-clamp-1 inline-flex items-center flex-wrap" title="${titleText}">
+                  <span>${titleText}</span>
+                  <span id="card_override_badge_${card.id}">${overrideBadge}</span>
+                </h4>
                 <div id="card_sub_${card.id}" class="text-[9px] 2xl:text-[10px] font-semibold text-cyan-400 tracking-wide truncate mt-0.5">${subText || ''}</div>
               </div>
               <span id="card_badge_${card.id}" class="text-xs font-black px-2.5 py-1 rounded-lg border flex-shrink-0" style="${badgeBg}">${card.achievementPct}%</span>
@@ -2254,14 +2359,21 @@
           boxEl.style.boxShadow = `0 0 18px ${statusColor}38`;
         }
 
+        const overrideBadgeEl = document.getElementById(`card_override_badge_${card.id}`);
+        if (overrideBadgeEl) {
+          overrideBadgeEl.innerHTML = card.isOverridden
+            ? `<span class="inline-flex items-center text-[9px] px-1.5 py-0.5 rounded font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 ml-1.5" title="Department Manual Override"><i class="fa-solid fa-pen-to-square mr-0.5 text-[8px]"></i>${state.currentLang === 'am' ? 'የተስተካከለ' : 'Adjusted'}</span>`
+            : '';
+        }
+
         if (actualEl) {
-          actualEl.innerText = isCurrency ? `${card.achievementPct}%` : formatHumanValue(card.actual, false, state.currentLang);
+          actualEl.innerText = card.formattedActual || (isCurrency ? `${card.achievementPct}%` : formatHumanValue(card.actual, false, state.currentLang));
         }
 
         if (targetEl) {
-          targetEl.innerText = isCurrency
+          targetEl.innerText = card.formattedTarget || (isCurrency
             ? `${formatHumanValue(card.actual, true, state.currentLang)} (${formatHumanValue(card.target, true, state.currentLang)})`
-            : formatHumanValue(card.target, false, state.currentLang);
+            : formatHumanValue(card.target, false, state.currentLang));
         }
 
         const myChart = chartInstances[`gauge_${card.id}`];
@@ -3847,6 +3959,281 @@
 
     function printWeeklyReport() {
       window.print();
+    }
+
+    // --- TOP CARDS OVERRIDES & SQLITE SETTINGS ---
+    let currentOverridesState = {
+      topCardsMode: 'Hybrid',
+      fiscalYearId: '2019',
+      overrides: []
+    };
+
+    const CARD_METADATA_MAP = {
+      kpi1: { nameAm: "ገቢ አፈፃፀም", nameEn: "Revenue Achievement", icon: "fa-money-bill-wave", isCurrency: true },
+      kpi2: { nameAm: "ዓመታዊ ገቢ ማሳወቅ", nameEn: "Annual Filing", icon: "fa-file-invoice", isCurrency: false },
+      kpi3: { nameAm: "ማደሻ ክሊራንስ የወሰዱ", nameEn: "Renewal Clearances", icon: "fa-certificate", isCurrency: false },
+      kpi4: { nameAm: "ቫት ያሳወቁ", nameEn: "VAT Declarations", icon: "fa-receipt", isCurrency: false },
+      kpi5: { nameAm: "የደመወዝ ገቢ ግብር", nameEn: "Payroll Income Tax", icon: "fa-users-gear", isCurrency: false },
+      kpi7: { nameAm: "ታክስ ኦዲት ያሳወቁ", nameEn: "Tax Audit Performance", icon: "fa-magnifying-glass-chart", isCurrency: false }
+    };
+
+    async function openCardOverridesModal() {
+      const modal = document.getElementById('cardOverridesModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+
+      const fy = state.filters.fiscalYear && state.filters.fiscalYear !== 'ALL' ? state.filters.fiscalYear : '2019';
+      const fyTag = document.getElementById('lblActiveFyModal');
+      if (fyTag) fyTag.innerText = fy;
+
+      const container = document.getElementById('overridesCardsContainer');
+      if (container) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-slate-400 flex flex-col items-center justify-center space-y-3">
+            <div class="w-8 h-8 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin"></div>
+            <span class="text-xs font-medium">${state.currentLang === 'am' ? 'እሴቶች ከ SQLite በመጫን ላይ...' : 'Loading overrides from SQLite...'}</span>
+          </div>
+        `;
+      }
+
+      try {
+        const res = await fetch(`/api/dashboard/top-cards/settings?fiscalYearId=${fy}`);
+        if (!res.ok) throw new Error("Failed to fetch overrides");
+        const data = await res.json();
+        currentOverridesState = data;
+        renderOverridesModalContent();
+      } catch (err) {
+        console.error("Error loading overrides:", err);
+        if (container) {
+          container.innerHTML = `<div class="p-4 text-center text-rose-400 text-xs">Error loading settings from SQLite.</div>`;
+        }
+      }
+    }
+
+    function closeCardOverridesModal() {
+      const modal = document.getElementById('cardOverridesModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function setMasterModePill(mode) {
+      currentOverridesState.topCardsMode = mode;
+      updateMasterModePillsUI(mode);
+    }
+
+    function updateMasterModePillsUI(mode) {
+      ['Auto', 'Hybrid', 'Manual'].forEach(m => {
+        const pill = document.getElementById(`pillMode_${m}`);
+        if (!pill) return;
+        if (m === mode) {
+          pill.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer bg-amber-500 text-slate-950 shadow-md';
+        } else {
+          pill.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-slate-400 hover:text-white';
+        }
+      });
+      const descEl = document.getElementById('lblMasterModeDesc');
+      if (descEl) {
+        if (mode === 'Auto') {
+          descEl.innerText = state.currentLang === 'am' ? 'ቀጥታ SQL ብቻ: ሁሉም የካርድ እሴቶች ከዳታቤዝ ይሰላሉ (እጅ ማስተካከያዎች ይታለፋሉ)' : 'Live SQL only: all card numbers calculate live from database (overrides ignored)';
+        } else if (mode === 'Hybrid') {
+          descEl.innerText = state.currentLang === 'am' ? 'ድብልቅ (Hybrid): የበሩ ካርዶች የእጅ ማስተካከያ ሲጠቀሙ፣ ያልበሩት ከቀጥታ SQL ይሰላሉ' : 'Hybrid: enabled cards use custom overrides, others continue calculating from live SQL';
+        } else {
+          descEl.innerText = state.currentLang === 'am' ? 'እጅ ብቻ (Manual): ለሁሉም ካርዶች በእጅ የተሞላ እሴት ብቻ ይጠቀማል' : 'Manual only: strictly requires manual input for all cards';
+        }
+      }
+    }
+
+    function renderOverridesModalContent() {
+      updateMasterModePillsUI(currentOverridesState.topCardsMode || 'Hybrid');
+      const container = document.getElementById('overridesCardsContainer');
+      if (!container) return;
+
+      const isAm = state.currentLang === 'am';
+      const liveCards = state.cachedCards || [];
+      const liveMap = {};
+      liveCards.forEach(c => { liveMap[c.id] = c; });
+
+      const cardIds = ['kpi1', 'kpi2', 'kpi3', 'kpi4', 'kpi5', 'kpi7'];
+
+      container.innerHTML = cardIds.map(cardId => {
+        const meta = CARD_METADATA_MAP[cardId] || { nameAm: cardId, nameEn: cardId, icon: "fa-chart-pie", isCurrency: false };
+        const cardTitle = isAm ? meta.nameAm : meta.nameEn;
+        const live = liveMap[cardId];
+        
+        let existingOverride = (currentOverridesState.overrides || []).find(o => o.cardId === cardId);
+        if (!existingOverride) {
+          existingOverride = {
+            cardId: cardId,
+            fiscalYearId: currentOverridesState.fiscalYearId,
+            isEnabled: false,
+            actual: null,
+            target: null,
+            useHumanFormat: cardId !== 'kpi7',
+            applyOnlyAllBranches: true
+          };
+          if (!currentOverridesState.overrides) currentOverridesState.overrides = [];
+          currentOverridesState.overrides.push(existingOverride);
+        }
+
+        const isEnabled = existingOverride.isEnabled;
+        const useHuman = existingOverride.useHumanFormat;
+        const actualVal = existingOverride.actual !== null && existingOverride.actual !== undefined ? existingOverride.actual : '';
+        const targetVal = existingOverride.target !== null && existingOverride.target !== undefined ? existingOverride.target : '';
+
+        const liveActualStr = live ? (live.formattedActual || live.actual) : '-';
+        const liveTargetStr = live ? (live.formattedTarget || live.target) : '-';
+
+        return `
+          <div class="bg-slate-950/70 border ${isEnabled ? 'border-amber-500/50 bg-amber-950/10' : 'border-slate-800/80'} rounded-2xl p-3.5 transition-all space-y-3" id="override_row_${cardId}">
+            <div class="flex items-center justify-between gap-3 flex-wrap">
+              <!-- Card identity & Live SQL baseline -->
+              <div class="flex items-center gap-2.5 min-w-[200px]">
+                <div class="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300">
+                  <i class="fa-solid ${meta.icon} text-xs"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>${cardTitle}</span>
+                    <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">${cardId}</span>
+                  </h4>
+                  <div class="text-[10px] text-slate-400">
+                    ${isAm ? 'የቀጥታ SQL እሴት' : 'Live SQL'}: <span class="text-cyan-400 font-medium">${liveActualStr}</span> / <span class="text-slate-300">${liveTargetStr}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Toggles: Override Enabled + Human Number Format -->
+              <div class="flex items-center gap-3 ml-auto">
+                <!-- Human Format Opt-in Toggle -->
+                <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-xl p-1 text-[11px]" title="${isAm ? 'የቁጥሮች አቀራረብ ቅርጸት (Humanized vs Exact)' : 'Number formatting style'}">
+                  <button type="button" onclick="setCardFormatToggle('${cardId}', true)" id="fmt_human_${cardId}"
+                    class="px-2 py-1 rounded-lg font-medium transition cursor-pointer ${useHuman ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'}">
+                    <i class="fa-solid fa-chart-simple mr-0.5 text-[9px]"></i> ${isAm ? 'አሳጥር (Human)' : 'Human'}
+                  </button>
+                  <button type="button" onclick="setCardFormatToggle('${cardId}', false)" id="fmt_exact_${cardId}"
+                    class="px-2 py-1 rounded-lg font-medium transition cursor-pointer ${!useHuman ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'}">
+                    <i class="fa-solid fa-hashtag mr-0.5 text-[9px]"></i> ${isAm ? 'ትክክለኛ ቁጥር' : 'Exact'}
+                  </button>
+                </div>
+
+                <!-- Card Override Master Toggle -->
+                <button type="button" onclick="toggleCardOverrideRow('${cardId}')" id="btnToggleOverride_${cardId}"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${isEnabled ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'}">
+                  <i class="fa-solid ${isEnabled ? 'fa-toggle-on text-amber-400 text-sm' : 'fa-toggle-off text-slate-500 text-sm'}"></i>
+                  <span>${isEnabled ? (isAm ? 'እጅ ማስተካከያ (On)' : 'Override ON') : (isAm ? 'ቀጥታ SQL (Auto)' : 'Live SQL')}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Custom Actual & Target Inputs (Active when override enabled) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 ${isEnabled ? '' : 'opacity-40 pointer-events-none'}" id="override_inputs_${cardId}">
+              <div>
+                <label class="block text-[11px] font-medium text-slate-300 mb-1">
+                  ${isAm ? 'ክንውን (Actual)' : 'Actual Value'} <span class="text-slate-500 font-normal">(${meta.isCurrency ? 'ETB' : (isAm ? 'ብዛት' : 'Count')})</span>
+                </label>
+                <input type="number" step="any" id="inp_actual_${cardId}" value="${actualVal}" placeholder="${live ? (live.actual || 0) : ''}"
+                  oninput="onOverrideValueChange('${cardId}')"
+                  class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-amber-400 transition" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-medium text-slate-300 mb-1">
+                  ${isAm ? 'ዕቅድ (Target)' : 'Target Value'} <span class="text-slate-500 font-normal">(${meta.isCurrency ? 'ETB' : (isAm ? 'ብዛት' : 'Count')})</span>
+                </label>
+                <input type="number" step="any" id="inp_target_${cardId}" value="${targetVal}" placeholder="${live ? (live.target || 0) : ''}"
+                  oninput="onOverrideValueChange('${cardId}')"
+                  class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-amber-400 transition" />
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleCardOverrideRow(cardId) {
+      let o = currentOverridesState.overrides.find(x => x.cardId === cardId);
+      if (!o) {
+        o = { cardId: cardId, fiscalYearId: currentOverridesState.fiscalYearId, isEnabled: true, useHumanFormat: cardId !== 'kpi7' };
+        currentOverridesState.overrides.push(o);
+      } else {
+        o.isEnabled = !o.isEnabled;
+      }
+      renderOverridesModalContent();
+    }
+
+    function setCardFormatToggle(cardId, useHuman) {
+      let o = currentOverridesState.overrides.find(x => x.cardId === cardId);
+      if (!o) {
+        o = { cardId: cardId, fiscalYearId: currentOverridesState.fiscalYearId, isEnabled: false, useHumanFormat: useHuman };
+        currentOverridesState.overrides.push(o);
+      } else {
+        o.useHumanFormat = useHuman;
+      }
+      renderOverridesModalContent();
+    }
+
+    function onOverrideValueChange(cardId) {
+      const actInp = document.getElementById(`inp_actual_${cardId}`);
+      const tgtInp = document.getElementById(`inp_target_${cardId}`);
+      let o = currentOverridesState.overrides.find(x => x.cardId === cardId);
+      if (!o) return;
+      o.actual = actInp && actInp.value.trim() !== '' ? parseFloat(actInp.value) : null;
+      o.target = tgtInp && tgtInp.value.trim() !== '' ? parseFloat(tgtInp.value) : null;
+    }
+
+    function resetAllOverridesToSql() {
+      if (!currentOverridesState.overrides) return;
+      currentOverridesState.overrides.forEach(o => {
+        o.isEnabled = false;
+        o.actual = null;
+        o.target = null;
+      });
+      currentOverridesState.topCardsMode = 'Hybrid';
+      renderOverridesModalContent();
+    }
+
+    async function saveCardOverrides() {
+      const btn = document.getElementById('btnSaveCardOverrides');
+      const saveText = document.getElementById('lblSaveOverridesText');
+      if (btn) btn.disabled = true;
+      if (saveText) saveText.innerText = state.currentLang === 'am' ? 'በመመዝገብ ላይ...' : 'Saving to SQLite...';
+
+      // Read all inputs into currentOverridesState
+      ['kpi1', 'kpi2', 'kpi3', 'kpi4', 'kpi5', 'kpi7'].forEach(cardId => {
+        const actInp = document.getElementById(`inp_actual_${cardId}`);
+        const tgtInp = document.getElementById(`inp_target_${cardId}`);
+        let o = currentOverridesState.overrides.find(x => x.cardId === cardId);
+        if (o) {
+          if (actInp && actInp.value.trim() !== '') o.actual = parseFloat(actInp.value);
+          else if (actInp && actInp.value.trim() === '') o.actual = null;
+
+          if (tgtInp && tgtInp.value.trim() !== '') o.target = parseFloat(tgtInp.value);
+          else if (tgtInp && tgtInp.value.trim() === '') o.target = null;
+        }
+      });
+
+      try {
+        const payload = {
+          fiscalYearId: currentOverridesState.fiscalYearId || (state.filters.fiscalYear && state.filters.fiscalYear !== 'ALL' ? state.filters.fiscalYear : '2019'),
+          topCardsMode: currentOverridesState.topCardsMode || 'Hybrid',
+          overrides: currentOverridesState.overrides
+        };
+
+        const res = await fetch('/api/dashboard/top-cards/overrides', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error("Failed to save overrides.");
+
+        closeCardOverridesModal();
+        await loadTopCards(true);
+      } catch (err) {
+        console.error("Save overrides failed:", err);
+        alert(state.currentLang === 'am' ? 'እሴቶችን ማስቀመጥ አልተቻለም!' : 'Failed to save card overrides.');
+      } finally {
+        if (btn) btn.disabled = false;
+        if (saveText) saveText.innerText = state.currentLang === 'am' ? 'እሴቶችን መዝግብና ተግብር' : 'Save & Apply';
+      }
     }
 
     function applyWeeklyCustomDateRange() {
