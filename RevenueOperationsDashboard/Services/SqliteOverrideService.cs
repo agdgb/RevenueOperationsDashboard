@@ -11,18 +11,42 @@ namespace RevenueOperationsDashboard.Services
         private readonly ILogger<SqliteOverrideService> _logger;
         private static readonly SemaphoreSlim _initLock = new(1, 1);
         private static bool _isInitialized = false;
+        private static bool _isAvailable = true;
 
         public static readonly string[] KnownCards = new[] { "kpi1", "kpi2", "kpi3", "kpi4", "kpi5", "kpi7" };
 
         public SqliteOverrideService(IWebHostEnvironment env, ILogger<SqliteOverrideService> logger)
         {
             _logger = logger;
-            var dataDir = Path.Combine(env.ContentRootPath, "App_Data");
-            if (!Directory.Exists(dataDir))
+            string dbPath;
+            try
             {
-                Directory.CreateDirectory(dataDir);
+                var dataDir = Path.Combine(env.ContentRootPath, "App_Data");
+                if (!Directory.Exists(dataDir))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(dataDir);
+                    }
+                    catch (Exception dirEx)
+                    {
+                        _logger.LogWarning(dirEx, "Unable to create App_Data in ContentRootPath. Attempting fallback to LocalApplicationData.");
+                        var fallback = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RevenueOperationsDashboard", "App_Data");
+                        if (!Directory.Exists(fallback))
+                        {
+                            Directory.CreateDirectory(fallback);
+                        }
+                        dataDir = fallback;
+                    }
+                }
+                dbPath = Path.Combine(dataDir, "dashboard_overrides.db");
             }
-            var dbPath = Path.Combine(dataDir, "dashboard_overrides.db");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to resolve directory for SQLite. Using fallback temp database.");
+                dbPath = Path.Combine(Path.GetTempPath(), "dashboard_overrides.db");
+            }
+
             _connectionString = $"Data Source={dbPath};";
         }
 
@@ -77,12 +101,14 @@ namespace RevenueOperationsDashboard.Services
                 }
 
                 _isInitialized = true;
-                _logger.LogInformation("SQLite override database initialized successfully.");
+                _isAvailable = true;
+                _logger.LogInformation("SQLite override database initialized successfully at: {Conn}", _connectionString);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to initialize SQLite override database.");
-                throw;
+                _isInitialized = true;
+                _isAvailable = false;
+                _logger.LogError(ex, "Failed to initialize SQLite override database. Operating in pure SQL Server fallback mode.");
             }
             finally
             {
@@ -90,12 +116,22 @@ namespace RevenueOperationsDashboard.Services
             }
         }
 
-        private async Task<SqliteConnection> GetConnectionAsync()
+        private async Task<SqliteConnection?> GetConnectionAsync()
         {
             await EnsureDatabaseInitializedAsync();
-            var conn = new SqliteConnection(_connectionString);
-            await conn.OpenAsync();
-            return conn;
+            if (!_isAvailable) return null;
+
+            try
+            {
+                var conn = new SqliteConnection(_connectionString);
+                await conn.OpenAsync();
+                return conn;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to open SQLite connection. Operating in fallback mode.");
+                return null;
+            }
         }
 
         public async Task<string> GetTopCardsModeAsync()
@@ -103,6 +139,8 @@ namespace RevenueOperationsDashboard.Services
             try
             {
                 using var conn = await GetConnectionAsync();
+                if (conn == null) return "Auto";
+
                 var mode = await conn.QueryFirstOrDefaultAsync<string>(
                     "SELECT SettingValue FROM SystemSettings WHERE SettingKey = 'TopCardsMode';"
                 );
@@ -110,23 +148,36 @@ namespace RevenueOperationsDashboard.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reading TopCardsMode from SQLite. Falling back to 'Hybrid'.");
-                return "Hybrid";
+                _logger.LogError(ex, "Error reading TopCardsMode from SQLite. Falling back to 'Auto'.");
+                return "Auto";
             }
         }
 
         public async Task SetTopCardsModeAsync(string mode, string? updatedBy = "User")
         {
-            using var conn = await GetConnectionAsync();
-            const string sql = @"
-                INSERT INTO SystemSettings (SettingKey, SettingValue, UpdatedAt, UpdatedBy)
-                VALUES ('TopCardsMode', @Mode, datetime('now'), @UpdatedBy)
-                ON CONFLICT(SettingKey) DO UPDATE SET
-                    SettingValue = excluded.SettingValue,
-                    UpdatedAt = excluded.UpdatedAt,
-                    UpdatedBy = excluded.UpdatedBy;
-            ";
-            await conn.ExecuteAsync(sql, new { Mode = mode, UpdatedBy = updatedBy });
+            try
+            {
+                using var conn = await GetConnectionAsync();
+                if (conn == null)
+                {
+                    _logger.LogWarning("SQLite is unavailable; cannot set TopCardsMode.");
+                    return;
+                }
+
+                const string sql = @"
+                    INSERT INTO SystemSettings (SettingKey, SettingValue, UpdatedAt, UpdatedBy)
+                    VALUES ('TopCardsMode', @Mode, datetime('now'), @UpdatedBy)
+                    ON CONFLICT(SettingKey) DO UPDATE SET
+                        SettingValue = excluded.SettingValue,
+                        UpdatedAt = excluded.UpdatedAt,
+                        UpdatedBy = excluded.UpdatedBy;
+                ";
+                await conn.ExecuteAsync(sql, new { Mode = mode, UpdatedBy = updatedBy });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to set TopCardsMode in SQLite.");
+            }
         }
 
         public async Task<List<TopCardOverrideDto>> GetOverridesAsync(string fiscalYearId)
@@ -134,6 +185,11 @@ namespace RevenueOperationsDashboard.Services
             try
             {
                 using var conn = await GetConnectionAsync();
+                if (conn == null)
+                {
+                    return GetDefaultOverrides(fiscalYearId);
+                }
+
                 const string sql = @"
                     SELECT 
                         CardId,
@@ -174,7 +230,6 @@ namespace RevenueOperationsDashboard.Services
                     };
                 }
 
-                // Ensure all known cards exist in the returned list
                 var list = new List<TopCardOverrideDto>();
                 foreach (var cardId in KnownCards)
                 {
@@ -184,7 +239,6 @@ namespace RevenueOperationsDashboard.Services
                     }
                     else
                     {
-                        // Default fallback: Tax Audit (kpi7) defaults to Exact (UseHumanFormat = false), others default to Human (true)
                         bool defaultHuman = cardId != "kpi7";
                         list.Add(new TopCardOverrideDto
                         {
@@ -204,9 +258,31 @@ namespace RevenueOperationsDashboard.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching overrides for FiscalYearId {FiscalYearId}", fiscalYearId);
-                return new List<TopCardOverrideDto>();
+                _logger.LogError(ex, "Error fetching overrides for FiscalYearId {FiscalYearId}. Falling back to defaults.", fiscalYearId);
+                return GetDefaultOverrides(fiscalYearId);
             }
+        }
+
+        private List<TopCardOverrideDto> GetDefaultOverrides(string fiscalYearId)
+        {
+            var list = new List<TopCardOverrideDto>();
+            foreach (var cardId in KnownCards)
+            {
+                bool defaultHuman = cardId != "kpi7";
+                list.Add(new TopCardOverrideDto
+                {
+                    CardId = cardId,
+                    FiscalYearId = fiscalYearId,
+                    IsEnabled = false,
+                    Actual = null,
+                    Target = null,
+                    UseHumanFormat = defaultHuman,
+                    ApplyOnlyAllBranches = true,
+                    UpdatedAt = DateTime.UtcNow,
+                    UpdatedBy = "SystemDefault"
+                });
+            }
+            return list;
         }
 
         public async Task<Dictionary<string, TopCardOverrideDto>> GetActiveOverridesLookupAsync(string fiscalYearId)
@@ -218,6 +294,11 @@ namespace RevenueOperationsDashboard.Services
         public async Task SaveOverridesAsync(string fiscalYearId, List<TopCardOverrideDto> overrides, string? updatedBy = "User")
         {
             using var conn = await GetConnectionAsync();
+            if (conn == null)
+            {
+                throw new InvalidOperationException("SQLite override storage is currently unavailable on this server (check App_Data directory permissions).");
+            }
+
             using var tx = conn.BeginTransaction();
             try
             {

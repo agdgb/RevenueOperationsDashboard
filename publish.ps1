@@ -117,7 +117,22 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-Write-Host "[OK] Build and publish completed successfully." -ForegroundColor Green
+# 5.1 Ensure Native SQLite DLL and App_Data are in publish root for IIS
+$nativeDll = Join-Path $OutputDir "runtimes/win-x64/native/e_sqlite3.dll"
+if (Test-Path $nativeDll) {
+    Copy-Item -Path $nativeDll -Destination (Join-Path $OutputDir "e_sqlite3.dll") -Force
+    Write-Host "[OK] Bundled native e_sqlite3.dll to publish root." -ForegroundColor Green
+}
+
+$appDataSrc = Join-Path $ScriptDir "RevenueOperationsDashboard/App_Data"
+$appDataDst = Join-Path $OutputDir "App_Data"
+if (-not (Test-Path $appDataDst)) {
+    New-Item -ItemType Directory -Path $appDataDst -Force | Out-Null
+}
+if (Test-Path $appDataSrc) {
+    Copy-Item -Path "$appDataSrc/*" -Destination $appDataDst -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Host "[OK] Bundled App_Data database into publish root." -ForegroundColor Green
+}
 
 # 6. Create Zip Archive
 $zipPath = $null
