@@ -650,19 +650,16 @@
     </div>
   </div>
 
-  <!-- NON-INTRUSIVE EXECUTIVE PAUSE / DISCUSSION MODE INDICATOR -->
+  <!-- NON-INTRUSIVE EXECUTIVE PAUSE INDICATOR (ICON-CENTRIC, SITS CLEAR OF CARDS & CHARTS) -->
   <div id="presentationPauseIndicator" onclick="toggleCarousel(true)"
-    class="fixed top-3 left-1/2 -translate-x-1/2 z-30 hidden opacity-0 transition-all duration-300 cursor-pointer select-none"
-    title="ማሳያውን ለመቀጠል ይጫኑ (Click to resume rotation)">
-    <div class="flex items-center gap-2.5 bg-slate-900/95 border border-amber-500/60 shadow-2xl shadow-amber-500/25 rounded-full px-4 py-1.5 backdrop-blur-md hover:bg-slate-800 transition">
+    class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] hidden opacity-0 transition-all duration-300 cursor-pointer select-none"
+    title="Click to resume (Space / B)">
+    <div class="flex items-center gap-2.5 bg-slate-900/95 border border-amber-500/60 shadow-2xl shadow-amber-500/30 rounded-full px-3.5 py-2 backdrop-blur-md hover:bg-slate-800 transition">
       <span class="relative flex h-2.5 w-2.5">
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
         <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
       </span>
       <i class="fa-solid fa-pause text-amber-400 text-xs"></i>
-      <span id="pauseIndicatorTitle" class="text-xs font-bold text-amber-300">ማሳያው ቆሟል (Paused)</span>
-      <span class="text-slate-600 text-xs">|</span>
-      <span id="pauseIndicatorSubtitle" class="text-[11px] text-slate-300 font-medium">ለመቀጠል Space ወይም B ይጫኑ (Click to resume)</span>
     </div>
   </div>
 
@@ -1600,9 +1597,9 @@
       class="w-full relative z-10 flex-shrink-0 bg-cardBg border-t border-borderDark p-3 flex items-center justify-between transition-all duration-300 transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
       <div class="flex items-center gap-3">
         <button id="playPauseBtn" onclick="toggleCarousel()"
-          class="flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition cursor-pointer">
-          <i id="playPauseIcon" class="fa-solid fa-pause"></i>
-          <span id="playPauseText">Pause</span>
+          class="flex items-center justify-center w-8 h-8 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg border border-slate-700 transition cursor-pointer"
+          title="Play / Pause (Space / B)">
+          <i id="playPauseIcon" class="fa-solid fa-pause text-xs"></i>
         </button>
 
         <!-- Slide Transition Timer Setting (30s min, 1m, 3m, 5m) -->
@@ -4019,7 +4016,6 @@
 
     function updatePlayPauseButtonState() {
       const icon = document.getElementById('playPauseIcon');
-      const text = document.getElementById('playPauseText');
       const btn = document.getElementById('playPauseBtn');
       const pill = document.getElementById('presentationPauseIndicator');
       const topLine = document.getElementById('presentationPauseTopLine');
@@ -4028,10 +4024,10 @@
 
       if (state.autoRotate) {
         // Active Auto-rotation
-        if (icon) icon.className = 'fa-solid fa-pause';
-        if (text) text.innerText = t_ui('Pause');
+        if (icon) icon.className = 'fa-solid fa-pause text-xs';
         if (btn) {
-          btn.className = 'flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition cursor-pointer';
+          btn.className = 'flex items-center justify-center w-8 h-8 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg border border-slate-700 transition cursor-pointer';
+          btn.title = (isAm ? 'አቁም' : 'Pause') + ' (Space / B)';
         }
         if (progressBar) {
           progressBar.classList.remove('bg-amber-400');
@@ -4055,21 +4051,15 @@
         }
       } else {
         // Paused / Executive Discussion Mode (Real chart stays 100% visible!)
-        if (icon) icon.className = 'fa-solid fa-play text-amber-400';
-        if (text) text.innerText = t_ui('Resume');
+        if (icon) icon.className = 'fa-solid fa-play text-amber-400 text-xs';
         if (btn) {
-          btn.className = 'flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs px-2.5 py-1.5 rounded-lg border border-amber-500/50 shadow-md transition cursor-pointer';
+          btn.className = 'flex items-center justify-center w-8 h-8 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg border border-amber-500/50 shadow-md transition cursor-pointer';
+          btn.title = (isAm ? 'ቀጥል' : 'Resume') + ' (Space / B)';
         }
         if (progressBar) {
           progressBar.classList.remove('bg-blue-500');
           progressBar.classList.add('bg-amber-400');
         }
-
-        // Update Pill Labels based on active language
-        const titleEl = document.getElementById('pauseIndicatorTitle');
-        const subEl = document.getElementById('pauseIndicatorSubtitle');
-        if (titleEl) titleEl.innerText = isAm ? 'ማሳያው ቆሟል (Paused)' : 'Paused (Discussion Mode)';
-        if (subEl) subEl.innerText = isAm ? 'ለመቀጠል Space ወይም B ይጫኑ (Click to resume)' : 'Press Space or B to resume (Click to resume)';
 
         // Show floating non-intrusive pause pill and ambient accent
         if (pill) {
