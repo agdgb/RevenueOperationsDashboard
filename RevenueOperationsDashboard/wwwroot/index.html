@@ -650,17 +650,24 @@
     </div>
   </div>
 
-  <!-- PRESENTATION BLACKOUT CURTAIN (USB Pointer 'B' / '.' toggle) -->
-  <div id="presentationBlackoutCurtain" onclick="togglePresentationBlackout(false)"
-    class="fixed inset-0 bg-slate-950/98 backdrop-blur-xl z-[60] flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-300 cursor-pointer select-none">
-    <div class="flex flex-col items-center gap-3 text-slate-400 text-center px-4">
-      <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 shadow-xl">
-        <i class="fa-solid fa-moon text-lg"></i>
-      </div>
-      <div class="text-sm font-semibold tracking-wide text-slate-300">የቀረጻ እረፍት / Screen Paused</div>
-      <div class="text-xs text-slate-500">ለመቀጠል ማያ ገጹን ይጫኑ ወይም በሪሞት 'B' ይጫኑ (Click or press 'B' to resume)</div>
+  <!-- NON-INTRUSIVE EXECUTIVE PAUSE / DISCUSSION MODE INDICATOR -->
+  <div id="presentationPauseIndicator" onclick="toggleCarousel(true)"
+    class="fixed top-3 left-1/2 -translate-x-1/2 z-30 hidden opacity-0 transition-all duration-300 cursor-pointer select-none"
+    title="ማሳያውን ለመቀጠል ይጫኑ (Click to resume rotation)">
+    <div class="flex items-center gap-2.5 bg-slate-900/95 border border-amber-500/60 shadow-2xl shadow-amber-500/25 rounded-full px-4 py-1.5 backdrop-blur-md hover:bg-slate-800 transition">
+      <span class="relative flex h-2.5 w-2.5">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+      </span>
+      <i class="fa-solid fa-pause text-amber-400 text-xs"></i>
+      <span id="pauseIndicatorTitle" class="text-xs font-bold text-amber-300">ማሳያው ቆሟል (Paused)</span>
+      <span class="text-slate-600 text-xs">|</span>
+      <span id="pauseIndicatorSubtitle" class="text-[11px] text-slate-300 font-medium">ለመቀጠል Space ወይም B ይጫኑ (Click to resume)</span>
     </div>
   </div>
+
+  <!-- Ambient Top Edge Amber Hairline when Paused -->
+  <div id="presentationPauseTopLine" class="fixed top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent z-30 hidden pointer-events-none transition-opacity duration-300 opacity-0"></div>
 
   <!-- EXECUTIVE WEEKLY REPORT BRIEFING MODAL -->
   <div id="weeklyReportModal"
@@ -3998,8 +4005,12 @@
       sel.value = activeVal;
     }
 
-    function toggleCarousel() {
-      state.autoRotate = !state.autoRotate;
+    function toggleCarousel(forceState = null) {
+      if (forceState !== null) {
+        state.autoRotate = forceState;
+      } else {
+        state.autoRotate = !state.autoRotate;
+      }
       if (state.autoRotate) {
         state.lastTickTime = Date.now();
       }
@@ -4009,12 +4020,72 @@
     function updatePlayPauseButtonState() {
       const icon = document.getElementById('playPauseIcon');
       const text = document.getElementById('playPauseText');
+      const btn = document.getElementById('playPauseBtn');
+      const pill = document.getElementById('presentationPauseIndicator');
+      const topLine = document.getElementById('presentationPauseTopLine');
+      const progressBar = document.getElementById('carouselProgressBar');
+      const isAm = state.currentLang === 'am';
+
       if (state.autoRotate) {
+        // Active Auto-rotation
         if (icon) icon.className = 'fa-solid fa-pause';
         if (text) text.innerText = t_ui('Pause');
+        if (btn) {
+          btn.className = 'flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition cursor-pointer';
+        }
+        if (progressBar) {
+          progressBar.classList.remove('bg-amber-400');
+          progressBar.classList.add('bg-blue-500');
+        }
+
+        // Hide floating pause pill and top ambient accent
+        if (pill) {
+          pill.classList.remove('opacity-100');
+          pill.classList.add('opacity-0');
+          setTimeout(() => {
+            if (state.autoRotate) pill.classList.add('hidden');
+          }, 250);
+        }
+        if (topLine) {
+          topLine.classList.remove('opacity-100');
+          topLine.classList.add('opacity-0');
+          setTimeout(() => {
+            if (state.autoRotate) topLine.classList.add('hidden');
+          }, 250);
+        }
       } else {
-        if (icon) icon.className = 'fa-solid fa-play';
+        // Paused / Executive Discussion Mode (Real chart stays 100% visible!)
+        if (icon) icon.className = 'fa-solid fa-play text-amber-400';
         if (text) text.innerText = t_ui('Resume');
+        if (btn) {
+          btn.className = 'flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs px-2.5 py-1.5 rounded-lg border border-amber-500/50 shadow-md transition cursor-pointer';
+        }
+        if (progressBar) {
+          progressBar.classList.remove('bg-blue-500');
+          progressBar.classList.add('bg-amber-400');
+        }
+
+        // Update Pill Labels based on active language
+        const titleEl = document.getElementById('pauseIndicatorTitle');
+        const subEl = document.getElementById('pauseIndicatorSubtitle');
+        if (titleEl) titleEl.innerText = isAm ? 'ማሳያው ቆሟል (Paused)' : 'Paused (Discussion Mode)';
+        if (subEl) subEl.innerText = isAm ? 'ለመቀጠል Space ወይም B ይጫኑ (Click to resume)' : 'Press Space or B to resume (Click to resume)';
+
+        // Show floating non-intrusive pause pill and ambient accent
+        if (pill) {
+          pill.classList.remove('hidden');
+          requestAnimationFrame(() => {
+            pill.classList.remove('opacity-0');
+            pill.classList.add('opacity-100');
+          });
+        }
+        if (topLine) {
+          topLine.classList.remove('hidden');
+          requestAnimationFrame(() => {
+            topLine.classList.remove('opacity-0');
+            topLine.classList.add('opacity-100');
+          });
+        }
       }
     }
 
@@ -4082,36 +4153,9 @@
       }
     }
 
-    // Toggle Presentation Blackout Screen (Triggered by USB pointer 'B' or '.' key)
+    // Toggle Presentation Pause / Discussion Mode (Triggered by USB pointer 'B' or '.' key)
     function togglePresentationBlackout(forceState = null) {
-      const curtain = document.getElementById('presentationBlackoutCurtain');
-      if (!curtain) return;
-      const isCurrentlyShown = !curtain.classList.contains('hidden') && curtain.classList.contains('opacity-100');
-      const show = forceState !== null ? forceState : !isCurrentlyShown;
-
-      if (show) {
-        curtain.classList.remove('hidden');
-        requestAnimationFrame(() => {
-          curtain.classList.add('opacity-100');
-          curtain.classList.remove('opacity-0');
-        });
-        if (state.autoRotate) {
-          state.wasRotatingBeforeBlackout = true;
-          state.autoRotate = false;
-          updatePlayPauseButtonState();
-        }
-      } else {
-        curtain.classList.remove('opacity-100');
-        curtain.classList.add('opacity-0');
-        setTimeout(() => {
-          curtain.classList.add('hidden');
-        }, 300);
-        if (state.wasRotatingBeforeBlackout) {
-          state.wasRotatingBeforeBlackout = false;
-          state.autoRotate = true;
-          updatePlayPauseButtonState();
-        }
-      }
+      toggleCarousel(forceState);
     }
 
     // --- EXECUTIVE WEEKLY REPORT BRIEFING LOGIC ---
@@ -5499,19 +5543,11 @@
         // Next Slide: Right Arrow, PageDown (Standard USB Clicker Next), Down Arrow, or 'n' / 'N'
         if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === 'ArrowDown' || e.key === 'n' || e.key === 'N') {
           e.preventDefault();
-          const curtain = document.getElementById('presentationBlackoutCurtain');
-          if (curtain && !curtain.classList.contains('hidden')) {
-            togglePresentationBlackout(false);
-          }
           nextSlide();
         }
         // Previous Slide: Left Arrow, PageUp (Standard USB Clicker Prev), Up Arrow, or 'p' / 'P'
         else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp' || e.key === 'p' || e.key === 'P') {
           e.preventDefault();
-          const curtain = document.getElementById('presentationBlackoutCurtain');
-          if (curtain && !curtain.classList.contains('hidden')) {
-            togglePresentationBlackout(false);
-          }
           prevSlide();
         }
         // Play / Pause Auto-rotation: Spacebar
@@ -5519,21 +5555,20 @@
           e.preventDefault();
           toggleCarousel();
         }
-        // Blackout / Blank Screen: USB Clicker 'B' or '.' button
+        // Blackout / Pause Mode: USB Clicker 'B' or '.' button
         else if (e.key === 'b' || e.key === 'B' || e.key === '.') {
           e.preventDefault();
-          togglePresentationBlackout();
+          toggleCarousel();
         }
         // Fullscreen Toggle: USB Clicker F5 or Shift+F5 (Start Slideshow button)
         else if (e.key === 'F5') {
           e.preventDefault();
           toggleFullscreen();
         }
-        // Escape: Dismiss blackout if currently active
+        // Escape: Resume if paused
         else if (e.key === 'Escape') {
-          const curtain = document.getElementById('presentationBlackoutCurtain');
-          if (curtain && !curtain.classList.contains('hidden')) {
-            togglePresentationBlackout(false);
+          if (!state.autoRotate) {
+            toggleCarousel(true);
           }
         }
       });
